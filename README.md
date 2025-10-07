@@ -37,11 +37,11 @@ id[:displayName][*]
 
 #### WiFi Network Selector
 
-![wifi](examples/wifi.png)
+![wifi](examples/img/wifi.png)
 
 #### Power Profile Selector
 
-![powerprofilesctl](examples/powerprofiles.png)
+![powerprofilesctl](examples/img/powerprofiles.png)
 
 See the [examples](examples) directory for more.
 
