@@ -85,12 +85,11 @@ sudo apt install cmake make g++ libwayland-dev wayland-protocols \
 
 ### Building
 
-1. **Clone the repository** (if not already done):
+1. **Clone the repository**:
    ```bash
    git clone git@github.com:zackb/hyprwat.git
    cd hyprwat
    git submodule update --init --recursive
-   make
    ```
 
 2. **Build the project**:
