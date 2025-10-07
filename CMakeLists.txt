@@ -4,8 +4,10 @@ project(hyprwat CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Find Wayland
 find_package(Wayland QUIET COMPONENTS Client Egl)
 if(NOT Wayland_FOUND)
+    # Fallback to pkg-config if Wayland CMake package is not found
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(WAYLAND REQUIRED IMPORTED_TARGET wayland-client wayland-egl)
 endif()
@@ -49,7 +51,6 @@ add_executable(hyprwat
     src/selection/selector.cpp
     src/input.cpp
     src/ui.cpp
-    src/menu/popup_menu.cpp
     ${IMGUI_SOURCES}
     ${WAYLAND_PROTOCOLS}
 )
