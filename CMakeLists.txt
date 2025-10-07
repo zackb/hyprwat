@@ -37,6 +37,15 @@ set(WAYLAND_PROTOCOLS
     src/wayland/protocols/xdg-shell-client-protocol.c
 )
 
+# INIH
+include(FetchContent)
+FetchContent_Declare(
+  inih
+  GIT_REPOSITORY https://github.com/benhoyt/inih.git
+  GIT_TAG r58
+)
+FetchContent_MakeAvailable(inih)
+
 # Main executable
 add_executable(hyprwat
     src/main.cpp
@@ -77,6 +86,7 @@ target_link_libraries(hyprwat PRIVATE
     OpenGL::OpenGL
     OpenGL::EGL
     ${Fontconfig_LIBRARIES}
+    inih
     ${CMAKE_DL_LIBS}
     m
     pthread
