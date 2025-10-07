@@ -35,6 +35,16 @@ id[:displayName][*]
 
 ### Examples
 
+#### WiFi Network Selector
+
+![wifi](examples/wifi.png)
+
+#### Power Profile Selector
+
+![powerprofilesctl](examples/powerprofiles.png)
+
+See the [examples](examples) directory for more.
+
 ```bash
 # Simple options with custom display names and pre-selection
 hyprwat performance:Performance* balanced:Balanced powersave:PowerSaver
@@ -161,10 +171,10 @@ nmcli -t -f active,ssid,signal dev wifi | \
 ### Power Profile Selector
 
 ```bash
-hyprwat \
-  performance:"🚀 Performance" \
-  balanced:"⚖️ Balanced*" \
-  powersave:"🔋 Power Saver"
+./build/debug/hyprwat \
+  performance:"⚡ Performance" \
+  balanced:"⚖ Balanced*" \
+  powersave:"▽ Power Saver"
 ```
 
 ## Requirements
