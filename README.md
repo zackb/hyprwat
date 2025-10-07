@@ -175,10 +175,19 @@ hyprwat \
 - **OpenGL/EGL support**
 - **Fontconfig**
 
+## Why?
+I created hyprwat to fill a gap in the Wayland ecosystem for a simple, flexible, and visually appealing menu system that can be easily integrated into various use cases. Particularly, for waybar I needed a menu selection for wifi networks, power profiles, pavcontrol, etc. 
+
+[My first attempt](https://github.com/zackb/code/tree/master/cpp/wat) used SDL2/3 and ImGui, but I didn't like the menu being a window (there's no layer shell support in SDL). So I rewrote it using pure Wayland protocols and EGL for rendering.
+
+If nothing else a pretty cool [cpp wrapper for Wayland protocols](src/wayland).
+
+If there's enough interest I'd like to expand it to have different kinds of UI like text input (wifi passwords) or sliders (volume control) and have it be a more general purpose hyprland control.
+
 ## License
 
 [MIT](LICENSE)
 
 ## Contributing
 
-TODO
+Get at me on [GitHub](https://github.com/zackb) or [BlueSky](https://bsky.app/profile/zackzbz.bsky.social) if you have ideas, issues, or want to contribute!
