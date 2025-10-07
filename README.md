@@ -11,7 +11,7 @@ hyprwat creates a popup menu at your cursor position where you can select from a
 - **Wayland native**: Built specifically for Wayland compositors
 - **Cursor positioning**: Automatically appears at your current cursor position
 - **Flexible input**: Accept options via command line arguments or stdin
-- **Modern UI**: Clean interface built with ImGui
+- **UI**: Interface built with ImGui
 - **Pre-selection support**: Mark items as initially selected
 - **Hyprland integration**: Designed to work with Hyprland compositor
 
@@ -77,8 +77,10 @@ sudo apt install cmake make g++ libwayland-dev wayland-protocols \
 
 1. **Clone the repository** (if not already done):
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:zackb/hyprwat.git
    cd hyprwat
+   git submodule update --init --recursive
+   make
    ```
 
 2. **Build the project**:
@@ -118,7 +120,7 @@ cmake --build --preset debug
   - `ui.cpp`: User interface logic
   - `wayland/`: Wayland protocol implementations
   - `renderer/`: EGL/OpenGL rendering context
-  - `selection/`: Selection handling logic
+  - `selection/`: Selection/Menu handling logic and UI
   - `hyprland/`: Hyprland IPC integration
 - `ext/imgui/`: ImGui library (included)
 - `CMakeLists.txt`: Build configuration
@@ -175,7 +177,7 @@ hyprwat \
 
 ## License
 
-TODO
+[MIT](LICENSE)
 
 ## Contributing
 
