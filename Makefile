@@ -21,6 +21,9 @@ run2: debug
 run3: debug
 	echo -e "foo:Foo\nbar:Bar\nbaz:Baz\nqux:Qux\nquux:Quux\ncorge:Corge\ngrault:Grault\ngarply:Garply*\nwaldo:Waldo\nfred:Fred\nplugh:Plugh\nxyzzy:Xyzzy\nthud:Thud" | ./build/debug/hyprwat
 
+run-input: debug
+	./build/debug/hyprwat --input Passphrase
+
 
 .PHONY: fmt
 fmt:
