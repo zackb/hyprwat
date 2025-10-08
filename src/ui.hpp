@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/config.hpp"
 #include "src/vec2.hpp"
 #include "src/wayland/layer_surface.hpp"
 #include "src/wayland/wayland.hpp"
@@ -13,7 +14,7 @@ public:
 class UI {
 public:
     UI(wl::Wayland& wayland) : wayland(wayland) {}
-    void init(int x, int y);
+    void init(const Config& config, int x, int y);
     void run(Frame& frame);
 
 private:
@@ -25,4 +26,6 @@ private:
 
     void renderFrame(Frame& frame);
     void updateScale(int32_t new_scale);
+    void applyTheme(const Config& config);
+    void setupFont(ImGuiIO& io, const Config& config);
 };

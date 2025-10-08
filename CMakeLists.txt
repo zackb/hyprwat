@@ -46,6 +46,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(inih)
 
+add_library(inih STATIC
+    ${inih_SOURCE_DIR}/ini.c
+    ${inih_SOURCE_DIR}/cpp/INIReader.cpp
+)
+target_include_directories(inih PUBLIC
+    ${inih_SOURCE_DIR}
+    ${inih_SOURCE_DIR}/cpp
+)
+
+
 # Main executable
 add_executable(hyprwat
     src/main.cpp
