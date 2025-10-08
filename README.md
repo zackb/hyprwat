@@ -53,7 +53,6 @@ hyprwat performance:Performance* balanced:Balanced powersave:PowerSaver
 hyprwat wifi0:Home wifi1:Work wifi2:Other
 
 # Using stdin input
-echo "wifi0:Home*" | hyprwat
 echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
 
 # Real-world WiFi example (using included script)
@@ -192,6 +191,12 @@ nmcli -t -f active,ssid,signal dev wifi | \
   performance:"⚡ Performance" \
   balanced:"⚖ Balanced*" \
   powersave:"▽ Power Saver"
+```
+
+### Passphrase Input Prompt
+```bash
+PASSPHRASE=$(./build/debug/hyprwat --input Passphrase)
+echo $PASSPHRASE
 ```
 
 ## Requirements
