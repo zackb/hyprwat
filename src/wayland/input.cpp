@@ -297,11 +297,17 @@ namespace wl {
     }
 
     void InputHandler::keyboard_enter(void* data, wl_keyboard*, uint32_t, wl_surface*, wl_array* keys) {
-        // no need to manually track key states in newer ImGui versions
+        InputHandler* self = static_cast<InputHandler*>(data);
+        if (!self->io)
+            return;
+        self->io->AddFocusEvent(true);
     }
 
     void InputHandler::keyboard_leave(void* data, wl_keyboard*, uint32_t, wl_surface*) {
-        // no need to manually clear key states in newer ImGui versions
+        InputHandler* self = static_cast<InputHandler*>(data);
+        if (!self->io)
+            return;
+        self->io->AddFocusEvent(false);
     }
 
     void InputHandler::keyboard_key(void* data, wl_keyboard*, uint32_t, uint32_t, uint32_t key, uint32_t state) {
