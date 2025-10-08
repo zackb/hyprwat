@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/vec2.hpp"
+#include "src/vec.hpp"
 extern "C" {
 #include <wayland-client.h>
 #include <wayland-egl.h>

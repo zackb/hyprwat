@@ -3,7 +3,7 @@
 #include "src/font/font.hpp"
 #include <GL/gl.h>
 
-void UI::init(const Config& config, int x, int y) {
+void UI::init(int x, int y) {
 
     // Create wl layer surface with small but reasonable initial size
     // Small enough to avoid flash, large enough for ImGui to work properly
@@ -51,12 +51,6 @@ void UI::init(const Config& config, int x, int y) {
 
     // Framebuffer scale = buffer pixels / logical points
     io.DisplayFramebufferScale = ImVec2((float)currentScale, (float)currentScale);
-
-    // apply the theme from config
-    applyTheme(config);
-
-    // set up font from config if specified, defaulting to fontconfig
-    setupFont(io, config);
 
     // Set up input handling wayland -> imgui
     wayland.input().setIO(&io);
@@ -173,10 +167,10 @@ void UI::applyTheme(const Config& config) {
 
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
+    ImGuiIO& io = ImGui::GetIO();
 
     style.Colors[ImGuiCol_WindowBg] = config.getColor("theme", "background_color", "#1e1e2eF0");
     style.Colors[ImGuiCol_Text] = config.getColor("theme", "font_color", "#cdd6f4");
-    style.Colors[ImGuiCol_ButtonHovered] = config.getColor("theme", "accent_color", "#89b4fa");
 
     style.WindowRounding = config.getFloat("theme", "window_rounding", 10.0f);
     style.FrameRounding = config.getFloat("theme", "frame_rounding", 6.0f);
@@ -188,6 +182,9 @@ void UI::applyTheme(const Config& config) {
 
     // transparency
     style.Alpha = config.getFloat("theme", "background_blur", 0.95f);
+
+    // set up font from config if specified, defaulting to fontconfig
+    setupFont(io, config);
 }
 
 void UI::setupFont(ImGuiIO& io, const Config& config) {

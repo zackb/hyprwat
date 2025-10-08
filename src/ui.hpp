@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/config.hpp"
-#include "src/vec2.hpp"
+#include "src/vec.hpp"
 #include "src/wayland/layer_surface.hpp"
 #include "src/wayland/wayland.hpp"
 
@@ -9,13 +9,15 @@ class Frame {
 public:
     virtual bool render() = 0;
     virtual Vec2 getSize() = 0;
+    virtual void applyTheme(const Config& config) {};
 };
 
 class UI {
 public:
     UI(wl::Wayland& wayland) : wayland(wayland) {}
-    void init(const Config& config, int x, int y);
+    void init(int x, int y);
     void run(Frame& frame);
+    void applyTheme(const Config& config);
 
 private:
     wl::Wayland& wayland;
@@ -26,6 +28,5 @@ private:
 
     void renderFrame(Frame& frame);
     void updateScale(int32_t new_scale);
-    void applyTheme(const Config& config);
     void setupFont(ImGuiIO& io, const Config& config);
 };

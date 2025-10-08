@@ -57,9 +57,9 @@ int main(const int argc, const char** argv) {
     Vec2 pos = hyprctl.getCursorPos();
 
     // load config
-    Config config("examples/hyprwat.conf1");
+    Config config("examples/hyprwat.conf");
 
-    ui.init(config, (int)pos.x, (int)pos.y);
+    ui.init((int)pos.x, (int)pos.y);
     if (argc > 1) {
         // parse argv for choices
         auto choices = Input::parseArgv(argc, argv);
@@ -75,6 +75,10 @@ int main(const int argc, const char** argv) {
         // parse stdin for choices asynchronously
         Input::parseStdin([&](Choice choice) { frame.add(choice); });
     }
+
+    // apply theme
+    ui.applyTheme(config);
+    frame.applyTheme(config);
 
     // run the UI loop
     ui.run(frame);

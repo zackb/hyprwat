@@ -3,6 +3,7 @@
 #include "../choice.hpp"
 #include "imgui.h"
 #include "src/ui.hpp"
+#include "src/vec.hpp"
 #include <vector>
 
 class Selector : public Frame {
@@ -16,11 +17,12 @@ public:
 
     virtual bool render();
     virtual Vec2 getSize() { return Vec2{lastSize.x, lastSize.y}; }
+    virtual void applyTheme(const Config& config);
 
 private:
     int selected = -1;
     std::vector<Choice> choices;
-    ImVec4 highlightedColor = ImVec4(0.2f, 0.4f, 0.7f, 1.0f);
-    ImVec4 selectedColor = ImVec4(0.2f, 0.4f, 0.7f, 0.4f);
+    ImVec4 activeColor = ImVec4(0.2f, 0.4f, 0.7f, 1.0f);
+    ImVec4 hoverColor = ImVec4(0.2f, 0.4f, 0.7f, 0.4f);
     ImVec2 lastSize = ImVec2(0, 0);
 };
