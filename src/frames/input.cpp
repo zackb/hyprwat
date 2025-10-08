@@ -37,13 +37,15 @@ bool TextInput::render() {
     bool enterPressed =
         ImGui::InputTextWithHint("##pass", hint.c_str(), inputBuffer, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
 
+    bool escPressed = ImGui::IsKeyPressed(ImGuiKey_Escape);
+
     ImGui::End();
 
     if (enterPressed) {
         std::cout << inputBuffer << std::endl;
         std::cout.flush();
     }
-    return !enterPressed;
+    return !enterPressed && !escPressed;
 }
 
 Vec2 TextInput::getSize() { return Vec2{lastSize.x, lastSize.y}; }

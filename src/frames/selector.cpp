@@ -100,12 +100,19 @@ bool Selector::render() {
         }
     }
 
+    bool escPressed = ImGui::IsKeyPressed(ImGuiKey_Escape);
+
     ImGui::End();
 
     // if an item was clicked, print its id and exit
     if (clicked >= 0) {
         std::cout << choices[clicked].id << std::endl;
         std::cout.flush();
+        return false;
+    }
+
+    // if esc was pressed exit without printing anything
+    if (escPressed) {
         return false;
     }
 
