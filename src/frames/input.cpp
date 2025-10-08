@@ -7,15 +7,10 @@ bool TextInput::render() {
     ImVec2 windowPadding = style.WindowPadding;
 
     // Calculate input box size
-    ImVec2 textSize = ImGui::CalcTextSize(hint.c_str());
     float inputWidth = 300.0f; // default width for input
-    float inputHeight = textSize.y + framePadding.y * 2;
 
-    // Total window size
-    float desiredWidth = inputWidth + windowPadding.x * 2;
-    float desiredHeight = inputHeight + windowPadding.y * 2;
-
-    lastSize = ImVec2(desiredWidth, desiredHeight);
+    // calculate actual size after rendering
+    lastSize = ImVec2(inputWidth + windowPadding.x * 2, 50);
 
     // Set the window to fill the entire display
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
@@ -38,6 +33,10 @@ bool TextInput::render() {
         ImGui::InputTextWithHint("##pass", hint.c_str(), inputBuffer, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
 
     bool escPressed = ImGui::IsKeyPressed(ImGuiKey_Escape);
+
+    // actual content size after rendering
+    ImVec2 contentSize = ImGui::GetItemRectSize();
+    lastSize = ImVec2(inputWidth + windowPadding.x * 2, contentSize.y + windowPadding.y * 2);
 
     ImGui::End();
 
