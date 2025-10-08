@@ -297,35 +297,11 @@ namespace wl {
     }
 
     void InputHandler::keyboard_enter(void* data, wl_keyboard*, uint32_t, wl_surface*, wl_array* keys) {
-        InputHandler* self = static_cast<InputHandler*>(data);
-        if (!self->io)
-            return;
-
-        // Mark all keys as released when keyboard focus is gained
-        for (int i = 0; i < IM_ARRAYSIZE(self->io->KeysDown); i++) {
-            if (self->io->KeysDown[i]) {
-                self->io->KeysDown[i] = false;
-            }
-        }
-
-        // Then mark the currently pressed keys
-        uint32_t* key;
-        wl_array_for_each(key, keys) {
-            if (*key < IM_ARRAYSIZE(self->io->KeysDown)) {
-                self->io->KeysDown[*key] = true;
-            }
-        }
+        // no need to manually track key states in newer ImGui versions
     }
 
     void InputHandler::keyboard_leave(void* data, wl_keyboard*, uint32_t, wl_surface*) {
-        InputHandler* self = static_cast<InputHandler*>(data);
-        if (!self->io)
-            return;
-
-        // Mark all keys as released when keyboard focus is lost
-        for (int i = 0; i < IM_ARRAYSIZE(self->io->KeysDown); i++) {
-            self->io->KeysDown[i] = false;
-        }
+        // no need to manually clear key states in newer ImGui versions
     }
 
     void InputHandler::keyboard_key(void* data, wl_keyboard*, uint32_t, uint32_t, uint32_t key, uint32_t state) {
@@ -340,11 +316,6 @@ namespace wl {
         // Update the key state in XKB
         if (self->xkb_state) {
             xkb_state_update_key(self->xkb_state, keycode, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
-        }
-
-        // Update ImGui key state
-        if (key < IM_ARRAYSIZE(self->io->KeysDown)) {
-            self->io->KeysDown[key] = pressed;
         }
 
         // Handle the key press/release
@@ -365,15 +336,21 @@ namespace wl {
         // Update the XKB state with the new modifiers
         xkb_state_update_mask(self->xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
 
-        // Update ImGui modifier keys
-        self->io->KeyCtrl = (mods_depressed & self->control_mask) || (mods_latched & self->control_mask) ||
-                            (mods_locked & self->control_mask);
-        self->io->KeyShift = (mods_depressed & self->shift_mask) || (mods_latched & self->shift_mask) ||
-                             (mods_locked & self->shift_mask);
-        self->io->KeyAlt =
+        // Update modifier key states
+        bool ctrl = (mods_depressed & self->control_mask) || (mods_latched & self->control_mask) ||
+                    (mods_locked & self->control_mask);
+        bool shift = (mods_depressed & self->shift_mask) || (mods_latched & self->shift_mask) ||
+                     (mods_locked & self->shift_mask);
+        bool alt =
             (mods_depressed & self->alt_mask) || (mods_latched & self->alt_mask) || (mods_locked & self->alt_mask);
-        self->io->KeySuper = (mods_depressed & self->super_mask) || (mods_latched & self->super_mask) ||
-                             (mods_locked & self->super_mask);
+        bool super = (mods_depressed & self->super_mask) || (mods_latched & self->super_mask) ||
+                     (mods_locked & self->super_mask);
+
+        // Update modifier keys
+        self->io->AddKeyEvent(ImGuiMod_Ctrl, ctrl);
+        self->io->AddKeyEvent(ImGuiMod_Shift, shift);
+        self->io->AddKeyEvent(ImGuiMod_Alt, alt);
+        self->io->AddKeyEvent(ImGuiMod_Super, super);
     }
 
     void InputHandler::keyboard_repeat_info(void* data, wl_keyboard*, int32_t rate, int32_t delay) {
@@ -382,41 +359,10 @@ namespace wl {
         self->repeat_delay = delay;
     }
 
-    void InputHandler::updateModifiers(xkb_state* state) {
-        if (!state || !io)
-            return;
-
-        io->KeyCtrl =
-            (xkb_state_mod_index_is_active(state,
-                                           xkb_keymap_mod_get_index(xkb_state_get_keymap(state), XKB_MOD_NAME_CTRL),
-                                           XKB_STATE_MODS_EFFECTIVE) > 0);
-
-        io->KeyShift =
-            (xkb_state_mod_index_is_active(state,
-                                           xkb_keymap_mod_get_index(xkb_state_get_keymap(state), XKB_MOD_NAME_SHIFT),
-                                           XKB_STATE_MODS_EFFECTIVE) > 0);
-
-        io->KeyAlt =
-            (xkb_state_mod_index_is_active(state,
-                                           xkb_keymap_mod_get_index(xkb_state_get_keymap(state), XKB_MOD_NAME_ALT),
-                                           XKB_STATE_MODS_EFFECTIVE) > 0);
-
-        io->KeySuper =
-            (xkb_state_mod_index_is_active(state,
-                                           xkb_keymap_mod_get_index(xkb_state_get_keymap(state), XKB_MOD_NAME_LOGO),
-                                           XKB_STATE_MODS_EFFECTIVE) > 0);
-    }
-
     void InputHandler::handleKey(uint32_t key, bool pressed) {
         if (!io)
             return;
 
-        // Convert Wayland keycode to ImGuiKey
-        if (key < IM_ARRAYSIZE(io->KeysDown)) {
-            io->KeysDown[key] = pressed;
-        }
-
-        // Handle special keys
         if (xkb_state && xkb_keymap) {
             xkb_keycode_t keycode = key + 8; // Convert to XKB keycode
             xkb_keysym_t sym = xkb_state_key_get_one_sym(xkb_state, keycode);
