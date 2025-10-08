@@ -28,6 +28,12 @@ bool TextInput::render() {
 
     // Set the input text width
     ImGui::SetNextItemWidth(inputWidth);
+
+    // Set focus to the input field on first frame
+    if (ImGui::IsWindowAppearing()) {
+        ImGui::SetKeyboardFocusHere();
+    }
+
     bool enterPressed =
         ImGui::InputTextWithHint("##pass", hint.c_str(), inputBuffer, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
 
