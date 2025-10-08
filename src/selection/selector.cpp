@@ -26,9 +26,7 @@ bool Selector::RoundedSelectableFullWidth(const char* label, bool selected, floa
 
     // draw the background if hovered or selected
     if (hovered || selected) {
-        ImU32 color = ImGui::GetColorU32(selected && hovered ? highlightedColor
-                                         : selected          ? selectedColor
-                                                             : highlightedColor);
+        ImU32 color = ImGui::GetColorU32(selected && hovered ? hoverColor : selected ? activeColor : hoverColor);
         ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), color, rounding);
     }
 
@@ -112,4 +110,9 @@ bool Selector::render() {
     }
 
     return true;
+}
+
+void Selector::applyTheme(const Config& config) {
+    hoverColor = config.getColor("theme", "hover_color", "#3366B3FF");
+    activeColor = config.getColor("theme", "active_color", "#3366B366");
 }

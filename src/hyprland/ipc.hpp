@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../vec2.hpp"
+#include "../vec.hpp"
 #include <atomic>
 #include <functional>
 #include <string>

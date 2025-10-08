@@ -52,31 +52,6 @@ void UI::init(int x, int y) {
     // Framebuffer scale = buffer pixels / logical points
     io.DisplayFramebufferScale = ImVec2((float)currentScale, (float)currentScale);
 
-    // load user font if available
-    auto fontPath = font::defaultFontPath();
-    if (!fontPath.empty()) {
-        ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 14.0f);
-        io.FontDefault = font;
-    }
-
-    // hidpi handled by DisplayFramebufferScale
-    io.FontGlobalScale = 1.0f;
-
-    // Set up our ImGui style
-    ImGui::StyleColorsDark();
-
-    ImGuiStyle& style = ImGui::GetStyle();
-    // style.ScaleAllSizes(scale);
-
-    style.ItemSpacing = ImVec2(10, 6);
-    // style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f); -- no transparent
-    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.95f);
-
-    style.WindowRounding = 10.0f;
-    style.FrameRounding = 6.0f;
-    style.WindowPadding = ImVec2(10, 10);
-    style.FramePadding = ImVec2(8, 4);
-
     // Set up input handling wayland -> imgui
     wayland.input().setIO(&io);
     // Input bounds in logical units
@@ -186,4 +161,43 @@ void UI::updateScale(int32_t newScale) {
     }
 
     // ImGui will be updated in the next renderFrame() call
+}
+
+void UI::applyTheme(const Config& config) {
+
+    ImGui::StyleColorsDark();
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImGuiIO& io = ImGui::GetIO();
+
+    style.Colors[ImGuiCol_WindowBg] = config.getColor("theme", "background_color", "#1e1e2eF0");
+    style.Colors[ImGuiCol_Text] = config.getColor("theme", "font_color", "#cdd6f4");
+
+    style.WindowRounding = config.getFloat("theme", "window_rounding", 10.0f);
+    style.FrameRounding = config.getFloat("theme", "frame_rounding", 6.0f);
+
+    // TODO
+    style.ItemSpacing = ImVec2(10, 6);
+    style.WindowPadding = ImVec2(10, 10);
+    style.FramePadding = ImVec2(8, 4);
+
+    // transparency
+    style.Alpha = config.getFloat("theme", "background_blur", 0.95f);
+
+    // set up font from config if specified, defaulting to fontconfig
+    setupFont(io, config);
+}
+
+void UI::setupFont(ImGuiIO& io, const Config& config) {
+    // load the user font if specified in config defaulting to fc
+    std::string fontPath = config.getString("theme", "font_path", font::defaultFontPath());
+    float fontSize = config.getFloat("theme", "font_size", 14.0f);
+
+    if (!fontPath.empty()) {
+        ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), fontSize);
+        if (font)
+            io.FontDefault = font;
+    }
+
+    // hidpi handled by DisplayFramebufferScale
+    io.FontGlobalScale = 1.0f;
 }
