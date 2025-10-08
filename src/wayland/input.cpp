@@ -110,7 +110,53 @@ namespace wl {
     void InputHandler::keyboard_keymap(void*, wl_keyboard*, uint32_t, int32_t, uint32_t) {}
     void InputHandler::keyboard_enter(void*, wl_keyboard*, uint32_t, wl_surface*, wl_array*) {}
     void InputHandler::keyboard_leave(void*, wl_keyboard*, uint32_t, wl_surface*) {}
-    void InputHandler::keyboard_key(void*, wl_keyboard*, uint32_t, uint32_t, uint32_t, uint32_t) {}
-    void InputHandler::keyboard_modifiers(void*, wl_keyboard*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) {}
+
+    void InputHandler::keyboard_key(void* data, wl_keyboard*, uint32_t serial, uint32_t key, uint32_t state, uint32_t) {
+        InputHandler* self = static_cast<InputHandler*>(data);
+
+        ImGuiIO& io = *self->io;
+
+        bool pressed = (state == WL_KEYBOARD_KEY_STATE_PRESSED);
+
+        // Map xkb keycode (offset 8 in Wayland) to ImGuiKey
+        // ImGuiKey imguiKey = ImGui_ImplWayland_KeycodeToImGuiKey(key + 8); // You need to implement mapping
+        /* TODO
+        if (imguiKey != ImGuiKey_None) {
+            io.AddKeyEvent(imguiKey, pressed);
+        }
+        */
+
+        // Update modifiers in ImGui
+        io.AddKeyEvent(ImGuiKey_ModCtrl, self->xkbCtrl);
+        io.AddKeyEvent(ImGuiKey_ModShift, self->xkbShift);
+        io.AddKeyEvent(ImGuiKey_ModAlt, self->xkbAlt);
+        io.AddKeyEvent(ImGuiKey_ModSuper, self->xkbSuper);
+
+        /* TODO
+        if (pressed) {
+            uint32_t codepoint = ...? need a mapping from keycode to UTF-8
+            if (codepoint > 0) {
+                char utf8[5] = {};
+                int len = xkb_utf32_to_utf8(codepoint, utf8);
+                io.AddInputCharactersUTF8(utf8);
+            }
+        }
+        */
+    }
+
+    void InputHandler::keyboard_modifiers(void* data,
+                                          wl_keyboard*,
+                                          uint32_t mods_depressed,
+                                          uint32_t mods_latched,
+                                          uint32_t mods_locked,
+                                          uint32_t group,
+                                          uint32_t) {
+        InputHandler* self = static_cast<InputHandler*>(data);
+        self->xkbShift = (mods_depressed & XKB_MOD_SHIFT);
+        self->xkbCtrl = (mods_depressed & XKB_MOD_CTRL);
+        self->xkbAlt = (mods_depressed & XKB_MOD_ALT);
+        self->xkbSuper = (mods_depressed & XKB_MOD_LOGO);
+    }
+
     void InputHandler::keyboard_repeat_info(void*, wl_keyboard*, int32_t, int32_t) {}
 } // namespace wl

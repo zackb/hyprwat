@@ -1,5 +1,6 @@
 #include "frames/selector.hpp"
 #include "input.hpp"
+#include "src/frames/input.hpp"
 #include "src/hyprland/ipc.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
@@ -80,8 +81,10 @@ int main(const int argc, const char** argv) {
     ui.applyTheme(config);
     frame.applyTheme(config);
 
+    TextInput input;
+
     // run the UI loop
-    ui.run(frame);
+    ui.run(input);
 
     return 0;
 }

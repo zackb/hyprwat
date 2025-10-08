@@ -6,6 +6,12 @@ extern "C" {
 
 #include "imgui.h"
 
+#define XKB_MOD_SHIFT (1 << 0)
+#define XKB_MOD_LOCK (1 << 1)
+#define XKB_MOD_CTRL (1 << 2)
+#define XKB_MOD_ALT (1 << 3)
+#define XKB_MOD_LOGO (1 << 6)
+
 namespace wl {
 
     // Handles input from a wl_seat and forwards it to ImGui
@@ -27,6 +33,11 @@ namespace wl {
         int width = 0;
         int height = 0;
         bool should_exit = false;
+
+        bool xkbCtrl = false;
+        bool xkbShift = false;
+        bool xkbAlt = false;
+        bool xkbSuper = false;
 
         // Seat callbacks
         static void seat_capabilities(void* data, wl_seat* seat, uint32_t capabilities);
