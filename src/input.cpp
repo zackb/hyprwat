@@ -4,26 +4,35 @@
 #include <thread>
 
 std::mutex Input::mutex;
-std::vector<Choice> Input::parseArgv(int argc, const char* argv[]) {
+ParseResult Input::parseArgv(int argc, const char* argv[]) {
 
-    std::vector<Choice> items;
+    ParseResult result;
 
-    if (argc > 1) {
-        for (int i = 1; i < argc; ++i) {
-            items.push_back(parseLine(argv[i]));
+    if (argc <= 1) {
+        return result;
+    }
+
+    // Check for --input mode
+    if (std::string(argv[1]) == "--input") {
+        result.mode = InputMode::INPUT;
+        // If there's a second argument, use it as the hint
+        if (argc > 2) {
+            result.hint = argv[2];
         }
+        return result;
+    }
+
+    // Default MENU mode - parse all arguments as choices
+    result.mode = InputMode::MENU;
+    for (int i = 1; i < argc; ++i) {
+        result.choices.push_back(parseLine(argv[i]));
     }
 
     // Ensure only one item is selected
-    bool anySelected = std::any_of(items.begin(), items.end(), [](const Choice& item) { return item.selected; });
+    bool anySelected =
+        std::any_of(result.choices.begin(), result.choices.end(), [](const Choice& item) { return item.selected; });
 
-    /*
-    if (!anySelected && !items.empty()) {
-        items[0].selected = true; // Default to the first
-    }
-    */
-
-    return items;
+    return result;
 }
 
 void Input::parseStdin(Callback callback) {

@@ -11,10 +11,12 @@
 void usage() {
     fprintf(stderr, R"(Usage:
   hyprwat [OPTIONS] [id[:displayName][*]]...
+  hyprwat --input [hint]
 
 Description:
-  A simple Wayland panel to present selectable options.
+  A simple Wayland panel to present selectable options or text input.
 
+MENU MODE (default):
   You can pass a list of items directly as command-line arguments, where each
   item is a tuple in the form:
 
@@ -25,16 +27,24 @@ Description:
   - `*`            : Optional suffix to mark this item as initially selected
 
   Examples:
-    wat performance:Performance* balanced:Balanced powersave:PowerSaver
-    wat wifi0:Home wifi1:Work wifi2:Other
+    hyprwat performance:Performance* balanced:Balanced powersave:PowerSaver
+    hyprwat wifi0:Home wifi1:Work wifi2:Other
 
-Alternatively, if no arguments are passed, options can be provided via stdin:
+  Alternatively, if no arguments are passed, options can be provided via stdin:
 
-  echo "wifi0:Home*" | wat
-  echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | wat
+    echo "wifi0:Home*" | hyprwat
+    echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
+
+INPUT MODE:
+  Use --input to show a text input field instead of a menu.
+
+  Examples:
+    hyprwat --input passphrase
+    hyprwat --input "Enter your name"
 
 Options:
   -h, --help       Show this help message
+  --input [hint]   Show text input mode with optional hint text
 )");
 }
 
@@ -61,30 +71,42 @@ int main(const int argc, const char** argv) {
     Config config("~/.config/hyprwat/hyprwat.conf");
 
     ui.init((int)pos.x, (int)pos.y);
-    if (argc > 1) {
-        // parse argv for choices
-        auto choices = Input::parseArgv(argc, argv);
-        int i = 0;
-        for (auto& choice : choices) {
-            frame.add({choice.id, choice.display});
-            if (choice.selected) {
-                frame.setSelected(i);
-            }
-            ++i;
-        }
-    } else {
-        // parse stdin for choices asynchronously
-        Input::parseStdin([&](Choice choice) { frame.add(choice); });
-    }
-
-    // apply theme
+    // apply theme to UI
     ui.applyTheme(config);
-    frame.applyTheme(config);
 
-    TextInput input;
+    // parse command line arguments
+    auto parseResult = Input::parseArgv(argc, argv);
 
-    // run the UI loop
-    ui.run(input);
+    // INPUT mode
+    if (parseResult.mode == InputMode::INPUT) {
+        // INPUT mode - show text input with hint
+        TextInput input(parseResult.hint.empty() ? "Input" : parseResult.hint);
+        // apply theme to the input frame
+        input.applyTheme(config);
+        ui.run(input);
+    } else {
+        // MENU mode (default)
+        if (argc > 1) {
+            // parse argv for choices
+            int i = 0;
+            for (auto& choice : parseResult.choices) {
+                frame.add({choice.id, choice.display});
+                if (choice.selected) {
+                    frame.setSelected(i);
+                }
+                ++i;
+            }
+        } else {
+            // parse stdin for choices asynchronously
+            Input::parseStdin([&](Choice choice) { frame.add(choice); });
+        }
+
+        // apply theme to the menu frame
+        frame.applyTheme(config);
+
+        // run the UI loop
+        ui.run(frame);
+    }
 
     return 0;
 }

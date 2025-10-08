@@ -7,8 +7,8 @@ bool TextInput::render() {
     ImVec2 windowPadding = style.WindowPadding;
 
     // Calculate input box size
-    ImVec2 textSize = ImGui::CalcTextSize("Passphrase"); // Hint text
-    float inputWidth = 300.0f;                           // Reasonable default width for input
+    ImVec2 textSize = ImGui::CalcTextSize(hint.c_str());
+    float inputWidth = 300.0f; // default width for input
     float inputHeight = textSize.y + framePadding.y * 2;
 
     // Total window size
@@ -29,10 +29,14 @@ bool TextInput::render() {
     // Set the input text width
     ImGui::SetNextItemWidth(inputWidth);
     bool enterPressed =
-        ImGui::InputTextWithHint("##pass", "Passphrase", inputBuffer, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGui::InputTextWithHint("##pass", hint.c_str(), inputBuffer, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
 
     ImGui::End();
 
+    if (enterPressed) {
+        std::cout << inputBuffer << std::endl;
+        std::cout.flush();
+    }
     return !enterPressed;
 }
 

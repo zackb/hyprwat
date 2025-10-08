@@ -3,13 +3,25 @@
 #include "choice.hpp"
 #include <functional>
 #include <mutex>
+#include <string>
 #include <vector>
+
+enum class InputMode {
+    MENU, // default menu selection mode
+    INPUT // text input mode
+};
+
+struct ParseResult {
+    InputMode mode = InputMode::MENU;
+    std::vector<Choice> choices;
+    std::string hint; // For INPUT mode only
+};
 
 class Input {
 
 public:
     using Callback = std::function<void(Choice)>;
-    static std::vector<Choice> parseArgv(int argc, const char* argv[]);
+    static ParseResult parseArgv(int argc, const char* argv[]);
     static void parseStdin(Callback callback);
     static std::mutex mutex;
 
