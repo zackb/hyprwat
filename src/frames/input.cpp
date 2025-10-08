@@ -1,5 +1,5 @@
 #include "input.hpp"
-#include "../flow.hpp"
+#include "../flows/flow.hpp"
 
 FrameResult TextInput::render() {
     // Calculate desired size based on content

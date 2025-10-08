@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../flow.hpp"
+#include "flow.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,6 +13,7 @@ struct Choice;
 class SimpleMenuFlow : public Flow {
 public:
     SimpleMenuFlow(const std::vector<Choice>& choices);
+    ~SimpleMenuFlow();
 
     Frame* getCurrentFrame() override;
     bool handleResult(const FrameResult& result) override;
@@ -29,6 +30,7 @@ private:
 class SimpleInputFlow : public Flow {
 public:
     SimpleInputFlow(const std::string& hint);
+    ~SimpleInputFlow();
 
     Frame* getCurrentFrame() override;
     bool handleResult(const FrameResult& result) override;

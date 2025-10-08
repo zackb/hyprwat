@@ -1,9 +1,8 @@
+#include "flows/flow.hpp"
+#include "flows/simple_flows.hpp"
 #include "frames/selector.hpp"
+#include "hyprland/ipc.hpp"
 #include "input.hpp"
-#include "src/flow.hpp"
-#include "src/flows/simple_flows.hpp"
-#include "src/frames/input.hpp"
-#include "src/hyprland/ipc.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
 

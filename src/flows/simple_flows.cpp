@@ -1,6 +1,6 @@
 #include "simple_flows.hpp"
-#include "../frames/selector.hpp"
 #include "../frames/input.hpp"
+#include "../frames/selector.hpp"
 
 // SimpleMenuFlow implementation
 SimpleMenuFlow::SimpleMenuFlow(const std::vector<Choice>& choices) {
@@ -10,9 +10,9 @@ SimpleMenuFlow::SimpleMenuFlow(const std::vector<Choice>& choices) {
     }
 }
 
-Frame* SimpleMenuFlow::getCurrentFrame() {
-    return selector.get();
-}
+SimpleMenuFlow::~SimpleMenuFlow() = default;
+
+Frame* SimpleMenuFlow::getCurrentFrame() { return selector.get(); }
 
 bool SimpleMenuFlow::handleResult(const FrameResult& result) {
     if (result.action == FrameResult::Action::SUBMIT) {
@@ -26,22 +26,16 @@ bool SimpleMenuFlow::handleResult(const FrameResult& result) {
     return true;
 }
 
-bool SimpleMenuFlow::isDone() const {
-    return done;
-}
+bool SimpleMenuFlow::isDone() const { return done; }
 
-std::string SimpleMenuFlow::getResult() const {
-    return finalResult;
-}
+std::string SimpleMenuFlow::getResult() const { return finalResult; }
 
 // SimpleInputFlow implementation
-SimpleInputFlow::SimpleInputFlow(const std::string& hint) {
-    input = std::make_unique<TextInput>(hint);
-}
+SimpleInputFlow::SimpleInputFlow(const std::string& hint) { input = std::make_unique<TextInput>(hint); }
 
-Frame* SimpleInputFlow::getCurrentFrame() {
-    return input.get();
-}
+SimpleInputFlow::~SimpleInputFlow() = default;
+
+Frame* SimpleInputFlow::getCurrentFrame() { return input.get(); }
 
 bool SimpleInputFlow::handleResult(const FrameResult& result) {
     if (result.action == FrameResult::Action::SUBMIT) {
@@ -55,13 +49,9 @@ bool SimpleInputFlow::handleResult(const FrameResult& result) {
     return true;
 }
 
-bool SimpleInputFlow::isDone() const {
-    return done;
-}
+bool SimpleInputFlow::isDone() const { return done; }
 
-std::string SimpleInputFlow::getResult() const {
-    return finalResult;
-}
+std::string SimpleInputFlow::getResult() const { return finalResult; }
 
 // MenuThenInputFlow implementation
 MenuThenInputFlow::MenuThenInputFlow(const std::vector<Choice>& choices, const std::string& inputHintPrefix)
@@ -107,18 +97,10 @@ bool MenuThenInputFlow::handleResult(const FrameResult& result) {
     return true;
 }
 
-bool MenuThenInputFlow::isDone() const {
-    return done;
-}
+bool MenuThenInputFlow::isDone() const { return done; }
 
-std::string MenuThenInputFlow::getResult() const {
-    return selectedItem + ":" + inputValue;
-}
+std::string MenuThenInputFlow::getResult() const { return selectedItem + ":" + inputValue; }
 
-std::string MenuThenInputFlow::getSelectedItem() const {
-    return selectedItem;
-}
+std::string MenuThenInputFlow::getSelectedItem() const { return selectedItem; }
 
-std::string MenuThenInputFlow::getInputValue() const {
-    return inputValue;
-}
+std::string MenuThenInputFlow::getInputValue() const { return inputValue; }

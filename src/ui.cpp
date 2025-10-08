@@ -1,5 +1,5 @@
 #include "ui.hpp"
-#include "flow.hpp"
+#include "flows/flow.hpp"
 #include "imgui_impl_opengl3.h"
 #include "src/font/font.hpp"
 #include <GL/gl.h>
