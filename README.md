@@ -64,6 +64,24 @@ echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
 
 - `-h, --help`: Show help message
 
+## Theming
+You can customize the appearance of the UI by modifying the configuration file located at `~/.config/hyprwat/hyprwat.conf`. The file uses a simple INI format to define colors and styles for various UI elements.
+
+Example `hyprwat.conf`:
+
+```ini
+[theme]
+font_color = #cdd6f4
+font_path = ~/.local/share/fonts/MesloLGSDZNerdFont-Regular.ttf
+font_size = 14.0
+background_color = #1e1e2e
+window_rounding = 10.0
+frame_rounding = 6.0
+background_blur = 0.95
+hover_color = #3366b3ff
+active_color = #3366b366
+```
+
 ## Build Instructions
 
 ### Dependencies

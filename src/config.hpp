@@ -12,7 +12,7 @@
 
 class Config {
 public:
-    explicit Config(const std::string& path) : reader(path) {
+    explicit Config(const std::string& path) : reader(expandUser(path)) {
         if (reader.ParseError() != 0) {
             // file not found or parse error
             std::cerr << "Warning: Config file '" << path << "' not found or invalid. Using defaults.\n";
@@ -20,7 +20,7 @@ public:
     }
 
     std::string getString(const std::string& section, const std::string& name, const std::string& def = "") const {
-        return reader.Get(section, name, def);
+        return expandUser(reader.Get(section, name, def)).string();
     }
 
     float getFloat(const std::string& section, const std::string& name, float def = 0.0f) const {
@@ -52,7 +52,7 @@ private:
         return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
 
-    std::filesystem::path expandUser(const std::string& path) {
+    std::filesystem::path expandUser(const std::string& path) const {
         if (path.empty() || path[0] != '~')
             return path;
 
