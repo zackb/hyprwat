@@ -29,7 +29,7 @@ namespace wl {
                                          ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT);
         zwlr_layer_surface_v1_set_margin(m_layer_surface, y, 0, 0, x);
         zwlr_layer_surface_v1_set_keyboard_interactivity(m_layer_surface,
-                                                         ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE);
+                                                         ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE);
         zwlr_layer_surface_v1_set_exclusive_zone(m_layer_surface, 0);
 
         wl_surface_commit(m_surface);
