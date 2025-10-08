@@ -89,7 +89,7 @@ active_color = #3366b366
 #### Arch Linux
 
 ```bash
-sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf xkbcommon
+sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf libxkbcommon
 ```
 
 #### Debian/Ubuntu

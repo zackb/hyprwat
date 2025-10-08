@@ -20,7 +20,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(Fontconfig REQUIRED fontconfig)
 
 # xkbcommon
-pkg_check_modules(XKBCOMMON REQUIRED xkbcommon)
+pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
 
 
 # ImGui sources
@@ -54,6 +54,7 @@ add_library(inih STATIC
     ${inih_SOURCE_DIR}/cpp/INIReader.cpp
 )
 target_include_directories(inih PUBLIC
+    ${XKBCOMMON_INCLUDE_DIRS}
     ${inih_SOURCE_DIR}
     ${inih_SOURCE_DIR}/cpp
 )
@@ -99,7 +100,7 @@ endif()
 target_link_libraries(hyprwat PRIVATE
     OpenGL::OpenGL
     OpenGL::EGL
-    PkgConfig::Fontconfig
+    ${Fontconfig_LIBRARIES}
     PkgConfig::XKBCOMMON
     inih
     ${CMAKE_DL_LIBS}

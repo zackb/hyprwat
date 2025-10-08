@@ -121,9 +121,9 @@ namespace wl {
             wl_pointer_destroy(pointer);
             pointer = nullptr;
         }
-        if (xkb_state) {
-            xkb_state_unref(xkb_state);
-            xkb_state = nullptr;
+        if (m_xkb_state) {
+            xkb_state_unref(m_xkb_state);
+            m_xkb_state = nullptr;
         }
         if (xkb_keymap) {
             xkb_keymap_unref(xkb_keymap);
@@ -247,9 +247,9 @@ namespace wl {
             self->xkb_keymap = nullptr;
         }
 
-        if (self->xkb_state) {
-            xkb_state_unref(self->xkb_state);
-            self->xkb_state = nullptr;
+        if (self->m_xkb_state) {
+            xkb_state_unref(self->m_xkb_state);
+            self->m_xkb_state = nullptr;
         }
 
         // Create new keymap and state
@@ -263,8 +263,8 @@ namespace wl {
             return;
         }
 
-        self->xkb_state = xkb_state_new(self->xkb_keymap);
-        if (!self->xkb_state) {
+        self->m_xkb_state = xkb_state_new(self->xkb_keymap);
+        if (!self->m_xkb_state) {
             xkb_keymap_unref(self->xkb_keymap);
             self->xkb_keymap = nullptr;
             return;
@@ -314,8 +314,8 @@ namespace wl {
         bool pressed = (state == WL_KEYBOARD_KEY_STATE_PRESSED);
 
         // Update the key state in XKB
-        if (self->xkb_state) {
-            xkb_state_update_key(self->xkb_state, keycode, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
+        if (self->m_xkb_state) {
+            xkb_state_update_key(self->m_xkb_state, keycode, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
         }
 
         // Handle the key press/release
@@ -330,11 +330,11 @@ namespace wl {
                                           uint32_t mods_locked,
                                           uint32_t group) {
         InputHandler* self = static_cast<InputHandler*>(data);
-        if (!self->xkb_state || !self->io)
+        if (!self->m_xkb_state || !self->io)
             return;
 
         // Update the XKB state with the new modifiers
-        xkb_state_update_mask(self->xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+        xkb_state_update_mask(self->m_xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
 
         // Update modifier key states
         bool ctrl = (mods_depressed & self->control_mask) || (mods_latched & self->control_mask) ||
@@ -363,9 +363,9 @@ namespace wl {
         if (!io)
             return;
 
-        if (xkb_state && xkb_keymap) {
+        if (m_xkb_state && xkb_keymap) {
             xkb_keycode_t keycode = key + 8; // Convert to XKB keycode
-            xkb_keysym_t sym = xkb_state_key_get_one_sym(xkb_state, keycode);
+            xkb_keysym_t sym = xkb_state_key_get_one_sym(m_xkb_state, keycode);
 
             // Map to ImGuiKey
             ImGuiKey imgui_key = ImGuiKey_None;
@@ -384,7 +384,7 @@ namespace wl {
             // Get the UTF-8 character for text input
             if (pressed) {
                 char buffer[16];
-                int size = xkb_state_key_get_utf8(xkb_state, keycode, buffer, sizeof(buffer));
+                int size = xkb_state_key_get_utf8(m_xkb_state, keycode, buffer, sizeof(buffer));
                 if (size > 0) {
                     buffer[size] = '\0';
                     io->AddInputCharactersUTF8(buffer);

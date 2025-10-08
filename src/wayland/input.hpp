@@ -38,7 +38,7 @@ namespace wl {
         // xkb state
         struct xkb_context* xkb_context = nullptr;
         struct xkb_keymap* xkb_keymap = nullptr;
-        struct xkb_state* xkb_state = nullptr;
+        struct xkb_state* m_xkb_state = nullptr;
         xkb_mod_mask_t control_mask = 0;
         xkb_mod_mask_t alt_mask = 0;
         xkb_mod_mask_t shift_mask = 0;
