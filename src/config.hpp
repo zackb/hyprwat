@@ -1,6 +1,8 @@
 #pragma once
 
 #include <INIReader.h>
+#include <filesystem>
+#include <iostream>
 #include <string>
 
 #include "INIReader.h" // from inih
@@ -12,7 +14,8 @@ class Config {
 public:
     explicit Config(const std::string& path) : reader(path) {
         if (reader.ParseError() != 0) {
-            throw std::runtime_error("Failed to load config: " + path);
+            // file not found or parse error
+            std::cerr << "Warning: Config file '" << path << "' not found or invalid. Using defaults.\n";
         }
     }
 
@@ -47,5 +50,19 @@ private:
         }
 
         return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+    }
+
+    std::filesystem::path expandUser(const std::string& path) {
+        if (path.empty() || path[0] != '~')
+            return path;
+
+        const char* home = std::getenv("HOME");
+        if (!home)
+            throw std::runtime_error("Cannot expand '~': HOME not set");
+
+        if (path.size() == 1)
+            return home;
+
+        return std::filesystem::path(home) / path.substr(2); // skip "~/"
     }
 };

@@ -57,7 +57,7 @@ int main(const int argc, const char** argv) {
     Vec2 pos = hyprctl.getCursorPos();
 
     // load config
-    Config config("examples/hyprwat.conf");
+    Config config("examples/hyprwat.conf1");
 
     ui.init(config, (int)pos.x, (int)pos.y);
     if (argc > 1) {
