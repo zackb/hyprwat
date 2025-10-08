@@ -1,6 +1,7 @@
 #include "input.hpp"
+#include "../flow.hpp"
 
-bool TextInput::render() {
+FrameResult TextInput::render() {
     // Calculate desired size based on content
     ImGuiStyle& style = ImGui::GetStyle();
     ImVec2 framePadding = style.FramePadding;
@@ -41,10 +42,14 @@ bool TextInput::render() {
     ImGui::End();
 
     if (enterPressed) {
-        std::cout << inputBuffer << std::endl;
-        std::cout.flush();
+        return FrameResult::Submit(std::string(inputBuffer));
     }
-    return !enterPressed && !escPressed;
+
+    if (escPressed) {
+        return FrameResult::Cancel();
+    }
+
+    return FrameResult::Continue();
 }
 
 Vec2 TextInput::getSize() { return Vec2{lastSize.x, lastSize.y}; }

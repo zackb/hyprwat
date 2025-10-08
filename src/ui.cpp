@@ -1,4 +1,5 @@
 #include "ui.hpp"
+#include "flow.hpp"
 #include "imgui_impl_opengl3.h"
 #include "src/font/font.hpp"
 #include <GL/gl.h>
@@ -58,8 +59,10 @@ void UI::init(int x, int y) {
     wayland.input().setWindowBounds(initialWidth, initialHeight);
 }
 
-// main loop
-void UI::run(Frame& frame) {
+// run a single frame until it returns a result
+FrameResult UI::run(Frame& frame) {
+    FrameResult result = FrameResult::Continue();
+
     while (running && !surface->shouldExit()) {
         // Process Wayland events
         wayland.display().prepareRead();
@@ -70,15 +73,48 @@ void UI::run(Frame& frame) {
         // Check if user clicked outside
         if (wayland.input().shouldExit()) {
             running = false;
+            return FrameResult::Cancel();
+        }
+
+        // Render ImGui frame and get result
+        result = renderFrame(frame);
+
+        // If frame returned a result (not CONTINUE), exit loop
+        if (result.action != FrameResult::Action::CONTINUE) {
+            break;
+        }
+    }
+
+    return result;
+}
+
+// run a flow until completion
+void UI::runFlow(Flow& flow) {
+    Frame* lastFrame = nullptr;
+
+    while (!flow.isDone() && running && !surface->shouldExit()) {
+        Frame* currentFrame = flow.getCurrentFrame();
+        if (!currentFrame) {
             break;
         }
 
-        // Render ImGui frame
-        renderFrame(frame);
+        // apply theme to frame if it changed or if we have a config
+        if (currentFrame != lastFrame && currentConfig) {
+            currentFrame->applyTheme(*currentConfig);
+        }
+        lastFrame = currentFrame;
+
+        // run the frame until it returns a result
+        FrameResult result = run(*currentFrame);
+
+        // Let flow handle the result
+        if (!flow.handleResult(result)) {
+            break;
+        }
     }
 }
 
-void UI::renderFrame(Frame& frame) {
+FrameResult UI::renderFrame(Frame& frame) {
 
     ImGuiIO& io = ImGui::GetIO();
     io.DeltaTime = 1.0f / 60.0f;
@@ -95,7 +131,7 @@ void UI::renderFrame(Frame& frame) {
     static int frameCount = 0;
     frameCount++;
 
-    running = frame.render();
+    FrameResult result = frame.render();
     Vec2 desiredSize = frame.getSize();
 
     // Render (but don't swap yet)
@@ -140,6 +176,8 @@ void UI::renderFrame(Frame& frame) {
 
     // EGL buffer swap
     egl->swapBuffers();
+
+    return result;
 }
 
 void UI::updateScale(int32_t newScale) {
@@ -164,6 +202,7 @@ void UI::updateScale(int32_t newScale) {
 }
 
 void UI::applyTheme(const Config& config) {
+    currentConfig = const_cast<Config*>(&config);
 
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();

@@ -6,8 +6,8 @@
 class TextInput : public Frame {
 public:
     TextInput(const std::string& hint = "") : hint(hint) {}
-    virtual bool render();
-    virtual Vec2 getSize();
+    virtual FrameResult render() override;
+    virtual Vec2 getSize() override;
 
 private:
     static constexpr uint32_t bufSize = 128;

@@ -73,7 +73,8 @@ add_executable(hyprwat
     src/input.cpp
     src/frames/selector.cpp
     src/frames/input.cpp
-    src/input.cpp
+    src/flows/simple_flows.cpp
+    src/flows/wifi_flow.cpp
     src/ui.cpp
     ${IMGUI_SOURCES}
     ${WAYLAND_PROTOCOLS}

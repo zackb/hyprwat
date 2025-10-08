@@ -15,9 +15,9 @@ public:
 
     bool RoundedSelectableFullWidth(const char* label, bool selected, float rounding = 6.0f);
 
-    virtual bool render();
-    virtual Vec2 getSize() { return Vec2{lastSize.x, lastSize.y}; }
-    virtual void applyTheme(const Config& config);
+    virtual FrameResult render() override;
+    virtual Vec2 getSize() override { return Vec2{lastSize.x, lastSize.y}; }
+    virtual void applyTheme(const Config& config) override;
 
 private:
     int selected = -1;

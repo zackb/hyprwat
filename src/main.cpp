@@ -1,5 +1,7 @@
 #include "frames/selector.hpp"
 #include "input.hpp"
+#include "src/flow.hpp"
+#include "src/flows/simple_flows.hpp"
 #include "src/frames/input.hpp"
 #include "src/hyprland/ipc.hpp"
 #include "ui.hpp"
@@ -7,6 +9,8 @@
 
 #include <GL/gl.h>
 #include <cstdio>
+#include <iostream>
+#include <memory>
 
 void usage() {
     fprintf(stderr, R"(Usage:
@@ -77,35 +81,43 @@ int main(const int argc, const char** argv) {
     // parse command line arguments
     auto parseResult = Input::parseArgv(argc, argv);
 
+    std::unique_ptr<Flow> flow;
+
     // INPUT mode
     if (parseResult.mode == InputMode::INPUT) {
-        // INPUT mode - show text input with hint
-        TextInput input(parseResult.hint.empty() ? "Input" : parseResult.hint);
-        // apply theme to the input frame
-        input.applyTheme(config);
-        ui.run(input);
+        flow = std::make_unique<SimpleInputFlow>(parseResult.hint.empty() ? "Input" : parseResult.hint);
     } else {
         // MENU mode (default)
         if (argc > 1) {
-            // parse argv for choices
-            int i = 0;
-            for (auto& choice : parseResult.choices) {
-                frame.add({choice.id, choice.display});
-                if (choice.selected) {
-                    frame.setSelected(i);
-                }
-                ++i;
-            }
+            // use choices from argv
+            flow = std::make_unique<SimpleMenuFlow>(parseResult.choices);
         } else {
-            // parse stdin for choices asynchronously
-            Input::parseStdin([&](Choice choice) { frame.add(choice); });
+            // Create selector and parse stdin asynchronously
+            auto selector = std::make_unique<Selector>();
+            Input::parseStdin([&selector](Choice choice) { selector->add(choice); });
+
+            // Apply theme and run directly (stdin mode doesn't use flow)
+            selector->applyTheme(config);
+            FrameResult result = ui.run(*selector);
+
+            // print result if submitted
+            if (result.action == FrameResult::Action::SUBMIT) {
+                std::cout << result.value << std::endl;
+                std::cout.flush();
+            }
+
+            return 0;
         }
+    }
 
-        // apply theme to the menu frame
-        frame.applyTheme(config);
+    // run the flow
+    ui.runFlow(*flow);
 
-        // run the UI loop
-        ui.run(frame);
+    // Print result if flow completed successfully
+    std::string result = flow->getResult();
+    if (!result.empty()) {
+        std::cout << result << std::endl;
+        std::cout.flush();
     }
 
     return 0;

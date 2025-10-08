@@ -1,5 +1,6 @@
 #include "selector.hpp"
 #include "../input.hpp"
+#include "../flow.hpp"
 #include "imgui_internal.h"
 #include <iostream>
 #include <mutex>
@@ -37,7 +38,7 @@ bool Selector::RoundedSelectableFullWidth(const char* label, bool selected, floa
     return clicked;
 }
 
-bool Selector::render() {
+FrameResult Selector::render() {
 
     // lock for streaming stdin
     std::lock_guard<std::mutex> lock(Input::mutex);
@@ -104,19 +105,17 @@ bool Selector::render() {
 
     ImGui::End();
 
-    // if an item was clicked, print its id and exit
+    // if an item was clicked, return its id
     if (clicked >= 0) {
-        std::cout << choices[clicked].id << std::endl;
-        std::cout.flush();
-        return false;
+        return FrameResult::Submit(choices[clicked].id);
     }
 
-    // if esc was pressed exit without printing anything
+    // if esc was pressed, cancel
     if (escPressed) {
-        return false;
+        return FrameResult::Cancel();
     }
 
-    return true;
+    return FrameResult::Continue();
 }
 
 void Selector::applyTheme(const Config& config) {
