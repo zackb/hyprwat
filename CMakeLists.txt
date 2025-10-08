@@ -67,7 +67,7 @@ add_executable(hyprwat
     src/renderer/egl_context.cpp
     src/font/font.cpp
     src/input.cpp
-    src/selection/selector.cpp
+    src/frames/selector.cpp
     src/input.cpp
     src/ui.cpp
     ${IMGUI_SOURCES}

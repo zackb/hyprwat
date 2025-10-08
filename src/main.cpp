@@ -1,5 +1,5 @@
+#include "frames/selector.hpp"
 #include "input.hpp"
-#include "selection/selector.hpp"
 #include "src/hyprland/ipc.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
