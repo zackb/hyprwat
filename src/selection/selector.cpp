@@ -64,8 +64,8 @@ bool Selector::render() {
         }
 
         // Add window padding (top and bottom) and some extra margin
-        float desiredWidth = maxTextWidth + framePadding.x * 2 + windowPadding.x * 2 + 20; // 20px extra margin
-        float desiredHeight = totalHeight + windowPadding.y * 2 + 5;                       // 5px extra bottom margin
+        float desiredWidth = maxTextWidth + framePadding.x * 2 + windowPadding.x * 2;
+        float desiredHeight = totalHeight + windowPadding.y * 2;
 
         lastSize = ImVec2(desiredWidth, desiredHeight);
     }
