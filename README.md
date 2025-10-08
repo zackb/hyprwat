@@ -89,7 +89,7 @@ active_color = #3366b366
 #### Arch Linux
 
 ```bash
-sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf
+sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf xkbcommon
 ```
 
 #### Debian/Ubuntu
@@ -98,7 +98,7 @@ sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf
 sudo apt update
 sudo apt install cmake make g++ libwayland-dev wayland-protocols \
                  libegl1-mesa-dev libgl1-mesa-dev libfontconfig1-dev \
-                 pkg-config
+                 pkg-config libxkbcommon-dev
 ```
 
 ### Building
@@ -201,6 +201,8 @@ nmcli -t -f active,ssid,signal dev wifi | \
 - **CMake 3.15+**
 - **OpenGL/EGL support**
 - **Fontconfig**
+- **xkbcommon**
+
 
 ## Why?
 I created hyprwat to fill a gap in the Wayland ecosystem for a simple, flexible, and visually appealing menu system that can be easily integrated into various use cases. Particularly, for waybar I needed a menu selection for wifi networks, power profiles, pavcontrol, etc. 

@@ -5,6 +5,7 @@ extern "C" {
 }
 
 #include "imgui.h"
+#include <xkbcommon/xkbcommon.h>
 
 #define XKB_MOD_SHIFT (1 << 0)
 #define XKB_MOD_LOCK (1 << 1)
@@ -34,10 +35,22 @@ namespace wl {
         int height = 0;
         bool should_exit = false;
 
-        bool xkbCtrl = false;
-        bool xkbShift = false;
-        bool xkbAlt = false;
-        bool xkbSuper = false;
+        // xkb state
+        struct xkb_context* xkb_context = nullptr;
+        struct xkb_keymap* xkb_keymap = nullptr;
+        struct xkb_state* xkb_state = nullptr;
+        xkb_mod_mask_t control_mask = 0;
+        xkb_mod_mask_t alt_mask = 0;
+        xkb_mod_mask_t shift_mask = 0;
+        xkb_mod_mask_t super_mask = 0;
+
+        // key repeat state
+        int32_t repeat_rate = 0;
+        int32_t repeat_delay = 0;
+
+        // kb helper functions
+        void updateModifiers(xkb_state* state);
+        void handleKey(uint32_t key, bool pressed);
 
         // Seat callbacks
         static void seat_capabilities(void* data, wl_seat* seat, uint32_t capabilities);

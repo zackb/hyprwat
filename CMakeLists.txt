@@ -14,10 +14,13 @@ endif()
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
 
-# Fontconfig
 find_package(PkgConfig REQUIRED)
+
+# Fontconfig
 pkg_check_modules(Fontconfig REQUIRED fontconfig)
-link_directories(${Fontconfig_LIBRARY_DIRS})
+
+# xkbcommon
+pkg_check_modules(XKBCOMMON REQUIRED xkbcommon)
 
 
 # ImGui sources
@@ -96,7 +99,8 @@ endif()
 target_link_libraries(hyprwat PRIVATE
     OpenGL::OpenGL
     OpenGL::EGL
-    ${Fontconfig_LIBRARIES}
+    PkgConfig::Fontconfig
+    PkgConfig::XKBCOMMON
     inih
     ${CMAKE_DL_LIBS}
     m
