@@ -3,6 +3,7 @@
 #include "frames/selector.hpp"
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
+#include "src/flows/wifi_flow.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
 
@@ -17,7 +18,7 @@ void usage() {
   hyprwat --input [hint]
 
 Description:
-  A simple Wayland panel to present selectable options or text input.
+  A simple Wayland panel to present selectable options or text input, connect to wifi networks, update audio sinks/sources, and more.
 
 MENU MODE (default):
   You can pass a list of items directly as command-line arguments, where each
@@ -45,9 +46,15 @@ INPUT MODE:
     hyprwat --input passphrase
     hyprwat --input "Enter your name"
 
+WIFI MODE:
+  Use --wifi to show available WiFi networks, select one, and enter the password if required.
+
 Options:
   -h, --help       Show this help message
   --input [hint]   Show text input mode with optional hint text
+  --wifi           Show WiFi network selection mode
+  --audio-input    Show audio input device selection mode
+  --audio-output   Show audio output device selection mode
 )");
 }
 
@@ -82,10 +89,33 @@ int main(const int argc, const char** argv) {
 
     std::unique_ptr<Flow> flow;
 
-    // INPUT mode
+    // INPUT or PASSWORD mode
     if (parseResult.mode == InputMode::INPUT || parseResult.mode == InputMode::PASSWORD) {
         flow = std::make_unique<SimpleInputFlow>(parseResult.hint.empty() ? "Input" : parseResult.hint,
                                                  parseResult.mode == InputMode::PASSWORD);
+    } else if (parseResult.mode == InputMode::WIFI) {
+        // WIFI mode
+        auto wifiFlowPtr = std::make_unique<WifiFlow>();
+        WifiFlow* wifiFlow = wifiFlowPtr.get();
+        flow = std::move(wifiFlowPtr);
+        // dbus connect
+        NetworkManagerClient nm;
+
+        // load known networks
+        std::vector<WifiNetwork> knownNets = nm.listWifiNetworks();
+        for (const auto& net : knownNets) {
+            std::cout << "Known network: " << net.ssid << " (Signal: " << net.strength << "%)" << std::endl;
+            wifiFlow->networkDiscovered(net);
+        }
+        // scan for networks and add them
+        nm.scanWifiNetworks(
+            [&wifiFlow](const WifiNetwork& net) {
+                std::cout << "Found network: " << net.ssid << " (Signal: " << net.strength << "%)" << std::endl;
+                wifiFlow->networkDiscovered(net);
+            },
+            5);
+    } else if (parseResult.mode == InputMode::AUDIO_INPOUT || parseResult.mode == InputMode::AUDIO_OUTPUT) {
+        // TODO
     } else {
         // MENU mode (default)
         if (argc > 1) {

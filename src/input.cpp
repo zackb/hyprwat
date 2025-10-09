@@ -22,6 +22,21 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
         return result;
     }
 
+    if (std::string(argv[1]) == "--wifi") {
+        result.mode = InputMode::WIFI;
+        return result;
+    }
+
+    if (std::string(argv[1]) == "--audio-input") {
+        result.mode = InputMode::AUDIO_INPOUT;
+        return result;
+    }
+
+    if (std::string(argv[1]) == "--audio-output") {
+        result.mode = InputMode::AUDIO_OUTPUT;
+        return result;
+    }
+
     // Default MENU mode - parse all arguments as choices
     result.mode = InputMode::MENU;
     for (int i = 1; i < argc; ++i) {

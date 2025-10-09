@@ -27,6 +27,9 @@ run-input: debug
 run-password: debug
 	./build/debug/hyprwat --password Passphrase
 
+run-wifi: debug
+	./build/debug/hyprwat --wifi 
+
 
 .PHONY: fmt
 fmt:

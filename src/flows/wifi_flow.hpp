@@ -1,22 +1,15 @@
 #pragma once
 
+#include "../dbus/network_manager.hpp"
+#include "../frames/input.hpp"
+#include "../frames/selector.hpp"
 #include "flow.hpp"
 #include <memory>
 #include <string>
-#include <vector>
 
-class Selector;
-class TextInput;
-
-// TODO: implement networkmanager dbus
-// 1. show list of wifi networks
-// 2. user selects a network
-// 3. prompt for password
-// 4. return network:password for connection
-class WiFiFlow : public Flow {
+class WifiFlow : public Flow {
 public:
-    // Constructor takes a list of network SSIDs
-    WiFiFlow(const std::vector<std::string>& networks);
+    WifiFlow();
 
     Frame* getCurrentFrame() override;
     bool handleResult(const FrameResult& result) override;
@@ -26,6 +19,9 @@ public:
     // Accessors for individual values
     std::string getSelectedNetwork() const;
     std::string getPassword() const;
+
+    // network availability callback
+    void networkDiscovered(const WifiNetwork& network);
 
 private:
     enum class State { SELECT_NETWORK, ENTER_PASSWORD };
