@@ -1,7 +1,7 @@
 #include "wifi_flow.hpp"
 #include "../input.hpp"
 
-WifiFlow::WifiFlow() {}
+WifiFlow::WifiFlow() { networkSelector = std::make_unique<Selector>(); }
 
 void WifiFlow::networkDiscovered(const WifiNetwork& network) {
     if (networkSelector) {

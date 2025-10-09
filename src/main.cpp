@@ -108,12 +108,15 @@ int main(const int argc, const char** argv) {
             wifiFlow->networkDiscovered(net);
         }
         // scan for networks and add them
-        nm.scanWifiNetworks(
-            [&wifiFlow](const WifiNetwork& net) {
-                std::cout << "Found network: " << net.ssid << " (Signal: " << net.strength << "%)" << std::endl;
-                wifiFlow->networkDiscovered(net);
-            },
-            5);
+        std::thread netThread([wifiFlow, nm = std::move(nm)]() mutable {
+            nm.scanWifiNetworks(
+                [&wifiFlow](const WifiNetwork& net) {
+                    std::cout << "Found network: " << net.ssid << " (Signal: " << net.strength << "%)" << std::endl;
+                    wifiFlow->networkDiscovered(net);
+                },
+                5);
+        });
+        netThread.detach();
     } else if (parseResult.mode == InputMode::AUDIO_INPOUT || parseResult.mode == InputMode::AUDIO_OUTPUT) {
         // TODO
     } else {
