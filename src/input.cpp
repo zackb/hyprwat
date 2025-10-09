@@ -13,8 +13,8 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
     }
 
     // Check for --input mode
-    if (std::string(argv[1]) == "--input") {
-        result.mode = InputMode::INPUT;
+    if (std::string(argv[1]) == "--input" || std::string(argv[1]) == "--password") {
+        result.mode = (std::string(argv[1]) == "--input") ? InputMode::INPUT : InputMode::PASSWORD;
         // If there's a second argument, use it as the hint
         if (argc > 2) {
             result.hint = argv[2];

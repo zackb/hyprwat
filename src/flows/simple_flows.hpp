@@ -29,7 +29,7 @@ private:
 // flow that shows a text input and exits with the entered text
 class SimpleInputFlow : public Flow {
 public:
-    SimpleInputFlow(const std::string& hint);
+    SimpleInputFlow(const std::string& hint, bool password = false);
     ~SimpleInputFlow();
 
     Frame* getCurrentFrame() override;

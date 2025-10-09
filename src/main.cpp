@@ -3,7 +3,6 @@
 #include "frames/selector.hpp"
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
-#include "src/dbus/network_manager.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
 
@@ -54,13 +53,6 @@ Options:
 
 int main(const int argc, const char** argv) {
 
-    NetworkManagerClient nm;
-    nm.scanWifiNetworks(
-        [](const WifiNetwork& net) {
-            std::cout << "Found network: " << net.ssid << " (Signal: " << net.strength << "%)" << std::endl;
-        },
-        5);
-
     // check for help flag
     if (argc == 2 && !strncmp(argv[1], "--help", strlen(argv[1]))) {
         usage();
@@ -91,8 +83,9 @@ int main(const int argc, const char** argv) {
     std::unique_ptr<Flow> flow;
 
     // INPUT mode
-    if (parseResult.mode == InputMode::INPUT) {
-        flow = std::make_unique<SimpleInputFlow>(parseResult.hint.empty() ? "Input" : parseResult.hint);
+    if (parseResult.mode == InputMode::INPUT || parseResult.mode == InputMode::PASSWORD) {
+        flow = std::make_unique<SimpleInputFlow>(parseResult.hint.empty() ? "Input" : parseResult.hint,
+                                                 parseResult.mode == InputMode::PASSWORD);
     } else {
         // MENU mode (default)
         if (argc > 1) {

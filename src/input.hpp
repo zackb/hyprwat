@@ -7,8 +7,9 @@
 #include <vector>
 
 enum class InputMode {
-    MENU, // default menu selection mode
-    INPUT // text input mode
+    MENU,    // default menu selection mode
+    INPUT,   // text input mode
+    PASSWORD // password input mode
 };
 
 struct ParseResult {

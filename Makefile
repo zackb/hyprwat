@@ -22,7 +22,10 @@ run3: debug
 	echo -e "foo:Foo\nbar:Bar\nbaz:Baz\nqux:Qux\nquux:Quux\ncorge:Corge\ngrault:Grault\ngarply:Garply*\nwaldo:Waldo\nfred:Fred\nplugh:Plugh\nxyzzy:Xyzzy\nthud:Thud" | ./build/debug/hyprwat
 
 run-input: debug
-	./build/debug/hyprwat --input Passphrase
+	./build/debug/hyprwat --input "What is your name?"
+
+run-password: debug
+	./build/debug/hyprwat --password Passphrase
 
 
 .PHONY: fmt

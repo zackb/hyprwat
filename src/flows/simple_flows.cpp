@@ -31,7 +31,9 @@ bool SimpleMenuFlow::isDone() const { return done; }
 std::string SimpleMenuFlow::getResult() const { return finalResult; }
 
 // SimpleInputFlow implementation
-SimpleInputFlow::SimpleInputFlow(const std::string& hint) { input = std::make_unique<TextInput>(hint); }
+SimpleInputFlow::SimpleInputFlow(const std::string& hint, bool password) {
+    input = std::make_unique<TextInput>(hint, password);
+}
 
 SimpleInputFlow::~SimpleInputFlow() = default;
 

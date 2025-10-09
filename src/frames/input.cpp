@@ -29,9 +29,11 @@ FrameResult TextInput::render() {
     if (ImGui::IsWindowAppearing()) {
         ImGui::SetKeyboardFocusHere();
     }
-
-    bool enterPressed =
-        ImGui::InputTextWithHint("##pass", hint.c_str(), inputBuffer, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+    if (password) {
+        flags |= ImGuiInputTextFlags_Password;
+    }
+    bool enterPressed = ImGui::InputTextWithHint("##pass", hint.c_str(), inputBuffer, bufSize, flags);
 
     bool escPressed = ImGui::IsKeyPressed(ImGuiKey_Escape);
 
