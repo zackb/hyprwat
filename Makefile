@@ -31,6 +31,10 @@ run-wifi: debug
 	./build/debug/hyprwat --wifi 
 
 
+reset-wifi:
+	sudo nmcli device disconnect wlan0
+	sudo nmcli device connect wlan0
+
 .PHONY: fmt
 fmt:
 	@echo "Formatting code with clang-format..."

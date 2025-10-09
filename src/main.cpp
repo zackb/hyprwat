@@ -98,25 +98,7 @@ int main(const int argc, const char** argv) {
         auto wifiFlowPtr = std::make_unique<WifiFlow>();
         WifiFlow* wifiFlow = wifiFlowPtr.get();
         flow = std::move(wifiFlowPtr);
-        // dbus connect
-        NetworkManagerClient nm;
-
-        // load known networks
-        std::vector<WifiNetwork> knownNets = nm.listWifiNetworks();
-        for (const auto& net : knownNets) {
-            std::cout << "Known network: " << net.ssid << " (Signal: " << net.strength << "%)" << std::endl;
-            wifiFlow->networkDiscovered(net);
-        }
-        // scan for networks and add them
-        std::thread netThread([wifiFlow, nm = std::move(nm)]() mutable {
-            nm.scanWifiNetworks(
-                [&wifiFlow](const WifiNetwork& net) {
-                    std::cout << "Found network: " << net.ssid << " (Signal: " << net.strength << "%)" << std::endl;
-                    wifiFlow->networkDiscovered(net);
-                },
-                5);
-        });
-        netThread.detach();
+        wifiFlow->start();
     } else if (parseResult.mode == InputMode::AUDIO_INPOUT || parseResult.mode == InputMode::AUDIO_OUTPUT) {
         // TODO
     } else {

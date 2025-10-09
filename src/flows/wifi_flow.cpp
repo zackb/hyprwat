@@ -1,7 +1,26 @@
 #include "wifi_flow.hpp"
 #include "../input.hpp"
 
+// initializes frames
 WifiFlow::WifiFlow() { networkSelector = std::make_unique<Selector>(); }
+
+WifiFlow::~WifiFlow() {
+    if (scanThread.joinable()) {
+        scanThread.join();
+    }
+}
+
+// starts scanning for networks
+void WifiFlow::start() {
+    // load known networks
+    std::vector<WifiNetwork> knownNets = nm.listWifiNetworks();
+    for (const auto& net : knownNets) {
+        networkDiscovered(net);
+    }
+    // scan for networks and add them
+    scanThread =
+        std::thread([this]() { nm.scanWifiNetworks([this](const WifiNetwork& net) { networkDiscovered(net); }, 5); });
+}
 
 void WifiFlow::networkDiscovered(const WifiNetwork& network) {
     if (networkSelector) {

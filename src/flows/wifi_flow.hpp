@@ -10,6 +10,9 @@
 class WifiFlow : public Flow {
 public:
     WifiFlow();
+    ~WifiFlow();
+
+    void start();
 
     Frame* getCurrentFrame() override;
     bool handleResult(const FrameResult& result) override;
@@ -28,10 +31,14 @@ private:
 
     State currentState = State::SELECT_NETWORK;
 
+    NetworkManagerClient nm;
+    std::thread scanThread;
+
     std::unique_ptr<Selector> networkSelector;
     std::unique_ptr<TextInput> passwordInput;
 
     std::string selectedNetwork;
     std::string password;
     bool done = false;
+    int scanTimeout = 5; // seconds
 };
