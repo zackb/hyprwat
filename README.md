@@ -4,7 +4,7 @@ A simple Wayland panel to present selectable options with a modern GUI interface
 
 ## Description
 
-hyprwat creates a popup menu at your cursor position where you can select from a list of options. It's particularly useful for creating interactive menus for system controls, WiFi networks, or any other selectable items in a Wayland environment.
+hyprwat creates a popup menu at your cursor position where you can select from a list of options. It's particularly useful for creating interactive menus for system controls, WiFi networks, or any other selectable items in a Wayland environment. It can also present input prompts for text or passwords.
 
 ## Features
 
@@ -32,6 +32,19 @@ id[:displayName][*]
 - `id`: Required identifier string (used internally)
 - `displayName`: Optional label to show in the UI (defaults to id)
 - `*`: Optional suffix to mark this item as initially selected
+
+If no arguments are provided, hyprwat will read from stdin, expecting one item per line in the same format.
+
+
+```
+--input <hint>
+```
+Show an input prompt instead of a selection menu with optional hint text
+
+```
+--password <hint>
+```
+Show a password input prompt (masked input) with optional hint text
 
 ### Examples
 
@@ -62,6 +75,9 @@ echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
 ### Options
 
 - `-h, --help`: Show help message
+- `--input <hint>`: Show an input prompt instead of a selection menu with optional hint text
+- `--password <hint>`: Show a password input prompt (masked input) with optional hint text
+
 
 ## Theming
 You can customize the appearance of the UI by modifying the configuration file located at `~/.config/hyprwat/hyprwat.conf`. The file uses a simple INI format to define colors and styles for various UI elements.
