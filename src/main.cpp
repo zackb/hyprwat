@@ -55,9 +55,11 @@ Options:
 int main(const int argc, const char** argv) {
 
     NetworkManagerClient nm;
-    for (auto net : nm.listWifiNetworks()) {
-        std::cout << net.ssid << " (" << net.strength << "%) " << std::endl;
-    }
+    nm.scanWifiNetworks(
+        [](const WifiNetwork& net) {
+            std::cout << "Found network: " << net.ssid << " (Signal: " << net.strength << "%)" << std::endl;
+        },
+        5);
 
     // check for help flag
     if (argc == 2 && !strncmp(argv[1], "--help", strlen(argv[1]))) {

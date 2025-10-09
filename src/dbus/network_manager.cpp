@@ -53,6 +53,7 @@ std::vector<sdbus::ObjectPath> NetworkManagerClient::getAccessPoints(const sdbus
 }
 
 // list networks
+// just returns currently known access points, no scanning
 std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
     std::map<std::string, int> networkMap; // SSID -> max strength
 
@@ -61,25 +62,8 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
         std::cerr << "No Wi-Fi devices found" << std::endl;
         return {};
     }
-    std::cout << "Found " << wifiDevices.size() << " Wi-Fi devices" << std::endl;
 
     for (auto& devicePath : wifiDevices) {
-        auto devProxy =
-            sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), devicePath);
-
-        // request a scan on this device
-        try {
-            devProxy->callMethod("RequestScan")
-                .onInterface("org.freedesktop.NetworkManager.Device.Wireless")
-                .withArguments(std::map<std::string, sdbus::Variant>{});
-        } catch (const sdbus::Error& e) {
-            std::cerr << "RequestScan failed on device " << devicePath << ": " << e.getMessage() << std::endl;
-        }
-
-        // give nm time to complete scan
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-
-        // get all access points for this device
         std::vector<sdbus::ObjectPath> apPaths;
         try {
             apPaths = getAccessPoints(devicePath);
@@ -88,13 +72,11 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
             continue;
         }
 
-        // iterate over access points and get ssid and signal strength
         for (auto& apPath : apPaths) {
             try {
                 auto apProxy =
                     sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), apPath);
 
-                // ssid
                 sdbus::Variant ssidVar;
                 apProxy->callMethod("Get")
                     .onInterface("org.freedesktop.DBus.Properties")
@@ -103,7 +85,6 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
                 auto ssidBytes = ssidVar.get<std::vector<uint8_t>>();
                 std::string ssid(ssidBytes.begin(), ssidBytes.end());
 
-                // signal strength
                 sdbus::Variant strengthVar;
                 apProxy->callMethod("Get")
                     .onInterface("org.freedesktop.DBus.Properties")
@@ -111,23 +92,84 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
                     .storeResultsTo(strengthVar);
                 int strength = static_cast<int>(strengthVar.get<uint8_t>());
 
-                // Keep only the highest strength for each SSID
                 if (networkMap.find(ssid) == networkMap.end() || networkMap[ssid] < strength) {
                     networkMap[ssid] = strength;
                 }
             } catch (const sdbus::Error& e) {
-                std::cerr << "Skipping AP " << apPath << " due to D-Bus error: " << e.getMessage() << std::endl;
+                // Ignore errors
             }
         }
     }
 
-    // Convert map back to vector
     std::vector<WifiNetwork> networks;
     for (const auto& [ssid, strength] : networkMap) {
         networks.push_back({ssid, strength});
     }
 
     return networks;
+}
+
+// initiates scan and calls callback for each newly discovered AP
+void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork&)> callback, int timeoutSeconds) {
+    auto wifiDevices = getWifiDevices();
+    if (wifiDevices.empty()) {
+        std::cerr << "No Wi-Fi devices found" << std::endl;
+        return;
+    }
+
+    for (auto& devicePath : wifiDevices) {
+        auto devProxy =
+            sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), devicePath);
+
+        // setup signal handler for newly discovered APs
+        devProxy->uponSignal("AccessPointAdded")
+            .onInterface("org.freedesktop.NetworkManager.Device.Wireless")
+            .call([&, callback](sdbus::ObjectPath apPath) {
+                try {
+                    auto apProxy =
+                        sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), apPath);
+
+                    sdbus::Variant ssidVar;
+                    apProxy->callMethod("Get")
+                        .onInterface("org.freedesktop.DBus.Properties")
+                        .withArguments("org.freedesktop.NetworkManager.AccessPoint", "Ssid")
+                        .storeResultsTo(ssidVar);
+                    auto ssidBytes = ssidVar.get<std::vector<uint8_t>>();
+                    std::string ssid(ssidBytes.begin(), ssidBytes.end());
+
+                    sdbus::Variant strengthVar;
+                    apProxy->callMethod("Get")
+                        .onInterface("org.freedesktop.DBus.Properties")
+                        .withArguments("org.freedesktop.NetworkManager.AccessPoint", "Strength")
+                        .storeResultsTo(strengthVar);
+                    int strength = static_cast<int>(strengthVar.get<uint8_t>());
+
+                    if (!ssid.empty()) {
+                        callback({ssid, strength});
+                    }
+                } catch (const sdbus::Error& e) {
+                    // Ignore errors
+                }
+            });
+
+        // Request scan
+        try {
+            devProxy->callMethod("RequestScan")
+                .onInterface("org.freedesktop.NetworkManager.Device.Wireless")
+                .withArguments(std::map<std::string, sdbus::Variant>{});
+        } catch (const sdbus::Error& e) {
+            std::cerr << "RequestScan failed on device " << devicePath << ": " << e.getMessage() << std::endl;
+        }
+
+        // Process events until timeout
+        auto startTime = std::chrono::steady_clock::now();
+        auto timeout = std::chrono::seconds(timeoutSeconds);
+
+        while (std::chrono::steady_clock::now() - startTime < timeout) {
+            connection->processPendingEvent();
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+    }
 }
 
 // connect to network

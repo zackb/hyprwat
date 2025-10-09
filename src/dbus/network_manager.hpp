@@ -14,6 +14,7 @@ class NetworkManagerClient {
 public:
     NetworkManagerClient();
     std::vector<WifiNetwork> listWifiNetworks();
+    void scanWifiNetworks(std::function<void(const WifiNetwork&)> callback, int timeoutSeconds = 5);
     bool connectToNetwork(const std::string& ssid, const std::string& password);
 
 private:
