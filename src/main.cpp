@@ -3,6 +3,7 @@
 #include "frames/selector.hpp"
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
+#include "src/dbus/network_manager.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
 
@@ -52,6 +53,11 @@ Options:
 }
 
 int main(const int argc, const char** argv) {
+
+    NetworkManagerClient nm;
+    for (auto net : nm.listWifiNetworks()) {
+        std::cout << net.ssid << " (" << net.strength << "%) " << std::endl;
+    }
 
     // check for help flag
     if (argc == 2 && !strncmp(argv[1], "--help", strlen(argv[1]))) {

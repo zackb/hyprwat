@@ -22,6 +22,10 @@ pkg_check_modules(Fontconfig REQUIRED fontconfig)
 # xkbcommon
 pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
 
+# sdbus
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDBUSCPP REQUIRED sdbus-c++)
+
 
 # ImGui sources
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/imgui")
@@ -56,6 +60,7 @@ add_library(inih STATIC
 target_include_directories(inih PUBLIC
     ${XKBCOMMON_INCLUDE_DIRS}
     ${inih_SOURCE_DIR}
+    ${SDBUSCPP_INCLUDE_DIRS}
     ${inih_SOURCE_DIR}/cpp
 )
 
@@ -63,6 +68,9 @@ target_include_directories(inih PUBLIC
 # Main executable
 add_executable(hyprwat
     src/main.cpp
+    src/input.cpp
+    src/ui.cpp
+    src/util.cpp
     src/hyprland/ipc.cpp
     src/wayland/wayland.cpp
     src/wayland/display.cpp
@@ -70,12 +78,11 @@ add_executable(hyprwat
     src/wayland/input.cpp
     src/renderer/egl_context.cpp
     src/font/font.cpp
-    src/input.cpp
     src/frames/selector.cpp
     src/frames/input.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
-    src/ui.cpp
+    src/dbus/network_manager.cpp
     ${IMGUI_SOURCES}
     ${WAYLAND_PROTOCOLS}
 )
@@ -103,6 +110,7 @@ target_link_libraries(hyprwat PRIVATE
     OpenGL::EGL
     ${Fontconfig_LIBRARIES}
     PkgConfig::XKBCOMMON
+    ${SDBUSCPP_LIBRARIES}
     inih
     ${CMAKE_DL_LIBS}
     m
