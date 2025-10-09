@@ -1,13 +1,12 @@
 #pragma once
 
-#include <cstdint>
 #include <sdbus-c++/sdbus-c++.h>
 #include <string>
 #include <vector>
 
 struct WifiNetwork {
     std::string ssid;
-    uint8_t strength; // 0-100
+    int strength; // 0-100
 };
 
 class NetworkManagerClient {

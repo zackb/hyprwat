@@ -54,14 +54,13 @@ std::vector<sdbus::ObjectPath> NetworkManagerClient::getAccessPoints(const sdbus
 
 // list networks
 std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
-    std::vector<WifiNetwork> networks;
+    std::map<std::string, int> networkMap; // SSID -> max strength
 
     auto wifiDevices = getWifiDevices();
     if (wifiDevices.empty()) {
         std::cerr << "No Wi-Fi devices found" << std::endl;
-        return networks;
+        return {};
     }
-
     std::cout << "Found " << wifiDevices.size() << " Wi-Fi devices" << std::endl;
 
     for (auto& devicePath : wifiDevices) {
@@ -110,13 +109,22 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
                     .onInterface("org.freedesktop.DBus.Properties")
                     .withArguments("org.freedesktop.NetworkManager.AccessPoint", "Strength")
                     .storeResultsTo(strengthVar);
-                uint8_t strength = strengthVar.get<uint8_t>();
+                int strength = static_cast<int>(strengthVar.get<uint8_t>());
 
-                networks.push_back({ssid, strength});
+                // Keep only the highest strength for each SSID
+                if (networkMap.find(ssid) == networkMap.end() || networkMap[ssid] < strength) {
+                    networkMap[ssid] = strength;
+                }
             } catch (const sdbus::Error& e) {
                 std::cerr << "Skipping AP " << apPath << " due to D-Bus error: " << e.getMessage() << std::endl;
             }
         }
+    }
+
+    // Convert map back to vector
+    std::vector<WifiNetwork> networks;
+    for (const auto& [ssid, strength] : networkMap) {
+        networks.push_back({ssid, strength});
     }
 
     return networks;
