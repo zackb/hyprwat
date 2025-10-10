@@ -1,6 +1,11 @@
 **TODO
-- [ ] esc to exit
+- [x] esc to exit
 - [ ] click outside to exit isnt working
-- [ ] pluggable UI "frame"s
-    - [ ] input (password, etc)
-- [ ] cursor positioning is off
+- [x] pluggable UI "frame"s
+    - [x] input (password, etc)
+- [x] dbus networkmanager
+- [x] pipewire
+- [ ] packaging
+- [ ] de-dupe wifi networks and choose the best one
+- [ ] connection specific frame while "Connecting..."
+    - [ ] present error/success
