@@ -10,10 +10,10 @@ class TextInput;
 struct Choice;
 
 // flow that shows a menu and exits with the selected item
-class SimpleMenuFlow : public Flow {
+class MenuFlow : public Flow {
 public:
-    SimpleMenuFlow(const std::vector<Choice>& choices);
-    ~SimpleMenuFlow();
+    MenuFlow(const std::vector<Choice>& choices);
+    ~MenuFlow();
 
     Frame* getCurrentFrame() override;
     bool handleResult(const FrameResult& result) override;

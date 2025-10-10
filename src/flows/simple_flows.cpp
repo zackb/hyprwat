@@ -3,18 +3,18 @@
 #include "../frames/selector.hpp"
 
 // SimpleMenuFlow implementation
-SimpleMenuFlow::SimpleMenuFlow(const std::vector<Choice>& choices) {
+MenuFlow::MenuFlow(const std::vector<Choice>& choices) {
     selector = std::make_unique<Selector>();
     for (auto& choice : choices) {
         selector->add(Choice{choice.id, choice.display, choice.selected});
     }
 }
 
-SimpleMenuFlow::~SimpleMenuFlow() = default;
+MenuFlow::~MenuFlow() = default;
 
-Frame* SimpleMenuFlow::getCurrentFrame() { return selector.get(); }
+Frame* MenuFlow::getCurrentFrame() { return selector.get(); }
 
-bool SimpleMenuFlow::handleResult(const FrameResult& result) {
+bool MenuFlow::handleResult(const FrameResult& result) {
     if (result.action == FrameResult::Action::SUBMIT) {
         finalResult = result.value;
         done = true;
@@ -26,9 +26,9 @@ bool SimpleMenuFlow::handleResult(const FrameResult& result) {
     return true;
 }
 
-bool SimpleMenuFlow::isDone() const { return done; }
+bool MenuFlow::isDone() const { return done; }
 
-std::string SimpleMenuFlow::getResult() const { return finalResult; }
+std::string MenuFlow::getResult() const { return finalResult; }
 
 // SimpleInputFlow implementation
 SimpleInputFlow::SimpleInputFlow(const std::string& hint, bool password) {

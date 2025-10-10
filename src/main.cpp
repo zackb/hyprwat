@@ -105,7 +105,7 @@ int main(const int argc, const char** argv) {
         // MENU mode (default)
         if (argc > 1) {
             // use choices from argv
-            flow = std::make_unique<SimpleMenuFlow>(parseResult.choices);
+            flow = std::make_unique<MenuFlow>(parseResult.choices);
         } else {
             // Create selector and parse stdin asynchronously
             auto selector = std::make_unique<Selector>();
