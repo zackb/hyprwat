@@ -3,6 +3,7 @@
 #include "frames/selector.hpp"
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
+#include "src/flows/audio_flow.hpp"
 #include "src/flows/wifi_flow.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
@@ -16,6 +17,9 @@ void usage() {
     fprintf(stderr, R"(Usage:
   hyprwat [OPTIONS] [id[:displayName][*]]...
   hyprwat --input [hint]
+  hyprwat --password [hint]
+  hyprwat --wifi
+  hyprwat --audio
 
 Description:
   A simple Wayland panel to present selectable options or text input, connect to wifi networks, update audio sinks/sources, and more.
@@ -49,12 +53,14 @@ INPUT MODE:
 WIFI MODE:
   Use --wifi to show available WiFi networks, select one, and enter the password if required.
 
+AUDIO MODE:
+  Use --audio to show available audio input/output devices and select one.
+
 Options:
   -h, --help       Show this help message
   --input [hint]   Show text input mode with optional hint text
   --wifi           Show WiFi network selection mode
-  --audio-input    Show audio input device selection mode
-  --audio-output   Show audio output device selection mode
+  --audio          Show audio input/output device selection mode
 )");
 }
 
@@ -99,8 +105,8 @@ int main(const int argc, const char** argv) {
         WifiFlow* wifiFlow = wifiFlowPtr.get();
         flow = std::move(wifiFlowPtr);
         wifiFlow->start();
-    } else if (parseResult.mode == InputMode::AUDIO_INPOUT || parseResult.mode == InputMode::AUDIO_OUTPUT) {
-        // TODO
+    } else if (parseResult.mode == InputMode::AUDIO) {
+        flow = std::make_unique<AudioFlow>();
     } else {
         // MENU mode (default)
         if (argc > 1) {

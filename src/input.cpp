@@ -27,13 +27,8 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
         return result;
     }
 
-    if (std::string(argv[1]) == "--audio-input") {
-        result.mode = InputMode::AUDIO_INPOUT;
-        return result;
-    }
-
-    if (std::string(argv[1]) == "--audio-output") {
-        result.mode = InputMode::AUDIO_OUTPUT;
+    if (std::string(argv[1]) == "--audio") {
+        result.mode = InputMode::AUDIO;
         return result;
     }
 

@@ -1,19 +1,19 @@
 # hyprwat
 
-A simple Wayland panel to present selectable options with a modern GUI interface. Built with ImGui and designed to work seamlessly with Hyprland compositor.
+A simple Wayland panel to present selectable options with a customizable interface. Designed to work seamlessly with Hyprland compositor.
 
 ## Description
 
-hyprwat creates a popup menu at your cursor position where you can select from a list of options. It's particularly useful for creating interactive menus for system controls, WiFi networks, or any other selectable items in a Wayland environment. It can also present input prompts for text or passwords.
+hyprwat creates a popup menu at your cursor position where you can select from a list of options. It's particularly useful for creating interactive menus for system controls, WiFi networks, or any other selectable items in a Wayland environment. It can also present input prompts for text or passwords. Different modes can be triggered via command line arguments including a WiFi network selector and audio device selector.
 
 ## Features
 
 - **Wayland native**: Built specifically for Wayland compositors
+- **Hyprland integration**: Designed to work with Hyprland compositor
 - **Cursor positioning**: Automatically appears at your current cursor position
 - **Flexible input**: Accept options via command line arguments or stdin
 - **UI**: Interface built with ImGui
 - **Pre-selection support**: Mark items as initially selected
-- **Hyprland integration**: Designed to work with Hyprland compositor
 
 ## Usage
 
@@ -62,14 +62,24 @@ See the [examples](examples) directory for more.
 # Simple options with custom display names and pre-selection
 hyprwat performance:Performance* balanced:Balanced powersave:PowerSaver
 
-# WiFi network selection
-hyprwat wifi0:Home wifi1:Work wifi2:Other
-
 # Using stdin input
 echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
 
-# Real-world WiFi example (using included script)
-./wifi.sh
+# Input prompt
+hyprwat --input "Enter Name"
+
+# Password prompt
+hyprwat --password "Enter Passphrase"
+
+# WiFi network selection
+hyprwat --wifi
+
+# Audio device selection
+hyprwat --audio
+
+# Scriptable
+See the [examples](examples) directory for more.
+
 ```
 
 ### Options
@@ -77,6 +87,8 @@ echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
 - `-h, --help`: Show help message
 - `--input <hint>`: Show an input prompt instead of a selection menu with optional hint text
 - `--password <hint>`: Show a password input prompt (masked input) with optional hint text
+- `--audio`: Show audio input/output device selector (requires pipewire)
+- `--wifi`:  Show WiFi network selection
 
 
 ## Theming
@@ -164,7 +176,7 @@ cmake --build --preset debug
   - `renderer/`: EGL/OpenGL rendering context
   - `selection/`: Selection/Menu handling logic and UI
   - `hyprland/`: Hyprland IPC integration
-- `ext/imgui/`: ImGui library (included)
+- `ext/imgui/`: ImGui library (git submodule)
 - `CMakeLists.txt`: Build configuration
 - `Makefile`: Convenience build targets
 
@@ -185,6 +197,7 @@ Run the application with test data:
 make run   # Basic test with long text
 make run2  # Simple test
 make run3  # Stdin input test
+make run-wifi  # WiFi selection test
 ```
 
 ## Integration Examples
@@ -200,10 +213,12 @@ nmcli -t -f active,ssid,signal dev wifi | \
   ./build/debug/hyprwat
 ```
 
+This is just an example showing scriptability; you should use --wifi.
+
 ### Power Profile Selector
 
 ```bash
-./build/debug/hyprwat \
+hyprwat \
   performance:"⚡ Performance" \
   balanced:"⚖ Balanced*" \
   powersave:"▽ Power Saver"
@@ -223,6 +238,8 @@ echo $PASSPHRASE
 - **OpenGL/EGL support**
 - **Fontconfig**
 - **xkbcommon**
+- **Pipewire**
+- **sdbus-c++**
 
 
 ## Why?
