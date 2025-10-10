@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <pipewire/extensions/metadata.h>
 #include <pipewire/pipewire.h>
 #include <spa/debug/types.h>
 #include <spa/param/audio/format-utils.h>
@@ -19,11 +20,11 @@ public:
     AudioManagerClient();
     ~AudioManagerClient();
 
-    // list audio devices
+    // List audio devices
     std::vector<AudioDevice> listInputDevices();
     std::vector<AudioDevice> listOutputDevices();
 
-    // set default devices
+    // Set default devices
     bool setDefaultInput(uint32_t deviceId);
     bool setDefaultOutput(uint32_t deviceId);
 
@@ -33,6 +34,10 @@ private:
     struct pw_core* core;
     struct pw_registry* registry;
     struct spa_hook registry_listener;
+
+    struct pw_proxy* metadata_proxy;
+    struct pw_metadata* metadata;
+    struct spa_hook metadata_listener;
 
     std::map<uint32_t, AudioDevice> sinks;
     std::map<uint32_t, AudioDevice> sources;
@@ -46,7 +51,7 @@ private:
     bool setDefault(uint32_t deviceId, const std::string& key);
 
 public:
-    // static callbacks need for registration
+    // Static callbacks need to be public for C-style callback registration
     static void registryEventGlobal(void* data,
                                     uint32_t id,
                                     uint32_t permissions,
@@ -54,4 +59,5 @@ public:
                                     uint32_t version,
                                     const struct spa_dict* props);
     static void registryEventGlobalRemove(void* data, uint32_t id);
+    static int metadataProperty(void* data, uint32_t id, const char* key, const char* type, const char* value);
 };

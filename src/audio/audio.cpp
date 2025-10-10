@@ -1,7 +1,7 @@
 #include "audio.hpp"
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <spa/utils/json.h>
 
 static const struct pw_registry_events registry_events = {
     /* version */ PW_VERSION_REGISTRY_EVENTS,
@@ -9,11 +9,18 @@ static const struct pw_registry_events registry_events = {
     /* global_remove */ AudioManagerClient::registryEventGlobalRemove,
 };
 
+static const struct pw_metadata_events metadata_events = {
+    /* version */ PW_VERSION_METADATA_EVENTS,
+    /* property */ AudioManagerClient::metadataProperty,
+};
+
 AudioManagerClient::AudioManagerClient()
     : loop(nullptr)
     , context(nullptr)
     , core(nullptr)
     , registry(nullptr)
+    , metadata_proxy(nullptr)
+    , metadata(nullptr)
     , default_sink_id(0)
     , default_source_id(0)
     , initialized(false) {
@@ -51,7 +58,7 @@ AudioManagerClient::AudioManagerClient()
 
     pw_thread_loop_unlock(loop);
 
-    // Wait a bit for initial enumeration
+    // TODO: can we not do this??
     usleep(100000);
 
     initialized = true;
@@ -60,6 +67,11 @@ AudioManagerClient::AudioManagerClient()
 AudioManagerClient::~AudioManagerClient() {
     if (loop) {
         pw_thread_loop_stop(loop);
+    }
+
+    if (metadata_proxy) {
+        spa_hook_remove(&metadata_listener);
+        pw_proxy_destroy(metadata_proxy);
     }
 
     if (registry) {
@@ -107,6 +119,17 @@ void AudioManagerClient::registryEventGlobal(
         } else if (strcmp(media_class, "Audio/Source") == 0) {
             self->sources[id] = dev;
         }
+    } else if (strcmp(type, PW_TYPE_INTERFACE_Metadata) == 0) {
+        const char* metadata_name = spa_dict_lookup(props, PW_KEY_METADATA_NAME);
+        if (metadata_name && strcmp(metadata_name, "default") == 0) {
+            pw_thread_loop_lock(self->loop);
+            self->metadata_proxy = (struct pw_proxy*)pw_registry_bind(self->registry, id, type, PW_VERSION_METADATA, 0);
+            if (self->metadata_proxy) {
+                self->metadata = (struct pw_metadata*)self->metadata_proxy;
+                pw_metadata_add_listener(self->metadata, &self->metadata_listener, &metadata_events, self);
+            }
+            pw_thread_loop_unlock(self->loop);
+        }
     }
 }
 
@@ -114,6 +137,66 @@ void AudioManagerClient::registryEventGlobalRemove(void* data, uint32_t id) {
     auto* self = static_cast<AudioManagerClient*>(data);
     self->sinks.erase(id);
     self->sources.erase(id);
+}
+
+int AudioManagerClient::metadataProperty(
+    void* data, uint32_t id, const char* key, const char* type, const char* value) {
+    auto* self = static_cast<AudioManagerClient*>(data);
+
+    if (!key)
+        return 0;
+
+    if (strcmp(key, "default.audio.sink") == 0 && value) {
+        struct spa_json it[2];
+        char key_buf[64];
+        char name_buf[256];
+
+        spa_json_init(&it[0], value, strlen(value));
+        if (spa_json_enter_object(&it[0], &it[1]) > 0) {
+            while (spa_json_get_string(&it[1], key_buf, sizeof(key_buf)) > 0) {
+                if (strcmp(key_buf, "name") == 0) {
+                    if (spa_json_get_string(&it[1], name_buf, sizeof(name_buf)) > 0) {
+                        std::string name(name_buf);
+                        for (auto& [id, dev] : self->sinks) {
+                            if (dev.name == name) {
+                                self->default_sink_id = id;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                } else {
+                    spa_json_next(&it[1], nullptr);
+                }
+            }
+        }
+    } else if (strcmp(key, "default.audio.source") == 0 && value) {
+        struct spa_json it[2];
+        char key_buf[64];
+        char name_buf[256];
+
+        spa_json_init(&it[0], value, strlen(value));
+        if (spa_json_enter_object(&it[0], &it[1]) > 0) {
+            while (spa_json_get_string(&it[1], key_buf, sizeof(key_buf)) > 0) {
+                if (strcmp(key_buf, "name") == 0) {
+                    if (spa_json_get_string(&it[1], name_buf, sizeof(name_buf)) > 0) {
+                        std::string name(name_buf);
+                        for (auto& [id, dev] : self->sources) {
+                            if (dev.name == name) {
+                                self->default_source_id = id;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                } else {
+                    spa_json_next(&it[1], nullptr);
+                }
+            }
+        }
+    }
+
+    return 0;
 }
 
 void AudioManagerClient::updateDevices() {
@@ -125,7 +208,8 @@ void AudioManagerClient::updateDevices() {
     pw_core_sync(core, 0, 0);
     pw_thread_loop_unlock(loop);
 
-    usleep(50000); // Give time for updates
+    // TODO: can we not do this??
+    usleep(50000);
 }
 
 std::vector<AudioDevice> AudioManagerClient::getDevices(const std::map<uint32_t, AudioDevice>& deviceMap) {
@@ -151,8 +235,8 @@ std::vector<AudioDevice> AudioManagerClient::listOutputDevices() {
 }
 
 bool AudioManagerClient::setDefault(uint32_t deviceId, const std::string& key) {
-    if (!initialized) {
-        std::cerr << "AudioManager not initialized" << std::endl;
+    if (!initialized || !metadata) {
+        std::cerr << "AudioManager not initialized or metadata not available" << std::endl;
         return false;
     }
 
@@ -168,27 +252,26 @@ bool AudioManagerClient::setDefault(uint32_t deviceId, const std::string& key) {
 
     deviceName = it->second.name;
 
-    // Use pw-metadata command to set default
-    // This is the most reliable way that works with all PipeWire versions
-    std::string value = "{\\\"name\\\":\\\"" + deviceName + "\\\"}";
-    std::string cmd = "pw-metadata -n settings 0 " + key + " Spa:String:JSON '" + value + "'";
+    std::string value = "{\"name\":\"" + deviceName + "\"}";
 
-    int result = system(cmd.c_str());
+    pw_thread_loop_lock(loop);
+    int res = pw_metadata_set_property(metadata, PW_ID_CORE, key.c_str(), "Spa:String:JSON", value.c_str());
+    pw_thread_loop_unlock(loop);
 
-    if (result == 0) {
-        std::cout << "Set " << key << " to device " << deviceId << " (" << deviceName << ")" << std::endl;
-
-        if (key == "default.audio.sink") {
-            default_sink_id = deviceId;
-        } else {
-            default_source_id = deviceId;
-        }
-
-        return true;
-    } else {
-        std::cerr << "Failed to set default device" << std::endl;
+    if (res < 0) {
+        std::cerr << "Failed to set default" << std::endl;
         return false;
     }
+
+    std::cout << "Set " << key << " to device " << deviceId << " (" << deviceName << ")" << std::endl;
+
+    if (key == "default.audio.sink") {
+        default_sink_id = deviceId;
+    } else {
+        default_source_id = deviceId;
+    }
+
+    return true;
 }
 
 bool AudioManagerClient::setDefaultInput(uint32_t deviceId) { return setDefault(deviceId, "default.audio.source"); }
