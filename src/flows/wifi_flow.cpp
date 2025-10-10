@@ -23,10 +23,17 @@ void WifiFlow::start() {
 }
 
 void WifiFlow::networkDiscovered(const WifiNetwork& network) {
-    if (networkSelector) {
-        std::lock_guard<std::mutex> lock(Input::mutex);
-        std::string label = network.ssid + " (" + std::to_string(network.strength) + "%)";
-        networkSelector->add(Choice{network.ssid, label, false});
+    if (!networkSelector)
+        return;
+
+    std::string display = network.ssid + " (" + std::to_string(network.strength) + "%)";
+    if (auto* existing = networkSelector->findChoiceById(network.ssid)) {
+        if (network.strength > existing->strength) {
+            existing->strength = network.strength;
+            existing->display = display;
+        }
+    } else {
+        networkSelector->add(Choice{network.ssid, display, false, network.strength});
     }
 }
 

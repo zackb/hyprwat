@@ -21,6 +21,16 @@ public:
             selected = choices.size() - 1;
         }
     }
+
+    // finds a pointer to choice by its id
+    // choice can by mutated
+    Choice* findChoiceById(const std::string& id) {
+        for (auto& c : choices)
+            if (c.id == id)
+                return &c;
+        return nullptr;
+    }
+
     void setSelected(int index) { selected = index; }
 
     bool RoundedSelectableFullWidth(const char* label, bool selected, float rounding = 6.0f);

@@ -6,6 +6,6 @@
 - [x] dbus networkmanager
 - [x] pipewire
 - [ ] packaging
-- [ ] de-dupe wifi networks and choose the best one
+- [x] de-dupe wifi networks and choose the best one
 - [ ] connection specific frame while "Connecting..."
     - [ ] present error/success
