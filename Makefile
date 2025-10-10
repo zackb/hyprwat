@@ -30,6 +30,9 @@ run-password: debug
 run-wifi: debug
 	./build/debug/hyprwat --wifi 
 
+run-audio: debug
+	./build/debug/hyprwat --audio
+
 
 reset-wifi:
 	sudo nmcli device disconnect wlan0

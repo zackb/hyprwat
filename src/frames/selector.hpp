@@ -9,10 +9,18 @@
 class Selector : public Frame {
 
 public:
+    /*
     void add(Choice& choice) { choices.emplace_back(choice); }
     void add(Choice&& choice) { choices.emplace_back(choice); }
     void add(const Choice& choice) { choices.emplace_back(choice); }
     void add(const Choice&& choice) { choices.emplace_back(choice); }
+    */
+    template <typename T> void add(T&& choice) {
+        choices.emplace_back(std::forward<T>(choice));
+        if (choice.selected) {
+            selected = choices.size() - 1;
+        }
+    }
     void setSelected(int index) { selected = index; }
 
     bool RoundedSelectableFullWidth(const char* label, bool selected, float rounding = 6.0f);
