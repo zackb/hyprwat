@@ -4,17 +4,16 @@ project(hyprwat CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(PkgConfig REQUIRED)
+
 # Find Wayland
 find_package(Wayland QUIET COMPONENTS Client Egl)
 if(NOT Wayland_FOUND)
     # Fallback to pkg-config if Wayland CMake package is not found
-    find_package(PkgConfig REQUIRED)
     pkg_check_modules(WAYLAND REQUIRED IMPORTED_TARGET wayland-client wayland-egl)
 endif()
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
-
-find_package(PkgConfig REQUIRED)
 
 # Fontconfig
 pkg_check_modules(Fontconfig REQUIRED fontconfig)
@@ -23,8 +22,10 @@ pkg_check_modules(Fontconfig REQUIRED fontconfig)
 pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
 
 # sdbus
-find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDBUSCPP REQUIRED sdbus-c++)
+
+# pipewire
+pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
 
 
 # ImGui sources
@@ -60,10 +61,10 @@ add_library(inih STATIC
 target_include_directories(inih PUBLIC
     ${XKBCOMMON_INCLUDE_DIRS}
     ${inih_SOURCE_DIR}
+    ${PIPEWIRE_INCLUDE_DIRS}
     ${SDBUSCPP_INCLUDE_DIRS}
     ${inih_SOURCE_DIR}/cpp
 )
-
 
 # Main executable
 add_executable(hyprwat
@@ -83,9 +84,16 @@ add_executable(hyprwat
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
     src/dbus/network_manager.cpp
+    src/audio/audio.cpp
     ${IMGUI_SOURCES}
     ${WAYLAND_PROTOCOLS}
 )
+
+target_compile_options(hyprwat PRIVATE
+    ${PIPEWIRE_CFLAGS_OTHER}
+    ${SDBUS_CPP_CFLAGS_OTHER}
+)
+
 
 # Include directories
 target_include_directories(hyprwat PRIVATE
@@ -110,6 +118,7 @@ target_link_libraries(hyprwat PRIVATE
     OpenGL::EGL
     ${Fontconfig_LIBRARIES}
     PkgConfig::XKBCOMMON
+    ${PIPEWIRE_LIBRARIES}
     ${SDBUSCPP_LIBRARIES}
     inih
     ${CMAKE_DL_LIBS}

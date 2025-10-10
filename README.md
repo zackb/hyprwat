@@ -104,7 +104,7 @@ active_color = #3366b366
 #### Arch Linux
 
 ```bash
-sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf libxkbcommon
+sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf libxkbcommon pipewire sdbus-c++
 ```
 
 #### Debian/Ubuntu
@@ -113,7 +113,7 @@ sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf 
 sudo apt update
 sudo apt install cmake make g++ libwayland-dev wayland-protocols \
                  libegl1-mesa-dev libgl1-mesa-dev libfontconfig1-dev \
-                 pkg-config libxkbcommon-dev libsdbus-c++-dev
+                 pkg-config libxkbcommon-dev libsdbus-c++-dev libpipewire-0.3-dev
 ```
 
 ### Building
