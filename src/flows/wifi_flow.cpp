@@ -59,6 +59,8 @@ bool WifiFlow::handleResult(const FrameResult& result) {
     case State::ENTER_PASSWORD:
         if (result.action == FrameResult::Action::SUBMIT) {
             password = result.value;
+            // TODO: perhaps another frame to show progress and handle errors
+            nm.connectToNetwork(selectedNetwork, password);
             done = true;
             return false;
         } else if (result.action == FrameResult::Action::CANCEL) {
