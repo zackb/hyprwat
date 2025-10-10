@@ -83,7 +83,7 @@ add_executable(hyprwat
     src/frames/input.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
-    src/dbus/network_manager.cpp
+    src/net/network_manager.cpp
     src/audio/audio.cpp
     ${IMGUI_SOURCES}
     ${WAYLAND_PROTOCOLS}

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../dbus/network_manager.hpp"
 #include "../frames/input.hpp"
 #include "../frames/selector.hpp"
+#include "../net/network_manager.hpp"
 #include "flow.hpp"
 #include <memory>
 #include <string>
