@@ -12,9 +12,11 @@ struct Choice;
 // flow that shows a menu and exits with the selected item
 class MenuFlow : public Flow {
 public:
+    MenuFlow();
     MenuFlow(const std::vector<Choice>& choices);
     ~MenuFlow();
 
+    void addChoice(const Choice& choice);
     Frame* getCurrentFrame() override;
     bool handleResult(const FrameResult& result) override;
     bool isDone() const override;
@@ -27,10 +29,10 @@ private:
 };
 
 // flow that shows a text input and exits with the entered text
-class SimpleInputFlow : public Flow {
+class InputFlow : public Flow {
 public:
-    SimpleInputFlow(const std::string& hint, bool password = false);
-    ~SimpleInputFlow();
+    InputFlow(const std::string& hint, bool password = false);
+    ~InputFlow();
 
     Frame* getCurrentFrame() override;
     bool handleResult(const FrameResult& result) override;

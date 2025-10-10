@@ -11,6 +11,8 @@ class Selector : public Frame {
 public:
     void add(Choice& choice) { choices.emplace_back(choice); }
     void add(Choice&& choice) { choices.emplace_back(choice); }
+    void add(const Choice& choice) { choices.emplace_back(choice); }
+    void add(const Choice&& choice) { choices.emplace_back(choice); }
     void setSelected(int index) { selected = index; }
 
     bool RoundedSelectableFullWidth(const char* label, bool selected, float rounding = 6.0f);

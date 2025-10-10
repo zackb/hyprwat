@@ -91,8 +91,8 @@ int main(const int argc, const char** argv) {
 
     // INPUT or PASSWORD mode
     if (parseResult.mode == InputMode::INPUT || parseResult.mode == InputMode::PASSWORD) {
-        flow = std::make_unique<SimpleInputFlow>(parseResult.hint.empty() ? "Input" : parseResult.hint,
-                                                 parseResult.mode == InputMode::PASSWORD);
+        flow = std::make_unique<InputFlow>(parseResult.hint.empty() ? "Input" : parseResult.hint,
+                                           parseResult.mode == InputMode::PASSWORD);
     } else if (parseResult.mode == InputMode::WIFI) {
         // WIFI mode
         auto wifiFlowPtr = std::make_unique<WifiFlow>();
@@ -108,20 +108,10 @@ int main(const int argc, const char** argv) {
             flow = std::make_unique<MenuFlow>(parseResult.choices);
         } else {
             // Create selector and parse stdin asynchronously
-            auto selector = std::make_unique<Selector>();
-            Input::parseStdin([&selector](Choice choice) { selector->add(choice); });
-
-            // Apply theme and run directly (stdin mode doesn't use flow)
-            selector->applyTheme(config);
-            FrameResult result = ui.run(*selector);
-
-            // print result if submitted
-            if (result.action == FrameResult::Action::SUBMIT) {
-                std::cout << result.value << std::endl;
-                std::cout.flush();
-            }
-
-            return 0;
+            auto menuFlowPtr = std::make_unique<MenuFlow>();
+            MenuFlow* menuFlow = menuFlowPtr.get();
+            flow = std::move(menuFlowPtr);
+            Input::parseStdin([&](Choice choice) { menuFlow->addChoice(choice); });
         }
     }
 

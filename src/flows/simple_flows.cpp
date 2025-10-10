@@ -2,7 +2,8 @@
 #include "../frames/input.hpp"
 #include "../frames/selector.hpp"
 
-// SimpleMenuFlow implementation
+MenuFlow::MenuFlow() { selector = std::make_unique<Selector>(); }
+
 MenuFlow::MenuFlow(const std::vector<Choice>& choices) {
     selector = std::make_unique<Selector>();
     for (auto& choice : choices) {
@@ -11,6 +12,8 @@ MenuFlow::MenuFlow(const std::vector<Choice>& choices) {
 }
 
 MenuFlow::~MenuFlow() = default;
+
+void MenuFlow::addChoice(const Choice& choice) { selector->add(choice); }
 
 Frame* MenuFlow::getCurrentFrame() { return selector.get(); }
 
@@ -31,15 +34,13 @@ bool MenuFlow::isDone() const { return done; }
 std::string MenuFlow::getResult() const { return finalResult; }
 
 // SimpleInputFlow implementation
-SimpleInputFlow::SimpleInputFlow(const std::string& hint, bool password) {
-    input = std::make_unique<TextInput>(hint, password);
-}
+InputFlow::InputFlow(const std::string& hint, bool password) { input = std::make_unique<TextInput>(hint, password); }
 
-SimpleInputFlow::~SimpleInputFlow() = default;
+InputFlow::~InputFlow() = default;
 
-Frame* SimpleInputFlow::getCurrentFrame() { return input.get(); }
+Frame* InputFlow::getCurrentFrame() { return input.get(); }
 
-bool SimpleInputFlow::handleResult(const FrameResult& result) {
+bool InputFlow::handleResult(const FrameResult& result) {
     if (result.action == FrameResult::Action::SUBMIT) {
         finalResult = result.value;
         done = true;
@@ -51,9 +52,9 @@ bool SimpleInputFlow::handleResult(const FrameResult& result) {
     return true;
 }
 
-bool SimpleInputFlow::isDone() const { return done; }
+bool InputFlow::isDone() const { return done; }
 
-std::string SimpleInputFlow::getResult() const { return finalResult; }
+std::string InputFlow::getResult() const { return finalResult; }
 
 // MenuThenInputFlow implementation
 MenuThenInputFlow::MenuThenInputFlow(const std::vector<Choice>& choices, const std::string& inputHintPrefix)
