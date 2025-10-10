@@ -1,6 +1,5 @@
 #include "flows/flow.hpp"
 #include "flows/simple_flows.hpp"
-#include "frames/selector.hpp"
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
 #include "src/flows/audio_flow.hpp"
@@ -75,56 +74,63 @@ int main(const int argc, const char** argv) {
     // initialize Wayland connection
     wl::Wayland wayland;
 
-    Selector frame;
-
+    // setup ui with Wayland
     UI ui(wayland);
 
     // find cursor position for meny x/y
     hyprland::Control hyprctl;
-    Vec2 pos = hyprctl.getCursorPos();
+    Vec2 pos = hyprctl.cursorPos();
 
     // load config
     Config config("~/.config/hyprwat/hyprwat.conf");
 
+    // initialize UI at cursor position
     ui.init((int)pos.x, (int)pos.y);
+
     // apply theme to UI
     ui.applyTheme(config);
 
     // parse command line arguments
-    auto parseResult = Input::parseArgv(argc, argv);
+    auto args = Input::parseArgv(argc, argv);
 
+    // find which flow to run
     std::unique_ptr<Flow> flow;
 
     // INPUT or PASSWORD mode
-    if (parseResult.mode == InputMode::INPUT || parseResult.mode == InputMode::PASSWORD) {
-        flow = std::make_unique<InputFlow>(parseResult.hint.empty() ? "Input" : parseResult.hint,
-                                           parseResult.mode == InputMode::PASSWORD);
-    } else if (parseResult.mode == InputMode::WIFI) {
-        // WIFI mode
-        auto wifiFlowPtr = std::make_unique<WifiFlow>();
-        WifiFlow* wifiFlow = wifiFlowPtr.get();
-        flow = std::move(wifiFlowPtr);
+    switch (args.mode) {
+    case InputMode::INPUT:
+        flow = std::make_unique<InputFlow>(args.hint, false);
+        break;
+    case InputMode::PASSWORD:
+        flow = std::make_unique<InputFlow>(args.hint, true);
+        break;
+    case InputMode::WIFI: {
+        auto wifiFlow = std::make_unique<WifiFlow>();
         wifiFlow->start();
-    } else if (parseResult.mode == InputMode::AUDIO) {
+        flow = std::move(wifiFlow);
+        break;
+    }
+    case InputMode::AUDIO:
         flow = std::make_unique<AudioFlow>();
-    } else {
-        // MENU mode (default)
+        break;
+    case InputMode::MENU:
         if (argc > 1) {
             // use choices from argv
-            flow = std::make_unique<MenuFlow>(parseResult.choices);
+            flow = std::make_unique<MenuFlow>(args.choices);
         } else {
-            // Create selector and parse stdin asynchronously
+            // parse stdin asynchronously for choices
             auto menuFlowPtr = std::make_unique<MenuFlow>();
             MenuFlow* menuFlow = menuFlowPtr.get();
             flow = std::move(menuFlowPtr);
             Input::parseStdin([&](Choice choice) { menuFlow->addChoice(choice); });
         }
+        break;
     }
 
     // run the flow
     ui.runFlow(*flow);
 
-    // Print result if flow completed successfully
+    // print result if flow completed successfully
     std::string result = flow->getResult();
     if (!result.empty()) {
         std::cout << result << std::endl;

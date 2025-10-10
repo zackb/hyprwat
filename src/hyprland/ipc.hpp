@@ -16,7 +16,7 @@ namespace hyprland {
         // Send command, return raw response
         std::string send(const std::string& command);
 
-        Vec2 getCursorPos();
+        Vec2 cursorPos();
 
     private:
         std::string socketPath;
