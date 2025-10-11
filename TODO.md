@@ -7,5 +7,5 @@
 - [x] pipewire
 - [x] packaging
 - [x] de-dupe wifi networks and choose the best one
-- [ ] connection specific frame while "Connecting..."
-    - [ ] present error/success
+- [x] connection specific frame while "Connecting..."
+    - [x] present error/success

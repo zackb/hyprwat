@@ -51,6 +51,8 @@ fmt:
 clean:
 	rm -rf build
 	rm -rf _CPack_Packages
+	rm -rf pkg
 	rm -f hyprwat*.deb
 	rm -f hyprwat*.rpm
 	rm -f hyprwat*.tar.gz
+	rm -f hyprwat*.zst
