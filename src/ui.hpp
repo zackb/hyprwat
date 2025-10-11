@@ -39,6 +39,7 @@ private:
     wl::Wayland& wayland;
     std::unique_ptr<wl::LayerSurface> surface;
     std::unique_ptr<egl::Context> egl;
+    int initialX = 0, initialY = 0;
     int32_t currentScale = 1;
     bool running = true;
 

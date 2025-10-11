@@ -13,6 +13,8 @@ namespace wl {
         wl_output* output;
         int32_t scale = 1;
         uint32_t id;
+        int32_t width;
+        int32_t height;
     };
 
     class Display {
@@ -37,6 +39,9 @@ namespace wl {
         const std::vector<Output>& outputs() const { return m_outputs; }
         int32_t getMaxScale() const;
         void setScaleChangeCallback(std::function<void(int32_t)> callback) { m_scale_callback = callback; }
+
+        // get the size of the first output in physical pixels
+        std::pair<int32_t, int32_t> getOutputSize() const;
 
     private:
         wl_display* m_display;

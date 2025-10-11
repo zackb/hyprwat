@@ -27,6 +27,7 @@ namespace wl {
 
         void bufferScale(int32_t scale);
         int32_t bufferScale() const { return m_scale; }
+        void reposition(int x, int y, int viewport_width, int viewport_height);
 
     private:
         wl_compositor* m_compositor;

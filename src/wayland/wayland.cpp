@@ -7,6 +7,7 @@ namespace wl {
             throw std::runtime_error("Failed to connect to Wayland display");
         }
         m_input = std::make_unique<InputHandler>(m_display.seat());
+        m_display.roundtrip();
     }
 
     Wayland::~Wayland() {}

@@ -6,10 +6,16 @@
 
 void UI::init(int x, int y) {
 
+    std::cout << "UI::init - Raw cursor position: (" << x << ", " << y << ")\n";
+
     // Create wl layer surface with small but reasonable initial size
     // Small enough to avoid flash, large enough for ImGui to work properly
     int initialWidth = 50;
     int initialHeight = 50;
+    initialX = x;
+    initialY = y;
+
+    std::cout << "UI::init - Stored initialX=" << initialX << ", initialY=" << initialY << "\n";
 
     surface = std::make_unique<wl::LayerSurface>(wayland.display().compositor(), wayland.display().layerShell());
     surface->create(x, y, initialWidth, initialHeight);
@@ -19,6 +25,7 @@ void UI::init(int x, int y) {
 
     // Get the current maximum scale from all outputs
     currentScale = wayland.display().getMaxScale();
+    std::cout << "UI::init - Current scale: " << currentScale << "\n";
 
     // Set up callback for dynamic scale changes
     wayland.display().setScaleChangeCallback([this](int32_t newScale) { updateScale(newScale); });
@@ -129,6 +136,7 @@ FrameResult UI::renderFrame(Frame& frame) {
     static Vec2 lastWindowSize;
     static int resizeStabilityCounter = 0;
     static int frameCount = 0;
+    static bool hasRepositioned = false;
     frameCount++;
 
     FrameResult result = frame.render();
@@ -153,18 +161,37 @@ FrameResult UI::renderFrame(Frame& frame) {
                         (desiredSize.x > 0 && desiredSize.y > 0); // Ensure valid size
 
     if (shouldResize) {
+        std::cout << "Resizing to " << desiredSize.x << "x" << desiredSize.y << "\n";
         // Clamp to reasonable bounds
         int newWidth = std::max(100, (int)desiredSize.x);
         int newHeight = std::max(50, (int)desiredSize.y);
 
         surface->resize(newWidth, newHeight, *egl);
         wayland.input().setWindowBounds(newWidth, newHeight);
+        // wayland.display().flush();
 
         // Update display size immediately for current frame
         io.DisplaySize = ImVec2((float)newWidth, (float)newHeight);
     } else {
         // Ensure DisplaySize is always current
         io.DisplaySize = ImVec2((float)surface->width(), (float)surface->height());
+    }
+
+    if (!hasRepositioned && resizeStabilityCounter >= RESIZE_STABILITY_FRAMES) {
+        hasRepositioned = true;
+        auto [viewport_w, viewport_h] = wayland.display().getOutputSize();
+
+        // TESTING
+        const float HYPRLAND_SCALE = 1.5f;
+        int vw_hypr = viewport_w / HYPRLAND_SCALE; // 1920 / 1.5 = 1280
+        int vh_hypr = viewport_h / HYPRLAND_SCALE; // 1080 / 1.5 = 720
+
+        // window size also needs to be in Hyprland space
+        int width_hypr = surface->width() * currentScale / HYPRLAND_SCALE; // 244 * 2 / 1.5
+        int height_hypr = surface->height() * currentScale / HYPRLAND_SCALE;
+
+        std::cout << "=== REPOSITIONING ===\n";
+        surface->reposition(initialX, initialY, vw_hypr, vh_hypr);
     }
 
     // Use buffer pixel size for viewport (after any resize)

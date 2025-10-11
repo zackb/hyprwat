@@ -54,6 +54,7 @@ namespace hyprland {
         close(wfd);
         return std::string(buf);
     }
+
     Vec2 Control::cursorPos() {
         std::string response = send("cursorpos");
         int x = 0, y = 0;
@@ -61,6 +62,21 @@ namespace hyprland {
             throw std::runtime_error("Failed to parse cursor position");
         }
         return {(float)x, (float)y};
+    }
+
+    float Control::scale() {
+        std::string response = send("monitors");
+
+        // "scale: " followed by a number
+        size_t pos = response.find("scale: ");
+        if (pos != std::string::npos) {
+            float scale;
+            if (sscanf(response.c_str() + pos + 7, "%f", &scale) == 1) {
+                return scale;
+            }
+        }
+
+        return 1.0f; // fallback
     }
 
     // Events

@@ -82,7 +82,7 @@ namespace wl {
                                                                .description = output_description};
             wl_output_add_listener(output, &output_listener, self);
 
-            self->m_outputs.push_back({output, 1, id});
+            self->m_outputs.push_back({output, 1, id, 0, 0});
         }
     }
 
@@ -94,6 +94,14 @@ namespace wl {
             }
         }
         return max;
+    }
+
+    std::pair<int32_t, int32_t> Display::getOutputSize() const {
+        if (m_outputs.empty()) {
+            return {1920, 1080}; // fallback?
+        }
+        // TODO: how do we handle multiple outputs with different sizes?
+        return {m_outputs[0].width, m_outputs[0].height};
     }
 
     void Display::registry_remover(void* data, wl_registry*, uint32_t id) {
@@ -117,7 +125,23 @@ namespace wl {
     // Output event handlers
     void Display::output_geometry(
         void*, wl_output*, int32_t, int32_t, int32_t, int32_t, int32_t, const char*, const char*, int32_t) {}
-    void Display::output_mode(void*, wl_output*, uint32_t, int32_t, int32_t, int32_t) {}
+
+    void Display::output_mode(
+        void* data, wl_output* output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
+        if (flags & WL_OUTPUT_MODE_CURRENT) {
+            Display* self = static_cast<Display*>(data);
+
+            // update output dimensions
+            for (auto& out : self->m_outputs) {
+                if (out.output == output) {
+                    out.width = width;
+                    out.height = height;
+                    break;
+                }
+            }
+        }
+    }
+
     void Display::output_done(void*, wl_output*) {}
 
     void Display::output_scale(void* data, wl_output* output, int32_t factor) {

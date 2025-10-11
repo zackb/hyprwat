@@ -16,7 +16,9 @@ namespace hyprland {
         // Send command, return raw response
         std::string send(const std::string& command);
 
+        // these are in fractional scale pixels
         Vec2 cursorPos();
+        float scale();
 
     private:
         std::string socketPath;

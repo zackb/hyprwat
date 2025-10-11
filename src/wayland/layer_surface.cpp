@@ -1,4 +1,5 @@
 #include "layer_surface.hpp"
+#include <iostream>
 
 namespace wl {
     LayerSurface::LayerSurface(wl_compositor* compositor, zwlr_layer_shell_v1* shell)
@@ -76,5 +77,42 @@ namespace wl {
     void LayerSurface::closed_handler(void* data, zwlr_layer_surface_v1*) {
         LayerSurface* self = static_cast<LayerSurface*>(data);
         self->m_should_exit = true;
+    }
+
+    // logical pixel coordinates
+    void LayerSurface::reposition(int x, int y, int viewport_width, int viewport_height) {
+
+        std::cout << "\n=== LayerSurface::reposition ===\n";
+        std::cout << "Input: x=" << x << ", y=" << y << "\n";
+        std::cout << "Window size: " << m_width << "x" << m_height << "\n";
+        std::cout << "Viewport: " << viewport_width << "x" << viewport_height << "\n";
+
+        // All inputs are in logical coordinates
+        int final_x = x;
+        int final_y = y;
+
+        if (x + m_width > viewport_width) {
+            std::cout << "X overflow: " << x << " + " << m_width << " = " << (x + m_width) << " > " << viewport_width
+                      << "\n";
+            final_x = viewport_width - m_width;
+            std::cout << "Adjusted final_x to: " << final_x << "\n";
+        }
+
+        if (y + m_height > viewport_height) {
+            std::cout << "Y overflow: " << y << " + " << m_height << " = " << (y + m_height) << " > " << viewport_height
+                      << "\n";
+            final_y = viewport_height - m_height;
+            std::cout << "Adjusted final_y to: " << final_y << "\n";
+        }
+
+        final_x = std::max(0, final_x);
+        final_y = std::max(0, final_y);
+
+        std::cout << "Final position: (" << final_x << ", " << final_y << ")\n";
+        std::cout << "Setting margins: top=" << final_y << ", left=" << final_x << "\n";
+        std::cout << "================================\n\n";
+
+        zwlr_layer_surface_v1_set_margin(m_layer_surface, final_y, 0, 0, final_x);
+        wl_surface_commit(m_surface);
     }
 } // namespace wl
