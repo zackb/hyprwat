@@ -98,7 +98,7 @@ int main(const int argc, const char** argv) {
     Config config("~/.config/hyprwat/hyprwat.conf");
 
     // initialize UI at wayland scaled cursor position
-    ui.init(pos.x, pos.y);
+    ui.init(pos.x, pos.y, hyprlandScale);
 
     // apply theme to UI
     ui.applyTheme(config);

@@ -23,7 +23,8 @@ public:
 class UI {
 public:
     UI(wl::Wayland& wayland) : wayland(wayland) {}
-    void init(int x, int y);
+    // x, y, scale are the compositor's scale (fractional scales are supported)
+    void init(int x, int y, float scale);
 
     // run a single frame until it returns a result
     FrameResult run(Frame& frame);
@@ -41,6 +42,7 @@ private:
     std::unique_ptr<egl::Context> egl;
     int initialX = 0, initialY = 0;
     int32_t currentScale = 1;
+    float currentFractionalScale = 1.0f;
     bool running = true;
 
     FrameResult renderFrame(Frame& frame);

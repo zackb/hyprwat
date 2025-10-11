@@ -80,37 +80,21 @@ namespace wl {
     }
 
     // logical pixel coordinates
-    void LayerSurface::reposition(int x, int y, int viewport_width, int viewport_height) {
-
-        std::cout << "\n=== LayerSurface::reposition ===\n";
-        std::cout << "Input: x=" << x << ", y=" << y << "\n";
-        std::cout << "Window size: " << m_width << "x" << m_height << "\n";
-        std::cout << "Viewport: " << viewport_width << "x" << viewport_height << "\n";
-
-        // All inputs are in logical coordinates
+    void LayerSurface::reposition(
+        int x, int y, int viewport_width, int viewport_height, int window_width, int window_height) {
         int final_x = x;
         int final_y = y;
 
-        if (x + m_width > viewport_width) {
-            std::cout << "X overflow: " << x << " + " << m_width << " = " << (x + m_width) << " > " << viewport_width
-                      << "\n";
-            final_x = viewport_width - m_width;
-            std::cout << "Adjusted final_x to: " << final_x << "\n";
+        if (x + window_width > viewport_width) {
+            final_x = viewport_width - window_width;
         }
 
-        if (y + m_height > viewport_height) {
-            std::cout << "Y overflow: " << y << " + " << m_height << " = " << (y + m_height) << " > " << viewport_height
-                      << "\n";
-            final_y = viewport_height - m_height;
-            std::cout << "Adjusted final_y to: " << final_y << "\n";
+        if (y + window_height > viewport_height) {
+            final_y = viewport_height - window_height;
         }
 
         final_x = std::max(0, final_x);
         final_y = std::max(0, final_y);
-
-        std::cout << "Final position: (" << final_x << ", " << final_y << ")\n";
-        std::cout << "Setting margins: top=" << final_y << ", left=" << final_x << "\n";
-        std::cout << "================================\n\n";
 
         zwlr_layer_surface_v1_set_margin(m_layer_surface, final_y, 0, 0, final_x);
         wl_surface_commit(m_surface);
