@@ -5,9 +5,8 @@
 NetworkManagerClient::NetworkManagerClient() {
     connection = sdbus::createSystemBusConnection();
     connection->enterEventLoopAsync();
-    proxy = sdbus::createProxy(*connection,
-                               sdbus::ServiceName("org.freedesktop.NetworkManager"),
-                               sdbus::ObjectPath("/org/freedesktop/NetworkManager"));
+    proxy = sdbus::createProxy(
+        *connection, "org.freedesktop.NetworkManager", sdbus::ObjectPath("/org/freedesktop/NetworkManager"));
 }
 
 // returns all wifi capable devices
@@ -19,7 +18,7 @@ std::vector<sdbus::ObjectPath> NetworkManagerClient::getWifiDevices() {
     // Filter only wifi devices
     std::vector<sdbus::ObjectPath> wifiDevices;
     for (auto& devPath : devices) {
-        auto devProxy = sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), devPath);
+        auto devProxy = sdbus::createProxy(*connection, "org.freedesktop.NetworkManager", devPath);
 
         sdbus::Variant devTypeVar;
         devProxy->callMethod("Get")
@@ -41,7 +40,7 @@ std::vector<sdbus::ObjectPath> NetworkManagerClient::getWifiDevices() {
 std::vector<sdbus::ObjectPath> NetworkManagerClient::getAccessPoints(const sdbus::ObjectPath& devicePath) {
     std::vector<sdbus::ObjectPath> aps;
 
-    auto devProxy = sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), devicePath);
+    auto devProxy = sdbus::createProxy(*connection, "org.freedesktop.NetworkManager", devicePath);
 
     try {
         devProxy->callMethod("GetAllAccessPoints")
@@ -75,8 +74,7 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
 
         for (auto& apPath : apPaths) {
             try {
-                auto apProxy =
-                    sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), apPath);
+                auto apProxy = sdbus::createProxy(*connection, "org.freedesktop.NetworkManager", apPath);
 
                 sdbus::Variant ssidVar;
                 apProxy->callMethod("Get")
@@ -122,16 +120,14 @@ void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork
     }
 
     for (auto& devicePath : wifiDevices) {
-        auto devProxy =
-            sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), devicePath);
+        auto devProxy = sdbus::createProxy(*connection, "org.freedesktop.NetworkManager", devicePath);
 
         // setup signal handler for newly discovered APs
         devProxy->uponSignal("AccessPointAdded")
             .onInterface("org.freedesktop.NetworkManager.Device.Wireless")
             .call([&, callback](sdbus::ObjectPath apPath) {
                 try {
-                    auto apProxy =
-                        sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), apPath);
+                    auto apProxy = sdbus::createProxy(*connection, "org.freedesktop.NetworkManager", apPath);
 
                     sdbus::Variant ssidVar;
                     apProxy->callMethod("Get")
@@ -170,7 +166,7 @@ void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork
         auto timeout = std::chrono::seconds(timeoutSeconds);
 
         while (std::chrono::steady_clock::now() - startTime < timeout && !stopScanRequest) {
-            connection->processPendingEvent();
+            connection->processPendingRequest();
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     }
@@ -216,8 +212,7 @@ bool NetworkManagerClient::connectToNetwork(const std::string& ssid,
             .storeResultsTo(activeConnection, resultDevice);
 
         // create proxy for the active connection
-        connectionProxy =
-            sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), devicePath);
+        connectionProxy = sdbus::createProxy(*connection, "org.freedesktop.NetworkManager", devicePath);
 
         // register signal handler for state changes
         connectionProxy->uponSignal("StateChanged")
