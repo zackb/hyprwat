@@ -9,7 +9,15 @@ struct WifiNetwork {
     int strength; // 0-100
 };
 
-enum ConnectionState { UNKNOWN = 0, ACTIVATING = 1, ACTIVATED = 2, DEACTIVATING = 3, DEACTIVATED = 4 };
+enum ConnectionState {
+    UNKNOWN,
+    DISCONNECTED,
+    ACTIVATING,
+    CONFIGURING,
+    AUTHENTICATING,
+    ACTIVATED,
+    FAILED,
+};
 
 class NetworkManagerClient {
 

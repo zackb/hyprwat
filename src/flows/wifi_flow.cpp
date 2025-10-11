@@ -79,14 +79,16 @@ bool WifiFlow::handleResult(const FrameResult& result) {
                     return;
                 switch (state) {
                 case ConnectionState::ACTIVATING:
+                case ConnectionState::AUTHENTICATING:
+                case ConnectionState::CONFIGURING:
                     connectingFrame->setText(message, ImVec4(0.7f, 0.7f, 1.0f, 1.0f));
                     break;
                 case ConnectionState::ACTIVATED:
                     connectingFrame->setText(message, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
                     done = true;
                     break;
-                case ConnectionState::DEACTIVATING:
-                case ConnectionState::DEACTIVATED:
+                case ConnectionState::DISCONNECTED:
+                case ConnectionState::FAILED:
                 case ConnectionState::UNKNOWN:
                     connectingFrame->setText(message, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
                     done = true;
@@ -108,7 +110,7 @@ bool WifiFlow::handleResult(const FrameResult& result) {
         }
         break;
     }
-    return true;
+    return !done;
 }
 
 bool WifiFlow::isDone() const { return done; }

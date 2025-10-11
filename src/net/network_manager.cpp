@@ -212,56 +212,38 @@ bool NetworkManagerClient::connectToNetwork(const std::string& ssid,
             .withArguments(conMap, devicePath, apPath)
             .storeResultsTo(activeConnection, resultDevice);
 
-        std::cout << "Active connection path: " << std::string(activeConnection) << std::endl;
-
         // create proxy for the active connection
         connectionProxy =
-            sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), activeConnection);
+            sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), devicePath);
 
         // register signal handler for state changes
-        connectionProxy->uponSignal("PropertiesChanged")
-            .onInterface("org.freedesktop.DBus.Properties")
-            .call([this, statusCallback](const std::string& interface,
-                                         const std::map<std::string, sdbus::Variant>& changed,
-                                         const std::vector<std::string>& invalidated) {
-                std::cout << "PropertiesChanged signal received on interface: " << interface << std::endl;
-                std::cout << "Changed properties:" << std::endl;
-
-                // Print ALL changed properties
-                for (const auto& [key, value] : changed) {
-                    std::cout << "  - " << key << std::endl;
-                }
-
-                // Print invalidated properties
-                std::cout << "Invalidated properties:" << std::endl;
-                for (const auto& prop : invalidated) {
-                    std::cout << "  - " << prop << std::endl;
-                }
-
-                if (changed.count("State")) {
-                    uint32_t state = changed.at("State").get<uint32_t>();
-                    std::cout << "Connection state changed: " << state << std::endl;
-                    if (statusCallback) {
-                        switch (state) {
-                        case 0: // NM_ACTIVE_CONNECTION_STATE_UNKNOWN
-                            statusCallback(ConnectionState::UNKNOWN, "Unknown state");
-                            break;
-                        case 1: // NM_ACTIVE_CONNECTION_STATE_ACTIVATING
-                            statusCallback(ConnectionState::ACTIVATING, "Connecting...");
-                            break;
-                        case 2: // NM_ACTIVE_CONNECTION_STATE_ACTIVATED
-                            statusCallback(ConnectionState::ACTIVATED, "Connected");
-                            break;
-                        case 3: // NM_ACTIVE_CONNECTION_STATE_DEACTIVATING
-                            statusCallback(ConnectionState::DEACTIVATING, "Disconnecting...");
-                            break;
-                        case 4: // NM_ACTIVE_CONNECTION_STATE_DEACTIVATED
-                            statusCallback(ConnectionState::DEACTIVATED, "Disconnected");
-                            break;
-                        default:
-                            statusCallback(ConnectionState::UNKNOWN, "Unknown state");
-                            break;
-                        }
+        connectionProxy->uponSignal("StateChanged")
+            .onInterface("org.freedesktop.NetworkManager.Device")
+            .call([this, statusCallback](uint32_t newState, uint32_t oldState, uint32_t reason) {
+                std::cout << "Connection state changed: " << newState << std::endl;
+                if (statusCallback) {
+                    switch (newState) {
+                    case 40:
+                        statusCallback(ConnectionState::DISCONNECTED, "Disconnected");
+                        break;
+                    case 50:
+                        statusCallback(ConnectionState::ACTIVATING, "Connecting...");
+                        break;
+                    case 60:
+                        statusCallback(ConnectionState::CONFIGURING, "Configuring...");
+                        break;
+                    case 70:
+                        statusCallback(ConnectionState::AUTHENTICATING, "Awaiting authentication...");
+                        break;
+                    case 100:
+                        statusCallback(ConnectionState::ACTIVATED, "Connected");
+                        break;
+                    case 120:
+                        statusCallback(ConnectionState::FAILED, "Failed");
+                        break;
+                    default:
+                        statusCallback(ConnectionState::UNKNOWN, "Unknown");
+                        break;
                     }
                 }
             });
