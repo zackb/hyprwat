@@ -144,8 +144,15 @@ set(CPACK_GENERATOR "DEB;RPM;TGZ")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Zack Bartel")
 set(CPACK_RPM_PACKAGE_RELEASE 1)
 
+# deb and rpm dependencies
+set(CPACK_DEBIAN_PACKAGE_DEPENDS
+    "libwayland-client0, wayland-protocols, libegl1-mesa, libgl1-mesa-glx, libfontconfig1, libxkbcommon0, libpipewire-0.3-0, libsdbus-c++-1")
+set(CPACK_RPM_PACKAGE_REQUIRES
+    "wayland-libs, wayland-protocols, mesa-libEGL, mesa-libGL, fontconfig, libxkbcommon, pipewire, sdbus-c++")
+
+
 # remove the "-Linux" suffix
-set(CPACK_SYSTEM_NAME "linux")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
 
 include(CPack)
 
