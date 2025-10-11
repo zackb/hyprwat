@@ -4,3 +4,7 @@ imgui.ini
 compile_commands.json
 **/*.o
 .idea
+_CPack_Packages
+*.deb
+*.rpm
+*.tar.gz

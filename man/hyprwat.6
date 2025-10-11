@@ -1,0 +1,159 @@
+.TH HYPRWAT 6 "October 2025" "hyprwat 1.0" "User Commands"
+.SH NAME
+hyprwat \- simple Wayland panel for menu and input prompts
+.SH SYNOPSIS
+.B hyprwat
+[\fIOPTIONS\fR] [\fIid[:displayName][*]\fR]...
+.br
+.B hyprwat
+--input [\fIhint\fR]
+.br
+.B hyprwat
+--password [\fIhint\fR]
+.br
+.B hyprwat
+--wifi
+.br
+.B hyprwat
+--audio
+.SH DESCRIPTION
+.B hyprwat
+is a lightweight Wayland-native popup panel that presents selectable options
+or input prompts at the current cursor position. It integrates cleanly with
+the Hyprland compositor and can be used to build interactive menus for
+system controls, Wi-Fi networks, audio devices, or any scriptable UI
+selection task.
+
+In its default menu mode,
+.B hyprwat
+displays a list of options, one of which may be preselected.
+It can also present text input or password dialogs, or automatically populate
+menus from system resources such as Wi-Fi networks or PipeWire audio devices.
+
+.SH MODES
+.TP
+.B MENU MODE (default)
+You can pass a list of items as command-line arguments in the form:
+
+.RS
+.nf
+id[:displayName][*]
+.fi
+.RE
+
+.RS
+.IP \(bu 2
+\fBid\fR: Required identifier (used internally)
+.IP \(bu 2
+\fBdisplayName\fR: Optional text label (defaults to id)
+.IP \(bu 2
+\fB*\fR: Optional suffix marking this item as initially selected
+.RE
+
+If no arguments are passed, menu items may be provided on standard input,
+one per line, in the same format.
+
+.EX
+$ hyprwat performance:Performance* balanced:Balanced powersave:PowerSaver
+$ echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
+.EE
+
+.TP
+.B INPUT MODE
+Show a text input prompt with optional hint text.
+
+.EX
+$ hyprwat --input "Enter your name"
+.EE
+
+.TP
+.B PASSWORD MODE
+Show a password input prompt (masked input).
+
+.EX
+$ hyprwat --password "WiFi Passphrase"
+.EE
+
+.TP
+.B WIFI MODE
+Scan and display available Wi-Fi networks for selection.
+If a network requires authentication, a password prompt will follow.
+
+.EX
+$ hyprwat --wifi
+.EE
+
+.TP
+.B AUDIO MODE
+Show available audio input/output devices (PipeWire) and select one.
+
+.EX
+$ hyprwat --audio
+.EE
+
+.SH OPTIONS
+.TP
+.BR -h , " --help"
+Show help message and exit.
+.TP
+.BR --input " [hint]"
+Display an input field with optional hint text.
+.TP
+.BR --password " [hint]"
+Display a password input prompt (masked).
+.TP
+.BR --wifi
+Show Wi-Fi network selection mode.
+.TP
+.BR --audio
+Show audio input/output device selection mode.
+
+.SH EXAMPLES
+.TP
+Select a power profile:
+.EX
+$ hyprwat performance:"Performance"* balanced:"" power-saver:"Power Saver"
+.EE
+.TP
+Provide menu items via stdin:
+.EX
+$ echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
+.EE
+.TP
+Prompt for input:
+.EX
+$ NAME=$(hyprwat --input "Enter name")
+.EE
+.TP
+Select Wi-Fi or audio device:
+.EX
+$ hyprwat --wifi
+$ hyprwat --audio
+.EE
+
+.SH FILES
+.TP
+.I ~/.config/hyprwat/hyprwat.conf
+Optional configuration file for theme customization.  
+Uses simple INI syntax to define fonts, colors, and window style.
+
+.SH REQUIREMENTS
+Wayland compositor (tested with Hyprland),
+C++20 compiler, EGL/OpenGL, Fontconfig, xkbcommon,
+PipeWire, and sdbus-c++.
+
+.SH SEE ALSO
+.BR hyprland (1),
+.BR waybar (1),
+.BR nmcli (1),
+.BR pactl (1)
+
+.SH AUTHOR
+Written by Zack Bartel <zack@bartel.com>
+
+.SH LICENSE
+MIT License.  
+Source available at:
+.UR https://github.com/zackb/hyprwat
+.UE
+

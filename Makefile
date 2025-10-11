@@ -13,6 +13,9 @@ release:
 install: release
 	cmake --install build/release
 
+package: release
+	cpack --config build/release/CPackConfig.cmake
+
 run: debug
 	./build/debug/hyprwat foo:FooZZZZZZZZZZZZZZZZZZZZZZZZZZZZ bar:Bar* zbz:'Zack Bartel'
 
@@ -47,6 +50,10 @@ fmt:
 
 clean:
 	rm -rf build
+	rm -rf _CPack_Packages
+	rm hyprwat*.deb
+	rm hyprwat*.rpm
+	rm hyprwat*.tar.gz
 
 old: 
 	gcc -c src/wayland/protocols/wlr-layer-shell-unstable-v1-client-protocol.c -o layer_shell.o

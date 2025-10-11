@@ -127,8 +127,26 @@ target_link_libraries(hyprwat PRIVATE
     pthread
 )
 
-# Install the executable
 install(TARGETS hyprwat
         RUNTIME DESTINATION bin)
+
+install(FILES man/hyprwat.6
+        DESTINATION share/man/man6)
+
+# generate .deb .rpm and .tgz
+include(InstallRequiredSystemLibraries)
+
+set(CPACK_PACKAGE_NAME "hyprwat")
+set(CPACK_PACKAGE_VERSION "0.1.0")
+set(CPACK_PACKAGE_CONTACT "zack@bartel.com")
+set(CPACK_GENERATOR "DEB;RPM;TGZ")
+
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Zack Bartel")
+set(CPACK_RPM_PACKAGE_RELEASE 1)
+
+# remove the "-Linux" suffix
+set(CPACK_SYSTEM_NAME "linux")
+
+include(CPack)
 
 
