@@ -35,16 +35,14 @@ id[:displayName][*]
 
 If no arguments are provided, hyprwat will read from stdin, expecting one item per line in the same format.
 
+### Options
 
-```
---input <hint>
-```
-Show an input prompt instead of a selection menu with optional hint text
+- `-h, --help`: Show help message
+- `--input <hint>`: Show an input prompt instead of a selection menu with optional hint text
+- `--password <hint>`: Show a password input prompt (masked input) with optional hint text
+- `--audio`: Show audio input/output device selector (requires pipewire)
+- `--wifi`:  Show WiFi network selection
 
-```
---password <hint>
-```
-Show a password input prompt (masked input) with optional hint text
 
 ### Examples
 
@@ -79,14 +77,6 @@ hyprwat --audio
 
 ```
 See the [examples](examples) directory for more.
-
-### Options
-
-- `-h, --help`: Show help message
-- `--input <hint>`: Show an input prompt instead of a selection menu with optional hint text
-- `--password <hint>`: Show a password input prompt (masked input) with optional hint text
-- `--audio`: Show audio input/output device selector (requires pipewire)
-- `--wifi`:  Show WiFi network selection
 
 
 ## Theming
@@ -178,48 +168,43 @@ cmake --build --preset debug
 - `CMakeLists.txt`: Build configuration
 - `Makefile`: Convenience build targets
 
-### Code Formatting
-
-Format the codebase with:
-
-```bash
-make fmt
-```
-
-### Testing
-
-Run the application with test data:
-
-```bash
-# Various test scenarios
-make run   # Basic test with long text
-make run2  # Simple test
-make run3  # Stdin input test
-make run-wifi  # WiFi selection test
-```
-
 ## Integration Examples
-
-### WiFi Network Selector
-
-The included `wifi.sh` script demonstrates integration with NetworkManager:
-
-```bash
-#!/bin/bash
-nmcli -t -f active,ssid,signal dev wifi | \
-  awk -F: '!seen[$2]++ { printf "%s:%s (%s%%)%s\n", $2, $2, $3, ($1 == "yes" ? "*" : "") }' | \
-  ./build/debug/hyprwat
-```
-
-This is just an example showing scriptability; you should use --wifi.
 
 ### Power Profile Selector
 
+The included `powerprofiles.sh` script demonstrates integration with powerprofilesctl:
+
 ```bash
-hyprwat \
-  performance:"⚡ Performance" \
-  balanced:"⚖ Balanced*" \
-  powersave:"▽ Power Saver"
+#!/bin/bash
+
+# Define profiles: id -> display name
+declare -A profiles=(
+    ["performance"]="⚡ Performance"
+    ["balanced"]="⚖ Balanced"
+    ["power-saver"]="▽ Power Saver"
+)
+
+# Get the current active profile
+current_profile=$(powerprofilesctl get)
+
+# Build hyprwat arguments
+args=()
+for id in "${!profiles[@]}"; do
+    label="${profiles[$id]}"
+    if [[ "$id" == "$current_profile" ]]; then
+        args+=("${id}:${label}*")
+    else
+        args+=("${id}:${label}")
+    fi
+done
+
+# Launch hyprwat and capture the selection
+selection=$(hyprwat "${args[@]}")
+
+# If user made a selection, apply it
+if [[ -n "$selection" ]]; then
+    powerprofilesctl set "$selection"
+fi
 ```
 
 ### Passphrase Input Prompt
