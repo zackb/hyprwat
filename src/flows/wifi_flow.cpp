@@ -74,7 +74,6 @@ bool WifiFlow::handleResult(const FrameResult& result) {
             currentState = State::CONNECTIING;
 
             nm.connectToNetwork(selectedNetwork, password, [this](ConnectionState state, const std::string& message) {
-                std::cout << "Connection state: " << message << std::endl;
                 if (!connectingFrame)
                     return;
                 switch (state) {
@@ -86,6 +85,7 @@ bool WifiFlow::handleResult(const FrameResult& result) {
                 case ConnectionState::ACTIVATED:
                     connectingFrame->setText(message, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
                     done = true;
+                    connectingFrame->done(); // HACK: how else to exit frame?
                     break;
                 case ConnectionState::DISCONNECTED:
                 case ConnectionState::FAILED:
@@ -110,7 +110,8 @@ bool WifiFlow::handleResult(const FrameResult& result) {
         }
         break;
     }
-    return !done;
+
+    return true;
 }
 
 bool WifiFlow::isDone() const { return done; }

@@ -220,7 +220,6 @@ bool NetworkManagerClient::connectToNetwork(const std::string& ssid,
         connectionProxy->uponSignal("StateChanged")
             .onInterface("org.freedesktop.NetworkManager.Device")
             .call([this, statusCallback](uint32_t newState, uint32_t oldState, uint32_t reason) {
-                std::cout << "Connection state changed: " << newState << std::endl;
                 if (statusCallback) {
                     switch (newState) {
                     case 40:

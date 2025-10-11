@@ -20,7 +20,7 @@ FrameResult Text::render() {
 
     ImGui::End();
 
-    if (escPressed) {
+    if (escPressed || _done) {
         return FrameResult::Cancel();
     }
 
