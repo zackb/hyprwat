@@ -4,6 +4,7 @@
 
 NetworkManagerClient::NetworkManagerClient() {
     connection = sdbus::createSystemBusConnection();
+    connection->enterEventLoopAsync();
     proxy = sdbus::createProxy(*connection,
                                sdbus::ServiceName("org.freedesktop.NetworkManager"),
                                sdbus::ObjectPath("/org/freedesktop/NetworkManager"));
@@ -173,7 +174,9 @@ void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork
 }
 
 // connect to network
-bool NetworkManagerClient::connectToNetwork(const std::string& ssid, const std::string& password) {
+bool NetworkManagerClient::connectToNetwork(const std::string& ssid,
+                                            const std::string& password,
+                                            std::function<void(ConnectionState, const std::string&)> statusCallback) {
 
     auto wifiDevices = getWifiDevices();
     if (wifiDevices.empty())
@@ -218,26 +221,47 @@ bool NetworkManagerClient::connectToNetwork(const std::string& ssid, const std::
         // register signal handler for state changes
         connectionProxy->uponSignal("PropertiesChanged")
             .onInterface("org.freedesktop.DBus.Properties")
-            .call([this](const std::string& interface,
-                         const std::map<std::string, sdbus::Variant>& changed,
-                         const std::vector<std::string>& invalidated) {
+            .call([this, statusCallback](const std::string& interface,
+                                         const std::map<std::string, sdbus::Variant>& changed,
+                                         const std::vector<std::string>& invalidated) {
+                std::cout << "PropertiesChanged signal received on interface: " << interface << std::endl;
+                std::cout << "Changed properties:" << std::endl;
+
+                // Print ALL changed properties
+                for (const auto& [key, value] : changed) {
+                    std::cout << "  - " << key << std::endl;
+                }
+
+                // Print invalidated properties
+                std::cout << "Invalidated properties:" << std::endl;
+                for (const auto& prop : invalidated) {
+                    std::cout << "  - " << prop << std::endl;
+                }
+
                 if (changed.count("State")) {
                     uint32_t state = changed.at("State").get<uint32_t>();
-
-                    switch (state) {
-                    case ConnectionState::ACTIVATING:
-                        std::cout << "Connecting to WiFi network..." << std::endl;
-                        // showMessage("Connecting to WiFi...", MessageType::Info);
-                        break;
-                    case ConnectionState::ACTIVATED:
-                        std::cout << "Connected to WiFi network!" << std::endl;
-                        // showMessage("Successfully connected!", MessageType::Success);
-                        break;
-                    case ConnectionState::DEACTIVATING:
-                    case ConnectionState::DEACTIVATED:
-                        std::cout << "Disconnected from WiFi network." << std::endl;
-                        // showMessage("Connection failed");
-                        break;
+                    std::cout << "Connection state changed: " << state << std::endl;
+                    if (statusCallback) {
+                        switch (state) {
+                        case 0: // NM_ACTIVE_CONNECTION_STATE_UNKNOWN
+                            statusCallback(ConnectionState::UNKNOWN, "Unknown state");
+                            break;
+                        case 1: // NM_ACTIVE_CONNECTION_STATE_ACTIVATING
+                            statusCallback(ConnectionState::ACTIVATING, "Connecting...");
+                            break;
+                        case 2: // NM_ACTIVE_CONNECTION_STATE_ACTIVATED
+                            statusCallback(ConnectionState::ACTIVATED, "Connected");
+                            break;
+                        case 3: // NM_ACTIVE_CONNECTION_STATE_DEACTIVATING
+                            statusCallback(ConnectionState::DEACTIVATING, "Disconnecting...");
+                            break;
+                        case 4: // NM_ACTIVE_CONNECTION_STATE_DEACTIVATED
+                            statusCallback(ConnectionState::DEACTIVATED, "Disconnected");
+                            break;
+                        default:
+                            statusCallback(ConnectionState::UNKNOWN, "Unknown state");
+                            break;
+                        }
                     }
                 }
             });
@@ -246,4 +270,9 @@ bool NetworkManagerClient::connectToNetwork(const std::string& ssid, const std::
         std::cerr << "Failed to connect: " << e.getName() << " " << e.getMessage() << std::endl;
         return false;
     }
+}
+
+void NetworkManagerClient::processEvents() {
+    if (connection)
+        connection->processPendingEvent();
 }

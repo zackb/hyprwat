@@ -1,5 +1,4 @@
 #include "wifi_flow.hpp"
-#include "../input.hpp"
 
 // initializes frames
 WifiFlow::WifiFlow() { networkSelector = std::make_unique<Selector>(); }
@@ -38,11 +37,14 @@ void WifiFlow::networkDiscovered(const WifiNetwork& network) {
 }
 
 Frame* WifiFlow::getCurrentFrame() {
+    nm.processEvents();
     switch (currentState) {
     case State::SELECT_NETWORK:
         return networkSelector.get();
     case State::ENTER_PASSWORD:
         return passwordInput.get();
+    case State::CONNECTIING:
+        return connectingFrame.get();
     default:
         return nullptr;
     }
@@ -66,14 +68,43 @@ bool WifiFlow::handleResult(const FrameResult& result) {
     case State::ENTER_PASSWORD:
         if (result.action == FrameResult::Action::SUBMIT) {
             password = result.value;
-            // TODO: perhaps another frame to show progress and handle errors
-            nm.connectToNetwork(selectedNetwork, password);
-            done = true;
-            return false;
+
+            connectingFrame =
+                std::make_unique<Text>("Connecting to " + selectedNetwork + "...", ImVec4(0.7f, 0.7f, 1.0f, 1.0f));
+            currentState = State::CONNECTIING;
+
+            nm.connectToNetwork(selectedNetwork, password, [this](ConnectionState state, const std::string& message) {
+                std::cout << "Connection state: " << message << std::endl;
+                if (!connectingFrame)
+                    return;
+                switch (state) {
+                case ConnectionState::ACTIVATING:
+                    connectingFrame->setText(message, ImVec4(0.7f, 0.7f, 1.0f, 1.0f));
+                    break;
+                case ConnectionState::ACTIVATED:
+                    connectingFrame->setText(message, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+                    done = true;
+                    break;
+                case ConnectionState::DEACTIVATING:
+                case ConnectionState::DEACTIVATED:
+                case ConnectionState::UNKNOWN:
+                    connectingFrame->setText(message, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                    done = true;
+                    break;
+                }
+            });
+
+            return true;
         } else if (result.action == FrameResult::Action::CANCEL) {
             // Go back to network selection
             currentState = State::SELECT_NETWORK;
             return true;
+        }
+        break;
+    case State::CONNECTIING:
+        if (result.action == FrameResult::Action::CANCEL) {
+            done = true;
+            return false;
         }
         break;
     }

@@ -2,6 +2,7 @@
 
 #include "../frames/input.hpp"
 #include "../frames/selector.hpp"
+#include "../frames/text.hpp"
 #include "../net/network_manager.hpp"
 #include "flow.hpp"
 #include <memory>
@@ -27,7 +28,7 @@ public:
     void networkDiscovered(const WifiNetwork& network);
 
 private:
-    enum class State { SELECT_NETWORK, ENTER_PASSWORD };
+    enum class State { SELECT_NETWORK, ENTER_PASSWORD, CONNECTIING };
 
     State currentState = State::SELECT_NETWORK;
 
@@ -36,6 +37,7 @@ private:
 
     std::unique_ptr<Selector> networkSelector;
     std::unique_ptr<TextInput> passwordInput;
+    std::unique_ptr<Text> connectingFrame;
 
     std::string selectedNetwork;
     std::string password;

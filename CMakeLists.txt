@@ -81,6 +81,7 @@ add_executable(hyprwat
     src/font/font.cpp
     src/frames/selector.cpp
     src/frames/input.cpp
+    src/frames/text.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
     src/flows/audio_flow.cpp
