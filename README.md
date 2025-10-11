@@ -15,6 +15,13 @@ hyprwat creates a popup menu at your cursor position where you can select from a
 - **UI**: Interface built with ImGui
 - **Pre-selection support**: Mark items as initially selected
 
+## Installation
+
+```
+yay -S hyprwat
+```
+Or build from source (see Build Instructions below).
+
 ## Usage
 
 ```
