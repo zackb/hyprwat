@@ -28,7 +28,6 @@ public:
     bool connectToNetwork(const std::string& ssid,
                           const std::string& password,
                           std::function<void(ConnectionState, const std::string&)> statusCallback = nullptr);
-    void processEvents();
 
 private:
     std::unique_ptr<sdbus::IConnection> connection;

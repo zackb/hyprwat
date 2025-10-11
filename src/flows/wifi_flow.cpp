@@ -37,7 +37,6 @@ void WifiFlow::networkDiscovered(const WifiNetwork& network) {
 }
 
 Frame* WifiFlow::getCurrentFrame() {
-    nm.processEvents();
     switch (currentState) {
     case State::SELECT_NETWORK:
         return networkSelector.get();

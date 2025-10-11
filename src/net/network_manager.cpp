@@ -252,8 +252,3 @@ bool NetworkManagerClient::connectToNetwork(const std::string& ssid,
         return false;
     }
 }
-
-void NetworkManagerClient::processEvents() {
-    if (connection)
-        connection->processPendingEvent();
-}
