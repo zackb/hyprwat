@@ -1,6 +1,6 @@
 **TODO
 - [x] esc to exit
-- [ ] click outside to exit isnt working
+- [x] click outside to exit isnt working
 - [x] pluggable UI "frame"s
     - [x] input (password, etc)
 - [x] dbus networkmanager

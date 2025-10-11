@@ -174,9 +174,14 @@ void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork
 
 // connect to network
 bool NetworkManagerClient::connectToNetwork(const std::string& ssid, const std::string& password) {
+
     auto wifiDevices = getWifiDevices();
     if (wifiDevices.empty())
         return false;
+
+    if (connectionProxy) {
+        connectionProxy.reset();
+    }
 
     auto devicePath = wifiDevices[0]; // pick first wifi device for now
     auto apPaths = getAccessPoints(devicePath);
@@ -185,26 +190,57 @@ bool NetworkManagerClient::connectToNetwork(const std::string& ssid, const std::
     // Convert ssid to byte array
     std::vector<uint8_t> ssidBytes(ssid.begin(), ssid.end());
 
-    std::map<std::string, std::map<std::string, sdbus::Variant>> connection;
-    connection["connection"] = {{"id", sdbus::Variant(ssid)},
-                                {"type", sdbus::Variant("802-11-wireless")},
-                                {"uuid", sdbus::Variant(generateUuid())}};
+    std::map<std::string, std::map<std::string, sdbus::Variant>> conMap;
+    conMap["connection"] = {{"id", sdbus::Variant(ssid)},
+                            {"type", sdbus::Variant("802-11-wireless")},
+                            {"uuid", sdbus::Variant(generateUuid())}};
 
-    connection["802-11-wireless"] = {{"ssid", sdbus::Variant(ssidBytes)}, {"mode", sdbus::Variant("infrastructure")}};
+    conMap["802-11-wireless"] = {{"ssid", sdbus::Variant(ssidBytes)}, {"mode", sdbus::Variant("infrastructure")}};
 
     if (!password.empty()) {
-        connection["802-11-wireless-security"] = {{"key-mgmt", sdbus::Variant("wpa-psk")},
-                                                  {"psk", sdbus::Variant(password)}};
+        conMap["802-11-wireless-security"] = {{"key-mgmt", sdbus::Variant("wpa-psk")},
+                                              {"psk", sdbus::Variant(password)}};
     }
 
     try {
         sdbus::ObjectPath activeConnection, resultDevice;
         proxy->callMethod("AddAndActivateConnection")
             .onInterface("org.freedesktop.NetworkManager")
-            .withArguments(connection, devicePath, apPath)
+            .withArguments(conMap, devicePath, apPath)
             .storeResultsTo(activeConnection, resultDevice);
 
         std::cout << "Active connection path: " << std::string(activeConnection) << std::endl;
+
+        // create proxy for the active connection
+        connectionProxy =
+            sdbus::createProxy(*connection, sdbus::ServiceName("org.freedesktop.NetworkManager"), activeConnection);
+
+        // register signal handler for state changes
+        connectionProxy->uponSignal("PropertiesChanged")
+            .onInterface("org.freedesktop.DBus.Properties")
+            .call([this](const std::string& interface,
+                         const std::map<std::string, sdbus::Variant>& changed,
+                         const std::vector<std::string>& invalidated) {
+                if (changed.count("State")) {
+                    uint32_t state = changed.at("State").get<uint32_t>();
+
+                    switch (state) {
+                    case ConnectionState::ACTIVATING:
+                        std::cout << "Connecting to WiFi network..." << std::endl;
+                        // showMessage("Connecting to WiFi...", MessageType::Info);
+                        break;
+                    case ConnectionState::ACTIVATED:
+                        std::cout << "Connected to WiFi network!" << std::endl;
+                        // showMessage("Successfully connected!", MessageType::Success);
+                        break;
+                    case ConnectionState::DEACTIVATING:
+                    case ConnectionState::DEACTIVATED:
+                        std::cout << "Disconnected from WiFi network." << std::endl;
+                        // showMessage("Connection failed");
+                        break;
+                    }
+                }
+            });
         return true;
     } catch (const sdbus::Error& e) {
         std::cerr << "Failed to connect: " << e.getName() << " " << e.getMessage() << std::endl;
