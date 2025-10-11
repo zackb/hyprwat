@@ -51,19 +51,6 @@ fmt:
 clean:
 	rm -rf build
 	rm -rf _CPack_Packages
-	rm hyprwat*.deb
-	rm hyprwat*.rpm
-	rm hyprwat*.tar.gz
-
-old: 
-	gcc -c src/wayland/protocols/wlr-layer-shell-unstable-v1-client-protocol.c -o layer_shell.o
-	gcc -c src/wayland/protocols/xdg-shell-client-protocol.c -o xdg_shell.o
-	g++ -std=c++17 -o wayland_popup \
-    src/main_old.cpp \
-    ext/imgui/*.cpp \
-    ext/imgui/backends/imgui_impl_opengl3.cpp \
-	layer_shell.o xdg_shell.o \
-    -Iext/imgui -Iext/imgui/backends \
-    -I/usr/include \
-    -lwayland-client -lwayland-egl -lEGL -lGL -ldl -lm -pthread
-
+	rm -f hyprwat*.deb
+	rm -f hyprwat*.rpm
+	rm -f hyprwat*.tar.gz
