@@ -112,6 +112,9 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
 
 // initiates scan and calls callback for each newly discovered AP
 void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork&)> callback, int timeoutSeconds) {
+    // cancel the scan before the timeout with stopScanning()
+    stopScanRequest = false;
+
     auto wifiDevices = getWifiDevices();
     if (wifiDevices.empty()) {
         std::cerr << "No Wi-Fi devices found" << std::endl;
@@ -166,7 +169,7 @@ void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork
         auto startTime = std::chrono::steady_clock::now();
         auto timeout = std::chrono::seconds(timeoutSeconds);
 
-        while (std::chrono::steady_clock::now() - startTime < timeout) {
+        while (std::chrono::steady_clock::now() - startTime < timeout && !stopScanRequest) {
             connection->processPendingEvent();
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }

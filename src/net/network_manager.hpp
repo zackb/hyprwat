@@ -28,6 +28,7 @@ public:
     bool connectToNetwork(const std::string& ssid,
                           const std::string& password,
                           std::function<void(ConnectionState, const std::string&)> statusCallback = nullptr);
+    void stopScanning() { stopScanRequest = true; }
 
 private:
     std::unique_ptr<sdbus::IConnection> connection;
@@ -36,4 +37,5 @@ private:
 
     std::vector<sdbus::ObjectPath> getWifiDevices();
     std::vector<sdbus::ObjectPath> getAccessPoints(const sdbus::ObjectPath& device);
+    bool stopScanRequest = false;
 };

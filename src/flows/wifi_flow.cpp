@@ -60,6 +60,7 @@ bool WifiFlow::handleResult(const FrameResult& result) {
             return true;
         } else if (result.action == FrameResult::Action::CANCEL) {
             done = true;
+            nm.stopScanning();
             return false;
         }
         break;
