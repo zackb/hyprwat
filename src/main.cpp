@@ -80,13 +80,10 @@ int main(const int argc, const char** argv) {
     // find cursor position for meny x/y
     hyprland::Control hyprctl;
     Vec2 pos = hyprctl.cursorPos();
-    std::cout << "Raw Hyprland cursor: (" << pos.x << ", " << pos.y << ")\n";
 
     // deal with hyprland fractional scaling vs wayland integer scaling
     float hyprlandScale = hyprctl.scale();
-    std::cout << "Hyprland scale: " << hyprlandScale << std::endl;
     int waylandScale = wayland.display().getMaxScale();
-    std::cout << "Wayland scale: " << waylandScale << std::endl;
 
     // convert hyprland logical->physical->wayland logical
     int x_physical = (int)(pos.x * hyprlandScale);
