@@ -77,10 +77,8 @@ hyprwat --wifi
 # Audio device selection
 hyprwat --audio
 
-# Scriptable
-See the [examples](examples) directory for more.
-
 ```
+See the [examples](examples) directory for more.
 
 ### Options
 
