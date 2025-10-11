@@ -1,9 +1,9 @@
 #pragma once
 
-#include "src/config.hpp"
-#include "src/vec.hpp"
-#include "src/wayland/layer_surface.hpp"
-#include "src/wayland/wayland.hpp"
+#include "config.hpp"
+#include "vec.hpp"
+#include "wayland/layer_surface.hpp"
+#include "wayland/wayland.hpp"
 
 // Forward declaration
 struct FrameResult;
