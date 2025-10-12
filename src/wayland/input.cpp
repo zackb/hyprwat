@@ -189,15 +189,19 @@ namespace wl {
     void InputHandler::pointer_button(void* data, wl_pointer*, uint32_t, uint32_t, uint32_t button, uint32_t state) {
         InputHandler* self = static_cast<InputHandler*>(data);
 
-        if (button == BTN_LEFT) {
-            self->io->MouseDown[0] = (state == WL_POINTER_BUTTON_STATE_PRESSED);
+        // handle mouse state for ImGui
+        bool pressed = (state == WL_POINTER_BUTTON_STATE_PRESSED);
+        if (button == BTN_LEFT)
+            self->io->MouseDown[0] = pressed;
+        else if (button == BTN_RIGHT)
+            self->io->MouseDown[1] = pressed;
 
-            if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-                float x = self->io->MousePos.x;
-                float y = self->io->MousePos.y;
-                if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
-                    self->should_exit = true;
-                }
+        // if clicked outside the window with either, request exit
+        if (pressed && (button == BTN_LEFT || button == BTN_RIGHT)) {
+            float x = self->io->MousePos.x;
+            float y = self->io->MousePos.y;
+            if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
+                self->should_exit = true;
             }
         }
     }
