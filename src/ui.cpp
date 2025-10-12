@@ -154,7 +154,7 @@ FrameResult UI::renderFrame(Frame& frame) {
     // Resize conditions: immediately for first frames, or after stability for later frames
     bool shouldResize = (resizeStabilityCounter >= RESIZE_STABILITY_FRAMES) &&
                         (desiredSize.x != surface->width() || desiredSize.y != surface->height()) &&
-                        (desiredSize.x > 0 && desiredSize.y > 0); // Ensure valid size
+                        (desiredSize.x > 0 && desiredSize.y > 0);
 
     if (shouldResize) {
         // Clamp to reasonable bounds
@@ -175,14 +175,15 @@ FrameResult UI::renderFrame(Frame& frame) {
     // reposition after resize is stable to prevent ui from going off screen
     if (!hasRepositioned && resizeStabilityCounter >= RESIZE_STABILITY_FRAMES) {
         hasRepositioned = true;
-        auto [viewport_w, viewport_h] = wayland.display().getOutputSize();
 
-        int vw_hypr = viewport_w / currentFractionalScale;
-        int vh_hypr = viewport_h / currentFractionalScale;
+        // compute viewport in Hyprland logical units
+        auto [viewport_physical_w, viewport_physical_h] = wayland.display().getOutputSize();
+        int vw_hypr = (int)(viewport_physical_w / currentFractionalScale);
+        int vh_hypr = (int)(viewport_physical_h / currentFractionalScale);
 
-        // window size also needs to be in Hyprland / fractional scale space
-        int width_hypr = surface->width() * currentScale / currentFractionalScale;
-        int height_hypr = surface->height() * currentScale / currentFractionalScale;
+        // window size in Hyprland logical units
+        int width_hypr = surface->width();
+        int height_hypr = surface->height();
 
         surface->reposition(initialX, initialY, vw_hypr, vh_hypr, width_hypr, height_hypr);
     }

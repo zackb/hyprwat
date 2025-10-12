@@ -22,6 +22,7 @@ namespace wl {
         void requestExit() { m_should_exit = true; }
         bool shouldExit() const { return m_should_exit; }
 
+        // logical size
         int width() const { return m_width; }
         int height() const { return m_height; }
 
