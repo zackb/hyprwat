@@ -1,6 +1,6 @@
 # hyprwat
 
-A simple Wayland panel to present selectable options with a customizable interface. Designed to work seamlessly with Hyprland compositor.
+A Hyprland menu utility to present selectable options with a customizable interface.
 
 ## Description
 
@@ -12,7 +12,8 @@ hyprwat creates a popup menu at your cursor position where you can select from a
 - **Hyprland integration**: Designed to work with Hyprland compositor
 - **Cursor positioning**: Automatically appears at your current cursor position
 - **Flexible input**: Accept options via command line arguments or stdin
-- **UI**: Interface built with ImGui
+- **WiFi selector**: Built-in support for selecting WiFi networks (via dbus and NetworkManager
+- **Audio selector**: Built-in support for selecting audio input/output devices (via Pipewire)
 - **Pre-selection support**: Mark items as initially selected
 
 ## Installation
