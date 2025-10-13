@@ -5,8 +5,8 @@
 #include <iostream>
 #include <string>
 
-#include "INIReader.h" // from inih
-#include <imgui.h>     // for ImVec4
+#include "INIReader.h"
+#include <imgui.h>
 #include <stdexcept>
 #include <string>
 

@@ -239,6 +239,7 @@ void UI::applyTheme(const Config& config) {
     style.ItemSpacing = ImVec2(10, 6);
     style.WindowPadding = ImVec2(10, 10);
     style.FramePadding = ImVec2(8, 4);
+    style.Colors[ImGuiCol_Border] = config.getColor("theme", "border_color", "#33ccffee");
 
     // transparency
     style.Alpha = config.getFloat("theme", "background_blur", 0.95f);
