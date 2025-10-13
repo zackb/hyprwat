@@ -124,7 +124,7 @@ int main(const int argc, const char** argv) {
         flow = std::make_unique<AudioFlow>();
         break;
     case InputMode::MENU:
-        if (argc > 1) {
+        if (args.choices.size() > 0) {
             // use choices from argv
             flow = std::make_unique<MenuFlow>(args.choices);
         } else {
