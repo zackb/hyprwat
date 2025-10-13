@@ -132,7 +132,6 @@ FrameResult UI::renderFrame(Frame& frame) {
     static Vec2 lastWindowSize;
     static int resizeStabilityCounter = 0;
     static int frameCount = 0;
-    static bool hasRepositioned = false;
     frameCount++;
 
     FrameResult result = frame.render();
@@ -167,15 +166,8 @@ FrameResult UI::renderFrame(Frame& frame) {
 
         // Update display size immediately for current frame
         io.DisplaySize = ImVec2((float)newWidth, (float)newHeight);
-    } else {
-        // Ensure DisplaySize is always current
-        io.DisplaySize = ImVec2((float)surface->width(), (float)surface->height());
-    }
 
-    // reposition after resize is stable to prevent ui from going off screen
-    if (!hasRepositioned && resizeStabilityCounter >= RESIZE_STABILITY_FRAMES) {
-        hasRepositioned = true;
-
+        // reposition window
         // compute viewport in Hyprland logical units
         auto [viewport_physical_w, viewport_physical_h] = wayland.display().getOutputSize();
         int vw_hypr = (int)(viewport_physical_w / currentFractionalScale);
@@ -186,6 +178,9 @@ FrameResult UI::renderFrame(Frame& frame) {
         int height_hypr = surface->height();
 
         surface->reposition(initialX, initialY, vw_hypr, vh_hypr, width_hypr, height_hypr);
+    } else {
+        // Ensure DisplaySize is always current
+        io.DisplaySize = ImVec2((float)surface->width(), (float)surface->height());
     }
 
     // Use buffer pixel size for viewport (after any resize)
