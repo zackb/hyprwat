@@ -1,0 +1,53 @@
+title: "Main Menu"
+
+sections:
+  - type: text
+    content: "System Control Center"
+    style: bold
+
+  - type: separator
+
+  # submenu navigation
+  - type: button
+    label: "⚡ Power Settings"
+    action:
+      type: submenu
+      path: "power.yaml" # relative path
+
+  - type: button
+    label: "🖥️  Display Settings"
+    action:
+      type: submenu
+      path: "display.yaml"
+
+  - type: button
+    label: "🔊 Audio Settings"
+    action:
+      type: submenu
+      path: "audio.yaml"
+
+  - type: button
+    label: "📡 Network Settings"
+    action:
+      type: submenu
+      path: "network.yaml"
+
+  - type: separator
+
+  # direct actions at root level
+  - type: button
+    label: "🔒 Lock Screen"
+    action:
+      type: execute
+      command: "hyprlock"
+      close_on_success: true
+
+  - type: button
+    label: "🚪 Exit"
+    action:
+      type: cancel
+
+shortcuts:
+  - key: "Escape"
+    action:
+      type: cancel

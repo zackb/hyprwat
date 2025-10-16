@@ -1,0 +1,60 @@
+title: "Display Settings"
+
+sections:
+  - type: text
+    content: "← Back (ESC)"
+
+  - type: separator
+
+  # nested submenu
+  - type: button
+    label: "🖥️  Monitor Configuration"
+    action:
+      type: submenu
+      path: "display-monitors.yaml"
+
+  - type: separator
+
+  - type: slider
+    id: "brightness"
+    label: "Screen Brightness"
+    min: 1
+    max: 100
+    default: 50
+    action:
+      type: execute
+      command: "brightnessctl set {value}%"
+      trigger: on_release
+
+  - type: checkbox
+    id: "night_light"
+    label: "Night Light"
+    default: false
+    action:
+      type: execute
+      command: "hyprshade toggle blue-light-filter"
+
+  - type: combo
+    id: "refresh_rate"
+    label: "Refresh Rate"
+    items:
+      - "60 Hz"
+      - "120 Hz"
+      - "144 Hz"
+      - "165 Hz"
+    default: 0
+    action:
+      type: execute
+      command: "hyprctl keyword monitor ,preferred,auto,{index}"
+
+  - type: separator
+
+  - type: button
+    label: "← Back"
+    action:
+      type: back
+
+shortcuts:
+  - key: "Escape"
+    action:
+      type: back

@@ -1,0 +1,57 @@
+title: "Power Settings"
+
+sections:
+  - type: text
+    content: "← Back (ESC)"
+
+  - type: separator
+
+  - type: selectable_list
+    items:
+      - id: "performance"
+        label: "⚡ Performance Mode"
+        action:
+          type: execute
+          command: "powerprofilesctl set performance && notify-send 'Power Profile' 'Performance mode enabled'"
+          close_on_success: true
+
+      - id: "balanced"
+        label: "⚖️  Balanced Mode"
+        selected: true
+        action:
+          type: execute
+          command: "powerprofilesctl set balanced && notify-send 'Power Profile' 'Balanced mode enabled'"
+          close_on_success: true
+
+      - id: "powersave"
+        label: "🔋 Power Saver Mode"
+        action:
+          type: execute
+          command: "powerprofilesctl set power-saver && notify-send 'Power Profile' 'Power saver mode enabled'"
+          close_on_success: true
+
+  - type: separator
+
+  - type: slider
+    id: "cpu_boost"
+    label: "CPU Boost"
+    min: 0
+    max: 100
+    default: 50
+    action:
+      type: execute
+      # command: "echo {value} | sudo tee /sys/devices/system/cpu/cpufreq/boost"
+      trigger: on_release
+
+  - type: separator
+
+  - type: button
+    label: "← Back"
+    action:
+      type: back
+
+shortcuts:
+  - key: "Escape"
+    action:
+      type: back # ESC goes back instead of canceling
+
