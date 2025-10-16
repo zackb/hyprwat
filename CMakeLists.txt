@@ -66,6 +66,21 @@ target_include_directories(inih PUBLIC
     ${inih_SOURCE_DIR}/cpp
 )
 
+# yaml-cpp
+FetchContent_Declare(
+    yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG master
+)
+
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(yaml-cpp)
+
+
 # Main executable
 add_executable(hyprwat
     src/main.cpp
@@ -82,9 +97,11 @@ add_executable(hyprwat
     src/frames/selector.cpp
     src/frames/input.cpp
     src/frames/text.cpp
+    src/frames/custom.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
     src/flows/audio_flow.cpp
+    src/flows/custom_flow.cpp
     src/net/network_manager.cpp
     src/audio/audio.cpp
     ${IMGUI_SOURCES}
@@ -123,6 +140,7 @@ target_link_libraries(hyprwat PRIVATE
     ${PIPEWIRE_LIBRARIES}
     ${SDBUSCPP_LIBRARIES}
     inih
+    yaml-cpp
     ${CMAKE_DL_LIBS}
     m
     pthread

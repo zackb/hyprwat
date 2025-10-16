@@ -3,6 +3,7 @@
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
 #include "src/flows/audio_flow.hpp"
+#include "src/flows/custom_flow.hpp"
 #include "src/flows/wifi_flow.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
@@ -122,6 +123,9 @@ int main(const int argc, const char** argv) {
     }
     case InputMode::AUDIO:
         flow = std::make_unique<AudioFlow>();
+        break;
+    case InputMode::CUSTOM:
+        flow = std::make_unique<CustomFlow>(args.configPath);
         break;
     case InputMode::MENU:
         if (args.choices.size() > 0) {
