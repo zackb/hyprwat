@@ -40,7 +40,7 @@ sections:
     default: 50
     action:
       type: execute
-      # command: "echo {value} | sudo tee /sys/devices/system/cpu/cpufreq/boost"
+      command: "echo echo {value} | sudo tee /sys/devices/system/cpu/cpufreq/boost"
       trigger: on_release
 
   - type: separator
