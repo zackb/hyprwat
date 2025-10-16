@@ -37,7 +37,7 @@ run-audio: debug
 	./build/debug/hyprwat --audio
 
 run-custom: debug
-	./build/debug/hyprwat --custom /home/zackb/.config/hyprwat/custom/main.yaml
+	./build/debug/hyprwat --custom examples/custom_menu/main.yaml
 
 reset-wifi:
 	sudo nmcli device disconnect wlan0
