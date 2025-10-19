@@ -27,6 +27,12 @@ sections:
       path: "audio.yaml"
 
   - type: button
+    label: "Widgets"
+    action:
+      type: submenu
+      path: "widgets.yaml"
+
+  - type: button
     label: "📡 Network Settings"
     action:
       type: submenu
