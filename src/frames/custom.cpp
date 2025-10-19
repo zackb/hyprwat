@@ -495,14 +495,21 @@ float CustomFrame::ComboWidget::getHeight() const {
 FrameResult CustomFrame::ColorPickerWidget::render(CustomFrame& frame) {
     ImGui::Text("%s", label.c_str());
 
-    if (ImGui::ColorEdit3(("##" + id).c_str(), color)) {
+    bool colorChosen = false;
+
+    bool valueChanged = ImGui::ColorEdit3(("##" + id).c_str(), color);
+    if (action.trigger == Action::OnChange && valueChanged) {
+        colorChosen = true;
+    } else if (action.trigger == Action::OnRelease && ImGui::IsItemDeactivatedAfterEdit()) {
+        colorChosen = true;
+    }
+    if (colorChosen) {
         // convert to hex
         char hex[8];
         snprintf(
             hex, sizeof(hex), "#%02X%02X%02X", (int)(color[0] * 255), (int)(color[1] * 255), (int)(color[2] * 255));
         return frame.executeAction(action, std::string(hex));
     }
-
     return FrameResult::Continue();
 }
 

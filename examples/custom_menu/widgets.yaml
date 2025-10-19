@@ -1,5 +1,21 @@
 title: "UI Controls Examples"
 sections:
+  - type: input
+    id: "input_id"
+    hint: "Input Example"
+    password: false
+    action:
+      type: execute
+      command: "echo Input value: {value}"
+
+  - type: input
+    id: "password_id"
+    hint: "Password Example"
+    password: true
+    action:
+      type: execute
+      command: "echo Password value: {value}"
+
   - type: slider
     id: "slider_id"
     label: "Slider Example"
