@@ -445,16 +445,16 @@ float CustomFrame::CheckboxWidget::getHeight() const {
 FrameResult CustomFrame::SliderWidget::render(CustomFrame& frame) {
     ImGui::Text("%s", label.c_str());
 
-    bool isActive = ImGui::SliderFloat(("##" + id).c_str(), &value, minValue, maxValue);
+    bool valueChanged = ImGui::SliderFloat(("##" + id).c_str(), &value, minValue, maxValue);
 
-    if (action.trigger == Action::OnChange && isActive) {
-        return frame.executeAction(action, std::to_string((int)value));
-    } else if (action.trigger == Action::OnRelease && wasActive && !isActive) {
-        wasActive = false;
+    if (action.trigger == Action::OnChange && valueChanged) {
         return frame.executeAction(action, std::to_string((int)value));
     }
 
-    wasActive = isActive;
+    if (ImGui::IsItemDeactivatedAfterEdit() && action.trigger == Action::OnRelease) {
+        return frame.executeAction(action, std::to_string((int)value));
+    }
+
     return FrameResult::Continue();
 }
 

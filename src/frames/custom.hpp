@@ -106,7 +106,6 @@ private:
         float minValue = 0.0f;
         float maxValue = 100.0f;
         Action action;
-        bool wasActive = false;
         FrameResult render(CustomFrame& frame) override;
         float getHeight() const override;
     };
