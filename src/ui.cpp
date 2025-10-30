@@ -49,6 +49,7 @@ void UI::init(int x, int y, float scale) {
     ImGui::CreateContext();
     ImGui_ImplOpenGL3_Init("#version 100");
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     // Logical size in points
     io.DisplaySize = ImVec2((float)surface->width(), (float)surface->height());
