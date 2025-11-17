@@ -13,7 +13,27 @@
 
 namespace fs = std::filesystem;
 
-void ThumbnailCache::go() { std::cout << hashFileKey("/home/zackb/Downloads/foo.bar") << std::endl; }
+std::string ThumbnailCache::getOrCreateThumbnail(const std::string& imagePath, int width, int height) {
+    int hashKey = hashFileKey(std::string(imagePath));
+    if (hashKey == 0) {
+        return "";
+    }
+
+    std::string thumbPath =
+        filepath_ + std::to_string(hashKey) + "_" + std::to_string(width) + "x" + std::to_string(height) + ".png";
+
+    if (fs::exists(thumbPath)) {
+        return thumbPath; // thumbnail already exists
+    }
+
+    // create thumbnail
+    if (resizeImage(imagePath, thumbPath, width, height)) {
+        std::cout << "Created thumbnail: " << thumbPath << std::endl;
+        return thumbPath;
+    } else {
+        return ""; // error resizing image
+    }
+}
 
 int ThumbnailCache::hashFileKey(std::string&& path) {
 

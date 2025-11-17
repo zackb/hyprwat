@@ -1,11 +1,12 @@
+#include "flows/audio_flow.hpp"
+#include "flows/custom_flow.hpp"
 #include "flows/flow.hpp"
 #include "flows/simple_flows.hpp"
+#include "flows/wifi_flow.hpp"
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
-#include "src/flows/audio_flow.hpp"
-#include "src/flows/custom_flow.hpp"
-#include "src/flows/wifi_flow.hpp"
 #include "ui.hpp"
+#include "wallpaper/wallpaper.hpp"
 #include "wayland/wayland.hpp"
 
 #include <GL/gl.h>
@@ -71,6 +72,8 @@ int main(const int argc, const char** argv) {
         usage();
         return 1;
     }
+
+    WallpaperManager wallpaper("/home/zackb/.local/share/wallpapers");
 
     // initialize Wayland connection
     wl::Wayland wayland;

@@ -114,7 +114,8 @@ add_executable(hyprwat
     src/flows/custom_flow.cpp
     src/net/network_manager.cpp
     src/audio/audio.cpp
-    src/file/thumbnail.cpp
+    src/wallpaper/thumbnail.cpp
+    src/wallpaper/wallpaper.cpp
     ${IMGUI_SOURCES}
     ${WAYLAND_PROTOCOLS}
 )
