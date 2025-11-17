@@ -54,6 +54,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(inih)
 
+# stb_image
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
+
 add_library(inih STATIC
     ${inih_SOURCE_DIR}/ini.c
     ${inih_SOURCE_DIR}/cpp/INIReader.cpp
@@ -64,6 +73,7 @@ target_include_directories(inih PUBLIC
     ${PIPEWIRE_INCLUDE_DIRS}
     ${SDBUSCPP_INCLUDE_DIRS}
     ${inih_SOURCE_DIR}/cpp
+    ${stb_SOURCE_DIR}
 )
 
 # yaml-cpp
@@ -104,6 +114,7 @@ add_executable(hyprwat
     src/flows/custom_flow.cpp
     src/net/network_manager.cpp
     src/audio/audio.cpp
+    src/file/thumbnail.cpp
     ${IMGUI_SOURCES}
     ${WAYLAND_PROTOCOLS}
 )
