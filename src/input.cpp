@@ -32,11 +32,18 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
         return result;
     }
 
-    // In your argument parsing
     if (std::string(argv[1]) == "--custom") {
         result.mode = InputMode::CUSTOM;
         if (argc > 2) {
             result.configPath = argv[2];
+        }
+        return result;
+    }
+
+    if (std::string(argv[1]) == "--wallpaper") {
+        result.mode = InputMode::WALLPAPER;
+        if (argc > 2) {
+            result.wallpaperDir = argv[2];
         }
         return result;
     }

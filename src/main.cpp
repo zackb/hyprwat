@@ -2,6 +2,7 @@
 #include "flows/custom_flow.hpp"
 #include "flows/flow.hpp"
 #include "flows/simple_flows.hpp"
+#include "flows/wallpaper_flow.hpp"
 #include "flows/wifi_flow.hpp"
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
@@ -21,6 +22,7 @@ void usage() {
   hyprwat --password [hint]
   hyprwat --wifi
   hyprwat --audio
+  hyprwat --wallpaper <directory>
 
 Description:
   A simple Wayland panel to present selectable options or text input, connect to wifi networks, update audio sinks/sources, and more.
@@ -58,10 +60,13 @@ AUDIO MODE:
   Use --audio to show available audio input/output devices and select one.
 
 Options:
-  -h, --help       Show this help message
-  --input [hint]   Show text input mode with optional hint text
-  --wifi           Show WiFi network selection mode
-  --audio          Show audio input/output device selection mode
+  -h, --help        Show this help message
+  --input [hint]    Show text input mode with optional hint text
+  --password [hint] Show password input mode with optional hint text
+  --wifi            Show WiFi network selection mode
+  --audio           Show audio input/output device selection mode
+  --custom <path>   Load a custom flow from the specified configuration file
+  --wallpaper <dir> Select wallpapers from the specified directory and set using hyprpaper
 )");
 }
 
@@ -72,8 +77,6 @@ int main(const int argc, const char** argv) {
         usage();
         return 1;
     }
-
-    WallpaperManager wallpaper("/home/zackb/.local/share/wallpapers");
 
     // initialize Wayland connection
     wl::Wayland wayland;
@@ -129,6 +132,9 @@ int main(const int argc, const char** argv) {
         break;
     case InputMode::CUSTOM:
         flow = std::make_unique<CustomFlow>(args.configPath);
+        break;
+    case InputMode::WALLPAPER:
+        flow = std::make_unique<WallpaperFlow>(args.wallpaperDir);
         break;
     case InputMode::MENU:
         if (args.choices.size() > 0) {

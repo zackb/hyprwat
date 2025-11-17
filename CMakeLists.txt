@@ -108,10 +108,12 @@ add_executable(hyprwat
     src/frames/input.cpp
     src/frames/text.cpp
     src/frames/custom.cpp
+    src/frames/images.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
     src/flows/audio_flow.cpp
     src/flows/custom_flow.cpp
+    src/flows/wallpaper_flow.cpp
     src/net/network_manager.cpp
     src/audio/audio.cpp
     src/wallpaper/thumbnail.cpp

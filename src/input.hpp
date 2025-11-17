@@ -13,13 +13,15 @@ enum class InputMode {
     WIFI,     // wifi selection + password mode
     AUDIO,    // audio input/output selection mode
     CUSTOM,   // custom menu from config file
+    WALLPAPER // wallpaper selection mode
 };
 
 struct ParseResult {
     InputMode mode = InputMode::MENU;
     std::vector<Choice> choices;
-    std::string hint;       // For INPUT mode only
-    std::string configPath; // For CUSTOM mode only
+    std::string hint;         // For INPUT mode only
+    std::string configPath;   // For CUSTOM mode only
+    std::string wallpaperDir; // For WALLPAPER mode only
 };
 
 class Input {
