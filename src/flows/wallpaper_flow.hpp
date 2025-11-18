@@ -5,7 +5,7 @@
 
 class WallpaperFlow : public Flow {
 public:
-    WallpaperFlow(const std::string& wallpaperDir);
+    WallpaperFlow(const std::string& wallpaperDir, const int logicalWidth, const int logicalHeight);
     ~WallpaperFlow();
 
     Frame* getCurrentFrame() override;
@@ -14,7 +14,7 @@ public:
     std::string getResult() const override;
 
 private:
-    std::string wallpaperDir;
+    WallpaperManager wallpaperManager;
     std::unique_ptr<ImageList> imageList;
     std::string finalResult;
     bool done = false;

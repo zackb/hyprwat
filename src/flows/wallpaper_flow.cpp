@@ -1,6 +1,12 @@
 #include "wallpaper_flow.hpp"
 
-WallpaperFlow::WallpaperFlow(const std::string& dir) : wallpaperDir(dir) { imageList = std::make_unique<ImageList>(); }
+// wallpaper selection flow
+// logicalWidth and logicalHeight are the size of the display in logical pixels
+WallpaperFlow::WallpaperFlow(const std::string& dir, const int logicalWidth, const int logicalHeight)
+    : wallpaperManager(dir) {
+
+    imageList = std::make_unique<ImageList>(wallpaperManager.getWallpapers(), logicalWidth, logicalHeight);
+}
 
 WallpaperFlow::~WallpaperFlow() = default;
 

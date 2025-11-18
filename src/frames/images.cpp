@@ -7,7 +7,8 @@
 // #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-ImageList::ImageList(std::vector<Wallpaper>& wallpapers) : Frame(), wallpapers(wallpapers) {
+ImageList::ImageList(const std::vector<Wallpaper>& wallpapers, const int logicalWidth, const int logicalHeight)
+    : Frame(), wallpapers(wallpapers), logicalWidth(logicalWidth), logicalHeight(logicalHeight) {
     // load textures
     for (const auto& wallpaper : wallpapers) {
         GLuint texture = LoadTextureFromFile(wallpaper.thumbnailPath.c_str());
@@ -23,11 +24,6 @@ ImageList::ImageList(std::vector<Wallpaper>& wallpapers) : Frame(), wallpapers(w
 // https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users
 FrameResult ImageList::render() {
 
-    ImGui::Begin("Wallpapers",
-                 nullptr,
-                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-                     ImGuiWindowFlags_NoResize);
-
     if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow)) {
         navigate(-1);
     }
@@ -40,8 +36,14 @@ FrameResult ImageList::render() {
         }
     }
 
+    ImGui::Begin("Wallpapers",
+                 nullptr,
+                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_NoResize);
+
     ImGuiIO& io = ImGui::GetIO();
     Vec2 viewportSize = getSize();
+    std::cout << "Viewport size: " << viewportSize.x << "x" << viewportSize.y << std::endl;
 
     float width = viewportSize.x;
     float height = viewportSize.y;
@@ -52,8 +54,6 @@ FrameResult ImageList::render() {
 
     ImGui::SetNextWindowPos(ImVec2(pos_x, pos_y), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
-
-    // ImGui::Image((void*)(intptr_t)my_texture, ImVec2(256, 256));
 
     // image display area
     ImVec2 content_region = ImGui::GetContentRegionAvail();
@@ -66,14 +66,12 @@ FrameResult ImageList::render() {
     float spacing = 20.0f;
     float total_width_per_image = image_width + spacing;
 
-    // Smooth scroll to selected image
+    // smooth scroll to selected image
     float target_scroll = selectedIndex * total_width_per_image - (content_region.x - image_width) * 0.5f;
     scrollOffset += (target_scroll - scrollOffset) * 0.15f; // smooth interpolation
 
-    // Horizontal scrolling container
     ImGui::BeginChild("ScrollRegion", ImVec2(0, image_area_height), false, ImGuiWindowFlags_HorizontalScrollbar);
 
-    // Set scroll position
     ImGui::SetScrollX(scrollOffset);
 
     // Render images horizontally
@@ -138,17 +136,12 @@ void ImageList::navigate(int direction) {
 }
 
 Vec2 ImageList::getSize() {
-    ImGuiIO& io = ImGui::GetIO();
-    ImVec2 viewportSize = io.DisplaySize;
-
     // 2/3 width, 1/2 height
-    float width = viewportSize.x * 0.666f;
-    float height = viewportSize.y * 0.5f;
-    return Vec2{width, height};
+    return Vec2{(float)logicalWidth / 0.666f, (float)logicalHeight / 0.5f};
 }
 
 // load image and create an OpenGL texture
-GLuint LoadTextureFromFile(const char* filename) {
+GLuint ImageList::LoadTextureFromFile(const char* filename) {
 
     int width, height, channels;
     unsigned char* data = stbi_load(filename, &width, &height, &channels, 4);

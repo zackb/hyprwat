@@ -19,6 +19,7 @@ public:
         loadWallpapers();
     }
     void applyWallpaper(const std::string& wallpaperPath);
+    const std::vector<Wallpaper>& getWallpapers() const { return wallpapers; }
 
 private:
     std::string wallpaperDir;
