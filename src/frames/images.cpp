@@ -86,7 +86,8 @@ FrameResult ImageList::render() {
         if (is_selected) {
             ImVec2 p_min = ImGui::GetCursorScreenPos();
             ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
-            ImGui::GetWindowDrawList()->AddRect(p_min, p_max, IM_COL32(100, 150, 255, 255), 0.0f, 0, 4.0f);
+            ImU32 color = ImGui::GetColorU32(hoverColor);
+            ImGui::GetWindowDrawList()->AddRect(p_min, p_max, color, 0.0f, 0, 4.0f);
         }
 
         // make images clickable
@@ -159,3 +160,5 @@ GLuint ImageList::LoadTextureFromFile(const char* filename) {
 
     return texture;
 }
+
+void ImageList::applyTheme(const Config& config) { hoverColor = config.getColor("theme", "hover_color", "#3366B366"); }
