@@ -35,6 +35,9 @@ FrameResult ImageList::render() {
             return FrameResult::Submit(wallpapers[selectedIndex].path);
         }
     }
+    if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+        return FrameResult::Cancel();
+    }
 
     ImGui::Begin("Wallpapers",
                  nullptr,
