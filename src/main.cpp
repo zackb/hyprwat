@@ -7,7 +7,6 @@
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
 #include "ui.hpp"
-#include "wallpaper/wallpaper.hpp"
 #include "wayland/wayland.hpp"
 
 #include <GL/gl.h>
