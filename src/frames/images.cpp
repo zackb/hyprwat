@@ -124,8 +124,9 @@ void ImageList::navigate(int direction) {
 
 Vec2 ImageList::getSize() {
     // 2/3 width, 1/2 height
-    // return Vec2{(float)logicalWidth / 0.666f, (float)logicalHeight / 0.5f};
-    return Vec2{1024.0f, 230.0f};
+    // return Vec2{, (float)logicalHeight / 0.5f};
+    float w = (float)logicalWidth * 0.666f;
+    return Vec2{w, 220.0f};
 }
 
 // load image and create an OpenGL texture

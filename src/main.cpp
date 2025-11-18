@@ -97,8 +97,8 @@ int main(const int argc, const char** argv) {
     int y_physical = (int)(pos.y * hyprlandScale);
     int x_wayland = x_physical / waylandScale;
     int y_wayland = y_physical / waylandScale;
-    int logicalDisplayWidth = displayWidth / waylandScale;
-    int logicalDisplayHeight = displayHeight / waylandScale;
+    int logicalDisplayWidth = displayWidth / hyprlandScale;
+    int logicalDisplayHeight = displayHeight / hyprlandScale;
 
     // load config
     Config config("~/.config/hyprwat/hyprwat.conf");

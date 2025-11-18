@@ -53,7 +53,7 @@ int ThumbnailCache::hashFileKey(std::string&& path) {
     auto fsize = fs::file_size(file);
     auto fname = file.string();
 
-    std::cout << "File: " << fname << ", Size: " << fsize << ", Last Write Time: " << ftime << std::endl;
+    // std::cout << "File: " << fname << ", Size: " << fsize << ", Last Write Time: " << ftime << std::endl;
 
     std::hash<std::string> str_hash;
     size_t h1 = str_hash(fname);
