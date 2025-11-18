@@ -1,11 +1,15 @@
 #pragma once
 
 #include "../frames/images.hpp"
+#include "../hyprland/ipc.hpp"
 #include "flow.hpp"
 
 class WallpaperFlow : public Flow {
 public:
-    WallpaperFlow(const std::string& wallpaperDir, const int logicalWidth, const int logicalHeight);
+    WallpaperFlow(hyprland::Control& hyprctl,
+                  const std::string& wallpaperDir,
+                  const int logicalWidth,
+                  const int logicalHeight);
     ~WallpaperFlow();
 
     Frame* getCurrentFrame() override;
@@ -14,7 +18,8 @@ public:
     std::string getResult() const override;
 
 private:
-    WallpaperManager wallpaperManager;
+    const WallpaperManager wallpaperManager;
+    hyprland::Control& hyprctl;
     std::unique_ptr<ImageList> imageList;
     std::string finalResult;
     bool done = false;

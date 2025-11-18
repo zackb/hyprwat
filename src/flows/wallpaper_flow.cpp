@@ -2,8 +2,11 @@
 
 // wallpaper selection flow
 // logicalWidth and logicalHeight are the size of the display in logical pixels
-WallpaperFlow::WallpaperFlow(const std::string& dir, const int logicalWidth, const int logicalHeight)
-    : wallpaperManager(dir) {
+WallpaperFlow::WallpaperFlow(hyprland::Control& hyprctl,
+                             const std::string& dir,
+                             const int logicalWidth,
+                             const int logicalHeight)
+    : wallpaperManager(dir), hyprctl(hyprctl) {
 
     imageList = std::make_unique<ImageList>(wallpaperManager.getWallpapers(), logicalWidth, logicalHeight);
 }
@@ -16,6 +19,7 @@ bool WallpaperFlow::handleResult(const FrameResult& result) {
     if (result.action == FrameResult::Action::SUBMIT) {
         finalResult = result.value;
         done = true;
+        hyprctl.setWallpaper(finalResult);
         return false;
     } else if (result.action == FrameResult::Action::CANCEL) {
         done = true;

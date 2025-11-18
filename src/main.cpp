@@ -136,7 +136,7 @@ int main(const int argc, const char** argv) {
         flow = std::make_unique<CustomFlow>(args.configPath);
         break;
     case InputMode::WALLPAPER:
-        flow = std::make_unique<WallpaperFlow>(args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);
+        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);
         break;
     case InputMode::MENU:
         if (args.choices.size() > 0) {
