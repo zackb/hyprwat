@@ -58,7 +58,7 @@ FrameResult ImageList::render() {
     float image_area_height = content_region.y;
 
     // image size
-    float image_height = 200; // image_area_height - 40.0f; // padding
+    float image_height = 225; // image_area_height - 40.0f; // padding
     float image_width = 400;  // image_height * 0.75f;
     float spacing = 20.0f;
     float total_width_per_image = image_width + spacing;
@@ -87,7 +87,7 @@ FrameResult ImageList::render() {
             ImVec2 p_min = ImGui::GetCursorScreenPos();
             ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
             ImU32 color = ImGui::GetColorU32(hoverColor);
-            ImGui::GetWindowDrawList()->AddRect(p_min, p_max, color, 0.0f, 0, 4.0f);
+            ImGui::GetWindowDrawList()->AddRect(p_min, p_max, color, 0.0f, 0, 8.0f);
         }
 
         // make images clickable
@@ -129,8 +129,9 @@ void ImageList::navigate(int direction) {
 Vec2 ImageList::getSize() {
     // 2/3 width, 1/2 height
     // return Vec2{, (float)logicalHeight / 0.5f};
-    float w = (float)logicalWidth * 0.666f;
-    return Vec2{w, 220.0f};
+    // float w = (float)logicalWidth * 0.666f;
+    float w = (float)logicalWidth * 0.8;
+    return Vec2{w, 245.0f};
 }
 
 // load image and create an OpenGL texture

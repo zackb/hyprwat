@@ -28,12 +28,12 @@ void WallpaperManager::loadWallpapers() {
             if (fs::is_regular_file(entry.path())) {
                 // only add images
                 if (wallpaperExts.contains(entry.path().extension().string())) {
-                    std::cout << "Adding wallpaper: " << entry.path() << '\n';
+                    // std::cout << "Adding wallpaper: " << entry.path() << '\n';
                     wallpapers.push_back(
-                        {entry.path().string(), thumbnailCache.getOrCreateThumbnail(entry.path().string(), 400, 200)});
+                        {entry.path().string(), thumbnailCache.getOrCreateThumbnail(entry.path().string(), 400, 225)});
                 }
             } else if (fs::is_directory(entry.path())) {
-                std::cout << "Directory: " << entry.path() << '\n';
+                // std::cout << "Directory: " << entry.path() << '\n';
             }
         }
     } catch (const fs::filesystem_error& e) {
