@@ -1,6 +1,7 @@
 #pragma once
 
 #include "choice.hpp"
+#include <filesystem>
 #include <functional>
 #include <mutex>
 #include <string>
@@ -34,4 +35,5 @@ public:
 
 private:
     static Choice parseLine(std::string line);
+    static std::filesystem::path expandPath(const std::string& path);
 };
