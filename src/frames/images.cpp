@@ -39,19 +39,23 @@ FrameResult ImageList::render() {
         return FrameResult::Cancel();
     }
 
-    ImGui::Begin("Wallpapers",
-                 nullptr,
-                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-                     ImGuiWindowFlags_NoResize);
-
     ImGuiIO& io = ImGui::GetIO();
     Vec2 viewportSize = getSize();
 
     float width = viewportSize.x;
     float height = viewportSize.y;
 
+    // window padding
+    float edge_padding = 20.0f;
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(edge_padding, edge_padding));
+
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
+
+    ImGui::Begin("Wallpapers",
+                 nullptr,
+                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_NoResize);
 
     // image display area
     ImVec2 content_region = ImGui::GetContentRegionAvail();
@@ -67,11 +71,12 @@ FrameResult ImageList::render() {
     float target_scroll = selectedIndex * total_width_per_image - (content_region.x - image_width) * 0.5f;
     scrollOffset += (target_scroll - scrollOffset) * 0.15f; // smooth interpolation
 
-    ImGui::BeginChild("ScrollRegion", ImVec2(0, image_area_height), false, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("ScrollRegion",
+                      ImVec2(0, image_area_height),
+                      false,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     ImGui::SetScrollX(scrollOffset);
-    ImGui::SameLine(0.0f, spacing);
-    ImGui::Dummy(ImVec2(1, 1));
 
     // render images horizontally
     for (int i = 0; i < textures.size(); i++) {
@@ -80,14 +85,15 @@ FrameResult ImageList::render() {
 
         ImGui::BeginGroup();
 
-        // Highlight selected image
+        // highlight selected image
         bool is_selected = (i == selectedIndex);
 
         if (is_selected) {
             ImVec2 p_min = ImGui::GetCursorScreenPos();
             ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
             ImU32 color = ImGui::GetColorU32(hoverColor);
-            ImGui::GetWindowDrawList()->AddRect(p_min, p_max, color, 0.0f, 0, 8.0f);
+            // draw on foreground layer to avoid child clipping
+            ImGui::GetForegroundDrawList()->AddRect(p_min, p_max, color, 0.0f, 0, 4.0f);
         }
 
         // make images clickable
@@ -113,6 +119,8 @@ FrameResult ImageList::render() {
     ImGui::EndChild();
 
     ImGui::End();
+
+    ImGui::PopStyleVar();
     return FrameResult::Continue();
 }
 
@@ -131,7 +139,10 @@ Vec2 ImageList::getSize() {
     // return Vec2{, (float)logicalHeight / 0.5f};
     // float w = (float)logicalWidth * 0.666f;
     float w = (float)logicalWidth * 0.8;
-    return Vec2{w, 245.0f};
+    float edge_padding = 20.0f;    // padding we want on all sides
+    float content_height = 225.0f; // height of the image area
+    // add padding to width and height to account for the space we need
+    return Vec2{w + (edge_padding * 2), content_height + (edge_padding * 2)};
 }
 
 // load image and create an OpenGL texture
