@@ -11,13 +11,11 @@ hyprwat creates a popup menu at your cursor position where you can select from a
 - **Wayland native**: Built specifically for Wayland compositors
 - **Hyprland integration**: Designed to work with Hyprland compositor
 - **Cursor positioning**: Automatically appears at your current cursor position
-- **Flexible input**: Accept options via command line arguments or stdin
 - **WiFi selector**: Built-in support for selecting WiFi networks (via dbus and NetworkManager
 - **Audio selector**: Built-in support for selecting audio input/output devices (via Pipewire)
-- **Custom menus**: Define your own menus using simple YAML configuration files
-- **Pre-selection support**: Mark items as initially selected
-- **Theming**: Customize the appearance with a configuration file
 - **Wallpaper selection**: Easily select a wallpaper from a directory of images (hyprpaper only)
+- **Custom menus**: Define your own menus using simple YAML configuration files
+- **Theming**: Customize the appearance with a configuration file
 
 ## Installation
 
@@ -62,6 +60,10 @@ If no arguments are provided, hyprwat will read from stdin, expecting one item p
 #### WiFi Network Selector
 
 ![wifi](examples/img/wifi.png)
+
+#### Wallpaper Selector
+
+![wallpapers](examples/img/wallpapers.png)
 
 #### Power Profile Selector
 
