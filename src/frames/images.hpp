@@ -20,6 +20,7 @@ private:
     float scrollOffset = 0.0f;
     int logicalWidth;
     int logicalHeight;
+    float imageRounding = 8;
     std::vector<GLuint> textures;
     std::vector<Wallpaper> wallpapers;
     std::vector<Wallpaper> pendingWallpapers;
