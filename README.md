@@ -236,7 +236,7 @@ fi
 
 ### Passphrase Input Prompt
 ```bash
-PASSPHRASE=$(./build/debug/hyprwat --input Passphrase)
+PASSPHRASE=$(hyprwat --input Passphrase)
 echo $PASSPHRASE
 ```
 
