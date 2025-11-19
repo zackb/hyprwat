@@ -22,5 +22,7 @@ private:
     hyprland::Control& hyprctl;
     std::unique_ptr<ImageList> imageList;
     std::string finalResult;
+    std::thread loadingThread;
+    std::atomic<bool> hasLoaded{false};
     bool done = false;
 };

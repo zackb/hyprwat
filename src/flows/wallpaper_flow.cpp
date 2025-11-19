@@ -8,23 +8,40 @@ WallpaperFlow::WallpaperFlow(hyprland::Control& hyprctl,
                              const int logicalHeight)
     : wallpaperManager(dir), hyprctl(hyprctl) {
 
-    imageList = std::make_unique<ImageList>(wallpaperManager.getWallpapers(), logicalWidth, logicalHeight);
+    imageList = std::make_unique<ImageList>(logicalWidth, logicalHeight);
 }
 
 WallpaperFlow::~WallpaperFlow() = default;
 
-Frame* WallpaperFlow::getCurrentFrame() { return imageList.get(); }
+Frame* WallpaperFlow::getCurrentFrame() {
+    if (!hasLoaded) {
+        // generate thumbnails in background
+        loadingThread = std::thread([this]() {
+            const auto wallpapers = wallpaperManager.getWallpapers();
+            imageList->addImages(wallpapers);
+            hasLoaded = true;
+        });
+    }
+
+    return imageList.get();
+}
 
 bool WallpaperFlow::handleResult(const FrameResult& result) {
     if (result.action == FrameResult::Action::SUBMIT) {
         finalResult = result.value;
         done = true;
         hyprctl.setWallpaper(finalResult);
-        return false;
     } else if (result.action == FrameResult::Action::CANCEL) {
         done = true;
+    }
+
+    if (done) {
+        if (loadingThread.joinable()) {
+            loadingThread.join();
+        }
         return false;
     }
+
     return true;
 }
 

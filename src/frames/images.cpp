@@ -7,22 +7,18 @@
 // #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-ImageList::ImageList(const std::vector<Wallpaper>& wallpapers, const int logicalWidth, const int logicalHeight)
-    : Frame(), wallpapers(wallpapers), logicalWidth(logicalWidth), logicalHeight(logicalHeight) {
-    // load textures
-    for (const auto& wallpaper : wallpapers) {
-        GLuint texture = LoadTextureFromFile(wallpaper.thumbnailPath.c_str());
-        if (texture != 0) {
-            textures.push_back(texture);
-        } else {
-            std::cerr << "Failed to load texture: " << wallpaper.thumbnailPath << std::endl;
-            textures.push_back(0);
-        }
-    }
+ImageList::ImageList(const int logicalWidth, const int logicalHeight)
+    : Frame(), wallpapers(), logicalWidth(logicalWidth), logicalHeight(logicalHeight) {}
+
+void ImageList::addImages(const std::vector<Wallpaper>& newWallpapers) {
+    pendingWallpapers.insert(pendingWallpapers.end(), newWallpapers.begin(), newWallpapers.end());
 }
 
 // https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users
 FrameResult ImageList::render() {
+
+    // process any new wallpapers to load their textures on the main thread
+    processPendingWallpapers();
 
     if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow)) {
         navigate(-1);
@@ -71,57 +67,74 @@ FrameResult ImageList::render() {
     float target_scroll = selectedIndex * total_width_per_image - (content_region.x - image_width) * 0.5f;
     scrollOffset += (target_scroll - scrollOffset) * 0.15f; // smooth interpolation
 
-    ImGui::BeginChild("ScrollRegion",
-                      ImVec2(0, image_area_height),
-                      false,
-                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    std::lock_guard<std::mutex> lock(wallpapersMutex);
 
-    ImGui::SetScrollX(scrollOffset);
+    if (textures.empty()) {
+        ImGui::Text("Generating thumbnails...");
+    } else {
 
-    // render images horizontally
-    for (int i = 0; i < textures.size(); i++) {
-        if (i > 0)
-            ImGui::SameLine();
+        ImGui::BeginChild("ScrollRegion",
+                          ImVec2(0, image_area_height),
+                          false,
+                          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-        ImGui::BeginGroup();
+        ImGui::SetScrollX(scrollOffset);
 
-        // highlight selected image
-        bool is_selected = (i == selectedIndex);
+        // render images horizontally
+        for (int i = 0; i < textures.size(); i++) {
+            if (i > 0)
+                ImGui::SameLine();
 
-        if (is_selected) {
-            ImVec2 p_min = ImGui::GetCursorScreenPos();
-            ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
-            ImU32 color = ImGui::GetColorU32(hoverColor);
-            // draw on foreground layer to avoid child clipping
-            ImGui::GetForegroundDrawList()->AddRect(p_min, p_max, color, 0.0f, 0, 4.0f);
+            ImGui::BeginGroup();
+
+            // highlight selected image
+            bool is_selected = (i == selectedIndex);
+
+            if (is_selected) {
+                ImVec2 p_min = ImGui::GetCursorScreenPos();
+                ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
+                ImU32 color = ImGui::GetColorU32(hoverColor);
+                // draw on foreground layer to avoid child clipping
+                ImGui::GetForegroundDrawList()->AddRect(p_min, p_max, color, 0.0f, 0, 4.0f);
+            }
+
+            // make images clickable
+            ImGui::PushID(i);
+            ImGui::Image((void*)(intptr_t)textures[i], ImVec2(image_width, image_height));
+            ImGui::PopID();
+
+            ImGui::EndGroup();
+
+            // add spacing
+            if (i < textures.size() - 1) {
+                ImGui::SameLine(0.0f, spacing);
+            }
         }
 
-        // make images clickable
-        ImGui::PushID(i);
-        ImGui::Image((void*)(intptr_t)textures[i], ImVec2(image_width, image_height));
-        /*
-        if (ImGui::ImageButton(
-                wallpapers[i].path.c_str(), (void*)(intptr_t)textures[i], ImVec2(image_width, image_height))) {
-            selectedIndex = i;
-            // Confirm();
-        }
-        */
-        ImGui::PopID();
-
-        ImGui::EndGroup();
-
-        // add spacing
-        if (i < textures.size() - 1) {
-            ImGui::SameLine(0.0f, spacing);
-        }
+        ImGui::EndChild();
     }
-
-    ImGui::EndChild();
 
     ImGui::End();
 
     ImGui::PopStyleVar();
     return FrameResult::Continue();
+}
+
+void ImageList::processPendingWallpapers() {
+    std::lock_guard<std::mutex> lock(wallpapersMutex);
+
+    for (const auto& wallpaper : pendingWallpapers) {
+        GLuint texture = LoadTextureFromFile(wallpaper.thumbnailPath.c_str());
+        if (texture != 0) {
+            textures.push_back(texture);
+        } else {
+            std::cerr << "Failed to load texture: " << wallpaper.thumbnailPath << std::endl;
+            textures.push_back(0);
+        }
+        wallpapers.push_back(wallpaper);
+    }
+
+    pendingWallpapers.clear();
 }
 
 void ImageList::navigate(int direction) {
