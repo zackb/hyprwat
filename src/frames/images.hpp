@@ -10,6 +10,8 @@ public:
     virtual FrameResult render() override;
     virtual Vec2 getSize() override;
     virtual void applyTheme(const Config& config) override;
+    virtual bool shouldRepositionOnResize() const override { return false; }
+    virtual bool shouldPositionAtCursor() const override { return false; }
 
 private:
     int selectedIndex = 0;
