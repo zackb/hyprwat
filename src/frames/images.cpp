@@ -105,12 +105,17 @@ FrameResult ImageList::render() {
                 ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
                 ImU32 color = ImGui::GetColorU32(hoverColor);
                 // draw on foreground layer to avoid child clipping
-                ImGui::GetForegroundDrawList()->AddRect(p_min, p_max, color, 0.0f, 0, 4.0f);
+                ImGui::GetForegroundDrawList()->AddRect(p_min, p_max, color, 12.0f, 0, 4.0f);
             }
 
             // make images clickable
             ImGui::PushID(i);
-            ImGui::Image((void*)(intptr_t)textures[i], ImVec2(image_width, image_height));
+            // ImGui::Image((void*)(intptr_t)textures[i], ImVec2(image_width, image_height));
+            ImVec2 p_min = ImGui::GetCursorScreenPos();
+            ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
+            ImGui::GetWindowDrawList()->AddImageRounded(
+                (void*)(intptr_t)textures[i], p_min, p_max, ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE, 12.0f);
+            ImGui::Dummy(ImVec2(image_width, image_height));
             ImGui::PopID();
 
             ImGui::EndGroup();
