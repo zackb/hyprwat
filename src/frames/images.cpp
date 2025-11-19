@@ -1,4 +1,5 @@
 #include "images.hpp"
+#include "imgui.h"
 
 // #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -70,7 +71,16 @@ FrameResult ImageList::render() {
     std::lock_guard<std::mutex> lock(wallpapersMutex);
 
     if (textures.empty()) {
-        ImGui::Text("Generating thumbnails...");
+        ImGui::SetWindowFontScale(2.0f);
+
+        const char* text = "Generating thumbnails...";
+        ImVec2 textSize = ImGui::CalcTextSize(text);
+        ImVec2 windowSize = ImGui::GetContentRegionAvail();
+        ImGui::SetCursorPosX((windowSize.x - textSize.x) * 0.5f);
+        ImGui::SetCursorPosY((windowSize.y - textSize.y) * 0.5f);
+        ImGui::Text("%s", text);
+
+        ImGui::SetWindowFontScale(1.0f);
     } else {
 
         ImGui::BeginChild("ScrollRegion",
