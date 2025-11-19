@@ -1,0 +1,34 @@
+# Description: Menu for selecting power profiles using powerprofilesctl
+# Usage: hyprwat --custom powerprofiles.yaml
+
+title: "Power Settings"
+
+sections:
+  - type: text
+    content: "Select a power profile:"
+
+  - type: separator
+
+  - type: selectable_list
+    items:
+      - id: "performance"
+        label: "⚡ Performance Mode"
+        action:
+          type: execute
+          command: "powerprofilesctl set performance && notify-send 'Power Profile' 'Performance mode enabled'"
+          close_on_success: true
+
+      - id: "balanced"
+        label: "⚖️  Balanced Mode"
+        selected: true
+        action:
+          type: execute
+          command: "powerprofilesctl set balanced && notify-send 'Power Profile' 'Balanced mode enabled'"
+          close_on_success: true
+
+      - id: "powersave"
+        label: "🔋 Power Saver Mode"
+        action:
+          type: execute
+          command: "powerprofilesctl set power-saver && notify-send 'Power Profile' 'Power saver mode enabled'"
+          close_on_success: true

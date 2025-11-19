@@ -4,7 +4,7 @@ A Hyprland menu utility to present selectable options with a customizable interf
 
 ## Description
 
-hyprwat creates a popup menu at your cursor position where you can select from a list of options. It's particularly useful for creating interactive menus for system controls, WiFi networks, or any other selectable items in a Wayland environment. It can also present input prompts for text or passwords. Different modes can be triggered via command line arguments including a WiFi network selector and audio device selector. Custom menus can be defined using simple YAML configuration files.
+hyprwat creates a popup menu at your cursor position where you can select from a list of options. It also has built-in support for WiFi networks, audio devices, wallpapers, and custom menus. Custom menus can be defined using simple YAML configuration files.
 
 ## Features
 
@@ -16,6 +16,22 @@ hyprwat creates a popup menu at your cursor position where you can select from a
 - **Wallpaper selection**: Easily select a wallpaper from a directory of images (hyprpaper only)
 - **Custom menus**: Define your own menus using simple YAML configuration files
 - **Theming**: Customize the appearance with a configuration file
+
+### Examples
+
+#### WiFi Network Selector
+
+![wifi](examples/img/wifi.png)
+
+#### Wallpaper Selector
+
+![wallpapers](examples/img/wallpapers.png)
+
+#### Power Profile Selector
+
+![powerprofilesctl](examples/img/powerprofiles.png)
+
+See the [examples](examples) directory for more.
 
 ## Installation
 
@@ -55,55 +71,7 @@ If no arguments are provided, hyprwat will read from stdin, expecting one item p
 - `--wallpaper <dir>`: Select a wallpaper from the specified directory (for hyprpaper)
 
 
-### Examples
-
-#### WiFi Network Selector
-
-![wifi](examples/img/wifi.png)
-
-#### Wallpaper Selector
-
-![wallpapers](examples/img/wallpapers.png)
-
-#### Power Profile Selector
-
-![powerprofilesctl](examples/img/powerprofiles.png)
-
-```
-title: "Power Settings"
-
-sections:
-  - type: text
-    content: "← Back (ESC)"
-
-  - type: separator
-
-  - type: selectable_list
-    items:
-      - id: "performance"
-        label: "⚡ Performance Mode"
-        action:
-          type: execute
-          command: "powerprofilesctl set performance && notify-send 'Power Profile' 'Performance mode enabled'"
-          close_on_success: true
-
-      - id: "balanced"
-        label: "⚖️  Balanced Mode"
-        selected: true
-        action:
-          type: execute
-          command: "powerprofilesctl set balanced && notify-send 'Power Profile' 'Balanced mode enabled'"
-          close_on_success: true
-
-      - id: "powersave"
-        label: "🔋 Power Saver Mode"
-        action:
-          type: execute
-          command: "powerprofilesctl set power-saver && notify-send 'Power Profile' 'Power saver mode enabled'"
-          close_on_success: true
-```
-
-See the [examples](examples) directory for more.
+### More Examples
 
 ```bash
 # Simple options with custom display names and pre-selection
@@ -291,7 +259,7 @@ I created hyprwat to fill a gap in the Wayland ecosystem for a simple, flexible,
 
 If nothing else a pretty cool [cpp wrapper for Wayland protocols](src/wayland).
 
-If there's enough interest I'd like to expand it to have different kinds of UI like text input (wifi passwords) or sliders (volume control) and have it be a more general purpose hyprland control.
+As time passed I added more features and built-in selectors for things I couldn't find elsewhere. I didn't want to rice rofi to make a wallpaper selector, so I added that too (hyprpaper only)!
 
 ## License
 
