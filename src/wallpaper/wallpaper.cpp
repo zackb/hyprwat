@@ -30,18 +30,16 @@ void WallpaperManager::loadWallpapers() {
                 // only add images
                 if (wallpaperExts.contains(entry.path().extension().string())) {
                     // std::cout << "Adding wallpaper: " << entry.path() << '\n';
-                    wallpapers.push_back(
-                        {entry.path().string(), thumbnailCache.getOrCreateThumbnail(entry.path().string(), 400, 225)});
+                    wallpapers.push_back({entry.path().string(),
+                                          thumbnailCache.getOrCreateThumbnail(entry.path().string(), 400, 225),
+                                          fs::last_write_time(entry.path())});
                 }
             } else if (fs::is_directory(entry.path())) {
                 // std::cout << "Directory: " << entry.path() << '\n';
             }
         }
-        std::sort(wallpapers.begin(), wallpapers.end(), [](auto const& a, auto const& b) {
-            auto ta = fs::last_write_time(a.path);
-            auto tb = fs::last_write_time(b.path);
-            return ta > tb; // newest first
-        });
+        std::sort(
+            wallpapers.begin(), wallpapers.end(), [](auto const& a, auto const& b) { return a.modified > b.modified; });
     } catch (const fs::filesystem_error& e) {
         std::cerr << "Filesystem error: " << e.what() << '\n';
     }

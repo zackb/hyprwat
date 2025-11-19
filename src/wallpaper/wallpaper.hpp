@@ -10,6 +10,7 @@ std::string getCacheDir();
 struct Wallpaper {
     std::string path;
     std::string thumbnailPath;
+    std::filesystem::file_time_type modified;
 };
 
 class WallpaperManager {
