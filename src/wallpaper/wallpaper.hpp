@@ -15,10 +15,9 @@ struct Wallpaper {
 class WallpaperManager {
 
 public:
-    WallpaperManager(const std::string& wallpaperDir) : wallpaperDir(wallpaperDir), thumbnailCache(getCacheDir()) {
-        loadWallpapers();
-    }
+    WallpaperManager(const std::string& wallpaperDir) : wallpaperDir(wallpaperDir), thumbnailCache(getCacheDir()) {}
     void applyWallpaper(const std::string& wallpaperPath);
+    void loadWallpapers();
     const std::vector<Wallpaper>& getWallpapers() const { return wallpapers; }
 
 private:
@@ -26,6 +25,4 @@ private:
     std::vector<Wallpaper> wallpapers;
     ThumbnailCache thumbnailCache;
     const std::set<std::string> wallpaperExts = {".jpg", ".png", ".jpeg", ".bmp", ".gif"};
-
-    void loadWallpapers();
 };

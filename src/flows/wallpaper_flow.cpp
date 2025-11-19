@@ -14,13 +14,14 @@ WallpaperFlow::WallpaperFlow(hyprland::Control& hyprctl,
 WallpaperFlow::~WallpaperFlow() = default;
 
 Frame* WallpaperFlow::getCurrentFrame() {
-    if (!hasLoaded) {
+    if (!loadingStarted) {
         // generate thumbnails in background
         loadingThread = std::thread([this]() {
-            const auto wallpapers = wallpaperManager.getWallpapers();
+            wallpaperManager.loadWallpapers();
+            const auto& wallpapers = wallpaperManager.getWallpapers();
             imageList->addImages(wallpapers);
-            hasLoaded = true;
         });
+        loadingStarted = true;
     }
 
     return imageList.get();
