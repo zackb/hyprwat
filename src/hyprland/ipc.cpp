@@ -79,6 +79,18 @@ namespace hyprland {
         return 1.0f; // fallback
     }
 
+    void Control::setWallpaper(const std::string& path) {
+        std::string response = send("/keyword exec hyprctl hyprpaper preload \"" + path + "\"");
+        if (response != "ok") {
+            std::cerr << "Failed to preload wallpaper: " << response << "\n";
+        }
+        response = send("/keyword exec hyprctl hyprpaper wallpaper \"," + path + "\"");
+        if (response != "ok") {
+            std::cerr << "Failed to set wallpaper: " << response << "\n";
+        }
+        send("/keyword exec hyprctl hyprpaper unload unused");
+    }
+
     // Events
 
     Events::Events() : Events(getSocketPath(".socket2.sock")) {}

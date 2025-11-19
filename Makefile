@@ -39,6 +39,9 @@ run-audio: debug
 run-custom: debug
 	./build/debug/hyprwat --custom examples/custom_menu/main.yaml
 
+run-wallpaper: debug
+	./build/debug/hyprwat --wallpaper ~/.local/share/wallpapers
+
 reset-wifi:
 	sudo nmcli device disconnect wlan0
 	sudo nmcli device connect wlan0

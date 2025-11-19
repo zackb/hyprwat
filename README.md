@@ -16,6 +16,8 @@ hyprwat creates a popup menu at your cursor position where you can select from a
 - **Audio selector**: Built-in support for selecting audio input/output devices (via Pipewire)
 - **Custom menus**: Define your own menus using simple YAML configuration files
 - **Pre-selection support**: Mark items as initially selected
+- **Theming**: Customize the appearance with a configuration file
+- **Wallpaper selection**: Easily select a wallpaper from a directory of images (hyprpaper only)
 
 ## Installation
 
@@ -52,6 +54,7 @@ If no arguments are provided, hyprwat will read from stdin, expecting one item p
 - `--audio`: Show audio input/output device selector (requires pipewire)
 - `--wifi`:  Show WiFi network selection
 - `--custom <file>`: Load a custom menu from a YAML configuration file
+- `--wallpaper <dir>`: Select a wallpaper from the specified directory (for hyprpaper)
 
 
 ### Examples
@@ -121,6 +124,9 @@ hyprwat --audio
 
 # Custom menu defined in yaml config files
 hyprwat --custom ~/.config/hyprwat/menus/powermenu.yaml
+
+# Wallpaper selection from a directory
+hyprwat --wallpaper ~/.local/share/wallpapers
 
 ```
 See the [examples](examples) directory for more.

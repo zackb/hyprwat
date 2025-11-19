@@ -1,10 +1,11 @@
+#include "flows/audio_flow.hpp"
+#include "flows/custom_flow.hpp"
 #include "flows/flow.hpp"
 #include "flows/simple_flows.hpp"
+#include "flows/wallpaper_flow.hpp"
+#include "flows/wifi_flow.hpp"
 #include "hyprland/ipc.hpp"
 #include "input.hpp"
-#include "src/flows/audio_flow.hpp"
-#include "src/flows/custom_flow.hpp"
-#include "src/flows/wifi_flow.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
 
@@ -20,6 +21,7 @@ void usage() {
   hyprwat --password [hint]
   hyprwat --wifi
   hyprwat --audio
+  hyprwat --wallpaper <directory>
 
 Description:
   A simple Wayland panel to present selectable options or text input, connect to wifi networks, update audio sinks/sources, and more.
@@ -57,10 +59,13 @@ AUDIO MODE:
   Use --audio to show available audio input/output devices and select one.
 
 Options:
-  -h, --help       Show this help message
-  --input [hint]   Show text input mode with optional hint text
-  --wifi           Show WiFi network selection mode
-  --audio          Show audio input/output device selection mode
+  -h, --help        Show this help message
+  --input [hint]    Show text input mode with optional hint text
+  --password [hint] Show password input mode with optional hint text
+  --wifi            Show WiFi network selection mode
+  --audio           Show audio input/output device selection mode
+  --custom <path>   Load a custom flow from the specified configuration file
+  --wallpaper <dir> Select wallpapers from the specified directory and set using hyprpaper
 )");
 }
 
@@ -85,12 +90,15 @@ int main(const int argc, const char** argv) {
     // deal with hyprland fractional scaling vs wayland integer scaling
     float hyprlandScale = hyprctl.scale();
     int waylandScale = wayland.display().getMaxScale();
+    auto [displayWidth, displayHeight] = wayland.display().getOutputSize();
 
     // convert hyprland logical->physical->wayland logical
     int x_physical = (int)(pos.x * hyprlandScale);
     int y_physical = (int)(pos.y * hyprlandScale);
     int x_wayland = x_physical / waylandScale;
     int y_wayland = y_physical / waylandScale;
+    int logicalDisplayWidth = displayWidth / hyprlandScale;
+    int logicalDisplayHeight = displayHeight / hyprlandScale;
 
     // load config
     Config config("~/.config/hyprwat/hyprwat.conf");
@@ -126,6 +134,9 @@ int main(const int argc, const char** argv) {
         break;
     case InputMode::CUSTOM:
         flow = std::make_unique<CustomFlow>(args.configPath);
+        break;
+    case InputMode::WALLPAPER:
+        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);
         break;
     case InputMode::MENU:
         if (args.choices.size() > 0) {
