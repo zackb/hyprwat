@@ -1,4 +1,5 @@
 #include "wallpaper.hpp"
+#include <algorithm>
 #include <filesystem>
 #include <iostream>
 
@@ -36,6 +37,11 @@ void WallpaperManager::loadWallpapers() {
                 // std::cout << "Directory: " << entry.path() << '\n';
             }
         }
+        std::sort(wallpapers.begin(), wallpapers.end(), [](auto const& a, auto const& b) {
+            auto ta = fs::last_write_time(a.path);
+            auto tb = fs::last_write_time(b.path);
+            return ta > tb; // newest first
+        });
     } catch (const fs::filesystem_error& e) {
         std::cerr << "Filesystem error: " << e.what() << '\n';
     }
