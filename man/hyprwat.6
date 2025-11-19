@@ -19,6 +19,9 @@ hyprwat \- A Hyprland menu utility to present selectable options with a customiz
 .br
 .B hyprwat
 --custom \fIconfig.yaml\fR
+.br
+.B hyprwat
+--wallpaper \fI~/.local/share/wallpapers\fR
 .SH DESCRIPTION
 .B hyprwat
 is a lightweight Wayland-native popup menu that presents selectable options
@@ -82,6 +85,12 @@ Show available audio input/output devices (PipeWire) and select one.
 $ hyprwat --audio
 .EE
 .TP
+.B WALLPAPER MODE
+Select an image file from the specified directory to set as the desktop wallpaper. This requires hyprpaper.
+.EX
+$ hyprwat --wallpaper ~/.local/share/wallpapers
+.EE
+.TP
 .B CUSTOM MODE
 Render a fully custom menu from a YAML configuration file. Custom menus
 support multiple widget types (buttons, inputs, sliders, checkboxes, color
@@ -106,6 +115,9 @@ Show Wi-Fi network selection mode.
 .TP
 .BR --audio
 Show audio input/output device selection mode.
+.TP
+.BR --wallpaper
+Select an image file from the specified directory to set as the desktop wallpaper.
 .TP
 .BR --custom " \fIconfig.yaml\fR"
 Load and render a custom menu from the specified YAML configuration file.
