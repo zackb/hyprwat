@@ -16,6 +16,9 @@ install: release
 package: release
 	cpack --config build/release/CPackConfig.cmake
 
+package-pacman: release
+	makepkg -s
+
 run: debug
 	./build/debug/hyprwat foo:FooZZZZZZZZZZZZZZZZZZZZZZZZZZZZ bar:Bar* zbz:'Zack Bartel'
 
