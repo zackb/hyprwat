@@ -18,6 +18,7 @@ package: release
 
 package-pacman: release
 	makepkg -s
+	# then in ../hypwat-bin: makepkg --printsrcinfo > .SRCINFO
 
 run: debug
 	./build/debug/hyprwat foo:FooZZZZZZZZZZZZZZZZZZZZZZZZZZZZ bar:Bar* zbz:'Zack Bartel'
