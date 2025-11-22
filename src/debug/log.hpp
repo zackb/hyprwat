@@ -15,33 +15,33 @@ namespace debug {
         if (!verbose && level == TRACE) {
             return;
         }
-        std::cout << '[';
+        std::cerr << '[';
 
         switch (level) {
         case TRACE:
-            std::cout << "TRACE";
+            std::cerr << "TRACE";
             break;
         case DEBUG:
-            std::cout << "DEBUG";
+            std::cerr << "DEBUG";
             break;
         case INFO:
-            std::cout << "INFO";
+            std::cerr << "INFO";
             break;
         case WARN:
-            std::cout << "WARN";
+            std::cerr << "WARN";
             break;
         case ERR:
-            std::cout << "ERR";
+            std::cerr << "ERR";
             break;
         case CRIT:
-            std::cout << "CRIT";
+            std::cerr << "CRIT";
             break;
         default:
             break;
         }
 
-        std::cout << "] ";
+        std::cerr << "] ";
 
-        std::cout << std::vformat(fmt, std::make_format_args(args...)) << std::endl;
+        std::cerr << std::vformat(fmt, std::make_format_args(args...)) << std::endl;
     }
 } // namespace debug
