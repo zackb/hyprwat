@@ -33,7 +33,8 @@ public:
     static void parseStdin(Callback callback);
     static std::mutex mutex;
 
+    static std::filesystem::path expandPath(const std::string& path);
+
 private:
     static Choice parseLine(std::string line);
-    static std::filesystem::path expandPath(const std::string& path);
 };

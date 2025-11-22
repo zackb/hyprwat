@@ -1,18 +1,18 @@
 #pragma once
 
 #include <INIReader.h>
-#include <filesystem>
 #include <string>
 
 #include "INIReader.h"
 #include "debug/log.hpp"
+#include "input.hpp"
 #include <imgui.h>
 #include <stdexcept>
 #include <string>
 
 class Config {
 public:
-    explicit Config(const std::string& path) : reader(expandUser(path)) {
+    explicit Config(const std::string& path) : reader(Input::expandPath(path)) {
         if (reader.ParseError() != 0) {
             // file not found or parse error
             debug::log(WARN, "Config file '{}' not found or invalid. Using defaults.", path);
@@ -20,7 +20,7 @@ public:
     }
 
     std::string getString(const std::string& section, const std::string& name, const std::string& def = "") const {
-        return expandUser(reader.Get(section, name, def)).string();
+        return Input::expandPath(reader.Get(section, name, def)).string();
     }
 
     float getFloat(const std::string& section, const std::string& name, float def = 0.0f) const {
@@ -50,19 +50,5 @@ private:
         }
 
         return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
-    }
-
-    std::filesystem::path expandUser(const std::string& path) const {
-        if (path.empty() || path[0] != '~')
-            return path;
-
-        const char* home = std::getenv("HOME");
-        if (!home)
-            throw std::runtime_error("Cannot expand '~': HOME not set");
-
-        if (path.size() == 1)
-            return home;
-
-        return std::filesystem::path(home) / path.substr(2); // skip "~/"
     }
 };
