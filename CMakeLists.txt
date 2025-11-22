@@ -170,7 +170,7 @@ install(FILES man/hyprwat.6
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_NAME "hyprwat")
-set(CPACK_PACKAGE_VERSION "0.9.0")
+set(CPACK_PACKAGE_VERSION "0.9.1")
 set(CPACK_PACKAGE_CONTACT "zack@bartel.com")
 set(CPACK_GENERATOR "DEB;RPM;TGZ")
 
