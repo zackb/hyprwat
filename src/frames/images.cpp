@@ -21,10 +21,10 @@ FrameResult ImageList::render() {
     // process any new wallpapers to load their textures on the main thread
     processPendingWallpapers();
 
-    if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow)) {
+    if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_H)) {
         navigate(-1);
     }
-    if (ImGui::IsKeyPressed(ImGuiKey_RightArrow)) {
+    if (ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_L)) {
         navigate(1);
     }
     if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_Space)) {
