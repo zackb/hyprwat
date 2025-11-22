@@ -1,6 +1,6 @@
 #include "thumbnail.hpp"
+#include "../debug/log.hpp"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -28,7 +28,7 @@ std::string ThumbnailCache::getOrCreateThumbnail(const std::string& imagePath, i
 
     // create thumbnail
     if (resizeImage(imagePath, thumbPath, width, height)) {
-        std::cout << "Created thumbnail: " << thumbPath << std::endl;
+        debug::log(DEBUG, "Thumbnail created at: {}", thumbPath);
         return thumbPath;
     } else {
         return ""; // error resizing image
@@ -39,7 +39,7 @@ int ThumbnailCache::hashFileKey(std::string&& path) {
 
     fs::path file(path);
     if (!fs::exists(file)) {
-        std::cerr << "File does not exist: " << path << std::endl;
+        debug::log(ERR, "File does not exist: {}", path);
         return 0;
     }
 
@@ -53,7 +53,7 @@ int ThumbnailCache::hashFileKey(std::string&& path) {
     auto fsize = fs::file_size(file);
     auto fname = file.string();
 
-    // std::cout << "File: " << fname << ", Size: " << fsize << ", Last Write Time: " << ftime << std::endl;
+    debug::log(DEBUG, "Hashing file: {}, size: {}, last write time: {}", fname, fsize, ftime);
 
     std::hash<std::string> str_hash;
     size_t h1 = str_hash(fname);

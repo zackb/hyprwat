@@ -2,10 +2,10 @@
 
 #include <INIReader.h>
 #include <filesystem>
-#include <iostream>
 #include <string>
 
 #include "INIReader.h"
+#include "debug/log.hpp"
 #include <imgui.h>
 #include <stdexcept>
 #include <string>
@@ -15,7 +15,7 @@ public:
     explicit Config(const std::string& path) : reader(expandUser(path)) {
         if (reader.ParseError() != 0) {
             // file not found or parse error
-            std::cerr << "Warning: Config file '" << path << "' not found or invalid. Using defaults.\n";
+            debug::log(WARN, "Config file '{}' not found or invalid. Using defaults.", path);
         }
     }
 

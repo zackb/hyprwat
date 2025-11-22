@@ -1,6 +1,6 @@
 #include "audio.hpp"
+#include "../debug/log.hpp"
 #include <cstring>
-#include <iostream>
 #include <spa/utils/json.h>
 
 static const struct pw_registry_events registry_events = {
@@ -29,18 +29,18 @@ AudioManagerClient::AudioManagerClient()
 
     loop = pw_thread_loop_new("audio-manager", nullptr);
     if (!loop) {
-        std::cerr << "Failed to create thread loop" << std::endl;
+        debug::log(ERR, "Failed to create thread loop");
         return;
     }
 
     context = pw_context_new(pw_thread_loop_get_loop(loop), nullptr, 0);
     if (!context) {
-        std::cerr << "Failed to create context" << std::endl;
+        debug::log(ERR, "Failed to create context");
         return;
     }
 
     if (pw_thread_loop_start(loop) < 0) {
-        std::cerr << "Failed to start thread loop" << std::endl;
+        debug::log(ERR, "Failed to start thread loop");
         return;
     }
 
@@ -48,7 +48,7 @@ AudioManagerClient::AudioManagerClient()
 
     core = pw_context_connect(context, nullptr, 0);
     if (!core) {
-        std::cerr << "Failed to connect to PipeWire" << std::endl;
+        debug::log(ERR, "Failed to connect to PipeWire core");
         pw_thread_loop_unlock(loop);
         return;
     }
@@ -236,7 +236,7 @@ std::vector<AudioDevice> AudioManagerClient::listOutputDevices() {
 
 bool AudioManagerClient::setDefault(uint32_t deviceId, const std::string& key) {
     if (!initialized || !metadata) {
-        std::cerr << "AudioManager not initialized or metadata not available" << std::endl;
+        debug::log(ERR, "AudioManager not initialized or metadata not available");
         return false;
     }
 
@@ -246,7 +246,7 @@ bool AudioManagerClient::setDefault(uint32_t deviceId, const std::string& key) {
 
     auto it = deviceMap.find(deviceId);
     if (it == deviceMap.end()) {
-        std::cerr << "Device ID " << deviceId << " not found" << std::endl;
+        debug::log(ERR, "Device ID {} not found", deviceId);
         return false;
     }
 
@@ -259,11 +259,11 @@ bool AudioManagerClient::setDefault(uint32_t deviceId, const std::string& key) {
     pw_thread_loop_unlock(loop);
 
     if (res < 0) {
-        std::cerr << "Failed to set default" << std::endl;
+        debug::log(ERR, "Failed to set default {}: {}", key, strerror(-res));
         return false;
     }
 
-    std::cout << "Set " << key << " to device " << deviceId << " (" << deviceName << ")" << std::endl;
+    debug::log(INFO, "Set {} to device {} ({})", key, deviceId, deviceName);
 
     if (key == "default.audio.sink") {
         default_sink_id = deviceId;

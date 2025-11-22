@@ -1,5 +1,4 @@
 #include "layer_surface.hpp"
-#include <iostream>
 
 namespace wl {
     LayerSurface::LayerSurface(wl_compositor* compositor, zwlr_layer_shell_v1* shell)

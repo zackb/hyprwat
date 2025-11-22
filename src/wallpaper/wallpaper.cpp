@@ -1,7 +1,7 @@
 #include "wallpaper.hpp"
+#include "../debug/log.hpp"
 #include <algorithm>
 #include <filesystem>
-#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -18,10 +18,6 @@ std::string getCacheDir() {
     return std::string(home) + "/.cache/hyprwat/wallpapers/";
 }
 
-void WallpaperManager::applyWallpaper(const std::string& wallpaperPath) {
-    std::cout << "Applying wallpaper: " << wallpaperPath << '\n';
-}
-
 void WallpaperManager::loadWallpapers() {
     wallpapers.clear();
     try {
@@ -29,18 +25,18 @@ void WallpaperManager::loadWallpapers() {
             if (fs::is_regular_file(entry.path())) {
                 // only add images
                 if (wallpaperExts.contains(entry.path().extension().string())) {
-                    // std::cout << "Adding wallpaper: " << entry.path() << '\n';
+                    debug::log(DEBUG, "Adding wallpaper: {}", entry.path().string());
                     wallpapers.push_back({entry.path().string(),
                                           thumbnailCache.getOrCreateThumbnail(entry.path().string(), 400, 225),
                                           fs::last_write_time(entry.path())});
                 }
             } else if (fs::is_directory(entry.path())) {
-                // std::cout << "Directory: " << entry.path() << '\n';
+                debug::log(DEBUG, "Found directory: {}", entry.path().string());
             }
         }
         std::sort(
             wallpapers.begin(), wallpapers.end(), [](auto const& a, auto const& b) { return a.modified > b.modified; });
     } catch (const fs::filesystem_error& e) {
-        std::cerr << "Filesystem error: " << e.what() << '\n';
+        debug::log(ERR, "Filesystem error while loading wallpapers: {}", e.what());
     }
 }
