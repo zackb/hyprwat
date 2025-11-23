@@ -1,5 +1,4 @@
 #include "input.hpp"
-#include "../flows/flow.hpp"
 
 FrameResult TextInput::render() {
     // Calculate desired size based on content
@@ -25,10 +24,10 @@ FrameResult TextInput::render() {
     // Set the input text width
     ImGui::SetNextItemWidth(inputWidth);
 
-    // Set focus to the input field on first frame
-    if (ImGui::IsWindowAppearing()) {
-        ImGui::SetKeyboardFocusHere();
-    }
+    // if (ImGui::IsWindowAppearing())
+    // TODO: may need a bool should_focus to support multiple inputs
+    ImGui::SetKeyboardFocusHere();
+
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
     if (password) {
         flags |= ImGuiInputTextFlags_Password;
