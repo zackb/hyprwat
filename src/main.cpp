@@ -9,7 +9,6 @@
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
 
-#include <GL/gl.h>
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -57,6 +56,12 @@ WIFI MODE:
 
 AUDIO MODE:
   Use --audio to show available audio input/output devices and select one.
+
+CUSTOM MODE:
+    Use --custom <file> to render a fully custom menu from a YAML configuration file.
+
+WALLPAPER MODE:
+    Use --wallpaper <dir> to select wallpapers from a specified directory and set them using hyprpaper.
 
 Options:
   -h, --help        Show this help message
