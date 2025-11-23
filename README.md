@@ -118,6 +118,7 @@ frame_rounding = 6.0
 background_blur = 0.95
 hover_color = #3366b3ff
 active_color = #3366b366
+wallpaper_width_ratio = 0.8
 ```
 
 ## Build Instructions
