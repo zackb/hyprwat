@@ -20,6 +20,8 @@ namespace hyprland {
         Vec2 cursorPos();
         float scale();
 
+        void setWallpaper(const std::string& path);
+
     private:
         std::string socketPath;
     };

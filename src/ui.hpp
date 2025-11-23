@@ -5,8 +5,21 @@
 #include "wayland/layer_surface.hpp"
 #include "wayland/wayland.hpp"
 
-// Forward declaration
-struct FrameResult;
+// result returned by a frame after user interaction
+struct FrameResult {
+    enum class Action {
+        CONTINUE, // Keep showing this frame
+        SUBMIT,   // User submitted (Enter pressed, item selected)
+        CANCEL    // User cancelled (ESC pressed)
+    };
+
+    Action action = Action::CONTINUE;
+    std::string value; // The submitted value (selected id, input text, password, etc.)
+
+    static FrameResult Continue() { return {Action::CONTINUE, ""}; }
+    static FrameResult Submit(const std::string& val) { return {Action::SUBMIT, val}; }
+    static FrameResult Cancel() { return {Action::CANCEL, ""}; }
+};
 
 class Frame {
 public:
@@ -18,6 +31,14 @@ public:
 
     virtual Vec2 getSize() = 0;
     virtual void applyTheme(const Config& config) {};
+
+    // whether the window should reposition based on cursor when resizing
+    // default true for menu-like behavior, override to false for centered/static windows
+    virtual bool shouldRepositionOnResize() const { return true; }
+
+    // whether the window should use cursor position for initial placement
+    // default true for menu-like behavior, override to false for centered windows
+    virtual bool shouldPositionAtCursor() const { return true; }
 };
 
 class UI {
@@ -33,6 +54,9 @@ public:
     void runFlow(class Flow& flow);
 
     void applyTheme(const Config& config);
+
+    // reposition window to center of screen
+    void centerWindow();
 
     Config* currentConfig = nullptr;
 

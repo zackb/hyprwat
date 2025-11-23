@@ -1,6 +1,6 @@
-.TH HYPRWAT 6 "October 2025" "hyprwat 0.5.0" "User Commands"
+.TH HYPRWAT 6 "November 2025" "hyprwat 0.9.1" "User Commands"
 .SH NAME
-hyprwat \- simple Wayland panel for menu and input prompts
+hyprwat \- A Hyprland menu utility to present selectable options with a customizable interface
 .SH SYNOPSIS
 .B hyprwat
 [\fIOPTIONS\fR] [\fIid[:displayName][*]\fR]...
@@ -16,31 +16,35 @@ hyprwat \- simple Wayland panel for menu and input prompts
 .br
 .B hyprwat
 --audio
+.br
+.B hyprwat
+--custom \fIconfig.yaml\fR
+.br
+.B hyprwat
+--wallpaper \fI~/.local/share/wallpapers\fR
 .SH DESCRIPTION
 .B hyprwat
-is a lightweight Wayland-native popup panel that presents selectable options
+is a lightweight Wayland-native popup menu that presents selectable options
 or input prompts at the current cursor position. It integrates cleanly with
 the Hyprland compositor and can be used to build interactive menus for
 system controls, Wi-Fi networks, audio devices, or any scriptable UI
 selection task.
-
 In its default menu mode,
 .B hyprwat
 displays a list of options, one of which may be preselected.
-It can also present text input or password dialogs, or automatically populate
-menus from system resources such as Wi-Fi networks or PipeWire audio devices.
-
+It can also present text input or password dialogs, automatically populate
+menus from system resources such as Wi-Fi networks or PipeWire audio devices,
+or render fully custom menus from YAML configuration files with support for
+hierarchical submenus, multiple widget types, and flexible actions.
 .SH MODES
 .TP
 .B MENU MODE (default)
 You can pass a list of items as command-line arguments in the form:
-
 .RS
 .nf
 id[:displayName][*]
 .fi
 .RE
-
 .RS
 .IP \(bu 2
 \fBid\fR: Required identifier (used internally)
@@ -49,48 +53,52 @@ id[:displayName][*]
 .IP \(bu 2
 \fB*\fR: Optional suffix marking this item as initially selected
 .RE
-
 If no arguments are passed, menu items may be provided on standard input,
 one per line, in the same format.
-
 .EX
 $ hyprwat performance:Performance* balanced:Balanced powersave:PowerSaver
-$ echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
+$ echo -e "wifi0:Home*\\nwifi1:Work\\nwifi2:Other" | hyprwat
 .EE
-
 .TP
 .B INPUT MODE
 Show a text input prompt with optional hint text.
-
 .EX
 $ hyprwat --input "Enter your name"
 .EE
-
 .TP
 .B PASSWORD MODE
 Show a password input prompt (masked input).
-
 .EX
 $ hyprwat --password "WiFi Passphrase"
 .EE
-
 .TP
 .B WIFI MODE
 Scan and display available Wi-Fi networks for selection.
 If a network requires authentication, a password prompt will follow.
-
 .EX
 $ hyprwat --wifi
 .EE
-
 .TP
 .B AUDIO MODE
 Show available audio input/output devices (PipeWire) and select one.
-
 .EX
 $ hyprwat --audio
 .EE
-
+.TP
+.B WALLPAPER MODE
+Select an image file from the specified directory to set as the desktop wallpaper. This requires hyprpaper.
+.EX
+$ hyprwat --wallpaper ~/.local/share/wallpapers
+.EE
+.TP
+.B CUSTOM MODE
+Render a fully custom menu from a YAML configuration file. Custom menus
+support multiple widget types (buttons, inputs, sliders, checkboxes, color
+pickers, etc.), hierarchical submenus, keyboard shortcuts, and various
+action types including command execution and submenu navigation.
+.EX
+$ hyprwat --custom ~/.config/hyprwat/main.yaml
+.EE
 .SH OPTIONS
 .TP
 .BR -h , " --help"
@@ -107,7 +115,135 @@ Show Wi-Fi network selection mode.
 .TP
 .BR --audio
 Show audio input/output device selection mode.
+.TP
+.BR --wallpaper
+Select an image file from the specified directory to set as the desktop wallpaper.
+.TP
+.BR --custom " \fIconfig.yaml\fR"
+Load and render a custom menu from the specified YAML configuration file.
+See
+.B CUSTOM MENU FORMAT
+below for configuration syntax.
+.SH CUSTOM MENU FORMAT
+Custom menus are defined in YAML format and support rich, interactive UIs
+with hierarchical navigation. The configuration file structure:
+.PP
+.B Basic Structure:
+.EX
+title: "Menu Title"
+width: 400          # Optional fixed width
+height: 300         # Optional fixed height
 
+theme:              # Optional theme overrides
+  hover_color: "#3366B3FF"
+  active_color: "#3366B366"
+
+sections:           # List of widgets
+  - type: text
+    content: "Label text"
+    style: bold   # normal, bold, italic
+  
+  - type: separator
+  
+  - type: button
+    label: "Button Label"
+    action:
+      type: execute
+      command: "command to run"
+      close_on_success: true
+
+shortcuts:          # Optional keyboard shortcuts
+  - key: "Escape"
+    action:
+      type: cancel
+.EE
+.PP
+.B Supported Widget Types:
+.RS
+.IP \(bu 2
+.B text
+\- Static text label (supports bold/italic)
+.IP \(bu 2
+.B separator
+\- Visual divider line
+.IP \(bu 2
+.B button
+\- Clickable button
+.IP \(bu 2
+.B selectable_list
+\- List of selectable items
+.IP \(bu 2
+.B input
+\- Text input field
+.IP \(bu 2
+.B checkbox
+\- Boolean toggle
+.IP \(bu 2
+.B slider
+\- Numeric slider with min/max range
+.IP \(bu 2
+.B combo
+\- Dropdown selection box
+.IP \(bu 2
+.B color_picker
+\- Color selection widget
+.RE
+.PP
+.B Supported Action Types:
+.RS
+.IP \(bu 2
+.B execute
+\- Execute shell command
+.IP \(bu 2
+.B submit
+\- Return a value and exit
+.IP \(bu 2
+.B cancel
+\- Cancel and exit
+.IP \(bu 2
+.B submenu
+\- Navigate to another YAML config file
+.IP \(bu 2
+.B back
+\- Return to parent menu
+.RE
+.PP
+.B Submenu Example:
+.EX
+# main.yaml
+sections:
+  - type: button
+    label: "Power Settings"
+    action:
+      type: submenu
+      path: "power.yaml"  # Relative or absolute path
+
+# power.yaml
+title: "Power Settings"
+sections:
+  - type: selectable_list
+    items:
+      - id: "performance"
+        label: "Performance"
+        action:
+          type: execute
+          command: "powerprofilesctl set performance"
+  
+  - type: button
+    label: "← Back"
+    action:
+      type: back
+
+shortcuts:
+  - key: "Escape"
+    action:
+      type: back
+.EE
+.PP
+Submenus support unlimited nesting depth. The Escape key navigates back
+through the menu hierarchy, exiting only from the root level.
+Action commands support token replacement: \fB{value}\fR, \fB{index}\fR,
+and \fB{state}\fR are replaced with widget values during execution.
 .SH EXAMPLES
 .TP
 Select a power profile:
@@ -117,7 +253,7 @@ $ hyprwat performance:"Performance"* balanced:"" power-saver:"Power Saver"
 .TP
 Provide menu items via stdin:
 .EX
-$ echo -e "wifi0:Home*\nwifi1:Work\nwifi2:Other" | hyprwat
+$ echo -e "wifi0:Home*\\nwifi1:Work\\nwifi2:Other" | hyprwat
 .EE
 .TP
 Prompt for input:
@@ -130,30 +266,67 @@ Select Wi-Fi or audio device:
 $ hyprwat --wifi
 $ hyprwat --audio
 .EE
+.TP
+Launch a custom control panel:
+.EX
+$ hyprwat --custom ~/.config/hyprwat/control-panel.yaml
+.EE
+.TP
+Create a power management menu:
+.EX
+$ cat > ~/.config/hyprwat/power.yaml << 'EOF'
+title: "Power Management"
+sections:
+  - type: text
+    content: "Select power profile:"
+  
+  - type: selectable_list
+    items:
+      - id: "perf"
+        label: "⚡ Performance"
+        action:
+          type: execute
+          command: "powerprofilesctl set performance"
+          close_on_success: true
+      - id: "balanced"
+        label: "⚖️  Balanced"
+        selected: true
+        action:
+          type: execute
+          command: "powerprofilesctl set balanced"
+          close_on_success: true
+      - id: "saver"
+        label: "🔋 Power Saver"
+        action:
+          type: execute
+          command: "powerprofilesctl set power-saver"
+          close_on_success: true
+EOF
 
+$ hyprwat --custom ~/.config/hyprwat/power.yaml
+.EE
 .SH FILES
 .TP
 .I ~/.config/hyprwat/hyprwat.conf
 Optional configuration file for theme customization.  
 Uses simple INI syntax to define fonts, colors, and window style.
-
+.TP
+.I ~/.config/hyprwat/*.yaml
+Custom menu configuration files. Can be organized hierarchically
+with submenus referencing other YAML files via relative or absolute paths.
 .SH REQUIREMENTS
 Wayland compositor (tested with Hyprland),
 C++20 compiler, EGL/OpenGL, Fontconfig, xkbcommon,
-PipeWire, and sdbus-c++.
-
+PipeWire, sdbus-c++, and yaml-cpp.
 .SH SEE ALSO
 .BR hyprland (1),
 .BR waybar (1),
 .BR nmcli (1),
 .BR pactl (1)
-
 .SH AUTHOR
 Written by Zack Bartel <zack@bartel.com>
-
 .SH LICENSE
 MIT License.  
 Source available at:
 .UR https://github.com/zackb/hyprwat
 .UE
-

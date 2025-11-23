@@ -50,32 +50,32 @@ static const struct {
     {XKB_KEY_7, ImGuiKey_7},
     {XKB_KEY_8, ImGuiKey_8},
     {XKB_KEY_9, ImGuiKey_9},
-    {XKB_KEY_A, ImGuiKey_A},
-    {XKB_KEY_B, ImGuiKey_B},
-    {XKB_KEY_C, ImGuiKey_C},
-    {XKB_KEY_D, ImGuiKey_D},
-    {XKB_KEY_E, ImGuiKey_E},
-    {XKB_KEY_F, ImGuiKey_F},
-    {XKB_KEY_G, ImGuiKey_G},
-    {XKB_KEY_H, ImGuiKey_H},
-    {XKB_KEY_I, ImGuiKey_I},
-    {XKB_KEY_J, ImGuiKey_J},
-    {XKB_KEY_K, ImGuiKey_K},
-    {XKB_KEY_L, ImGuiKey_L},
-    {XKB_KEY_M, ImGuiKey_M},
-    {XKB_KEY_N, ImGuiKey_N},
-    {XKB_KEY_O, ImGuiKey_O},
-    {XKB_KEY_P, ImGuiKey_P},
-    {XKB_KEY_Q, ImGuiKey_Q},
-    {XKB_KEY_R, ImGuiKey_R},
-    {XKB_KEY_S, ImGuiKey_S},
-    {XKB_KEY_T, ImGuiKey_T},
-    {XKB_KEY_U, ImGuiKey_U},
-    {XKB_KEY_V, ImGuiKey_V},
-    {XKB_KEY_W, ImGuiKey_W},
-    {XKB_KEY_X, ImGuiKey_X},
-    {XKB_KEY_Y, ImGuiKey_Y},
-    {XKB_KEY_Z, ImGuiKey_Z},
+    {XKB_KEY_a, ImGuiKey_A},
+    {XKB_KEY_b, ImGuiKey_B},
+    {XKB_KEY_c, ImGuiKey_C},
+    {XKB_KEY_d, ImGuiKey_D},
+    {XKB_KEY_e, ImGuiKey_E},
+    {XKB_KEY_f, ImGuiKey_F},
+    {XKB_KEY_g, ImGuiKey_G},
+    {XKB_KEY_h, ImGuiKey_H},
+    {XKB_KEY_i, ImGuiKey_I},
+    {XKB_KEY_j, ImGuiKey_J},
+    {XKB_KEY_k, ImGuiKey_K},
+    {XKB_KEY_l, ImGuiKey_L},
+    {XKB_KEY_m, ImGuiKey_M},
+    {XKB_KEY_n, ImGuiKey_N},
+    {XKB_KEY_o, ImGuiKey_O},
+    {XKB_KEY_p, ImGuiKey_P},
+    {XKB_KEY_q, ImGuiKey_Q},
+    {XKB_KEY_r, ImGuiKey_R},
+    {XKB_KEY_s, ImGuiKey_S},
+    {XKB_KEY_t, ImGuiKey_T},
+    {XKB_KEY_u, ImGuiKey_U},
+    {XKB_KEY_v, ImGuiKey_V},
+    {XKB_KEY_w, ImGuiKey_W},
+    {XKB_KEY_x, ImGuiKey_X},
+    {XKB_KEY_y, ImGuiKey_Y},
+    {XKB_KEY_z, ImGuiKey_Z},
     {XKB_KEY_F1, ImGuiKey_F1},
     {XKB_KEY_F2, ImGuiKey_F2},
     {XKB_KEY_F3, ImGuiKey_F3},
@@ -189,15 +189,19 @@ namespace wl {
     void InputHandler::pointer_button(void* data, wl_pointer*, uint32_t, uint32_t, uint32_t button, uint32_t state) {
         InputHandler* self = static_cast<InputHandler*>(data);
 
-        if (button == BTN_LEFT) {
-            self->io->MouseDown[0] = (state == WL_POINTER_BUTTON_STATE_PRESSED);
+        // handle mouse state for ImGui
+        bool pressed = (state == WL_POINTER_BUTTON_STATE_PRESSED);
+        if (button == BTN_LEFT)
+            self->io->MouseDown[0] = pressed;
+        else if (button == BTN_RIGHT)
+            self->io->MouseDown[1] = pressed;
 
-            if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-                float x = self->io->MousePos.x;
-                float y = self->io->MousePos.y;
-                if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
-                    self->should_exit = true;
-                }
+        // if clicked outside the window with either, request exit
+        if (pressed && (button == BTN_LEFT || button == BTN_RIGHT)) {
+            float x = self->io->MousePos.x;
+            float y = self->io->MousePos.y;
+            if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
+                self->should_exit = true;
             }
         }
     }

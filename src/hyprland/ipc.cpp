@@ -1,7 +1,7 @@
 #include "ipc.hpp"
+#include "../debug/log.hpp"
 
 #include <cstring>
-#include <iostream>
 #include <stdexcept>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -79,6 +79,18 @@ namespace hyprland {
         return 1.0f; // fallback
     }
 
+    void Control::setWallpaper(const std::string& path) {
+        std::string response = send("/keyword exec hyprctl hyprpaper preload \"" + path + "\"");
+        if (response != "ok") {
+            debug::log(ERR, "Failed to preload wallpaper: {}", response);
+        }
+        response = send("/keyword exec hyprctl hyprpaper wallpaper \"," + path + "\"");
+        if (response != "ok") {
+            debug::log(ERR, "Failed to set wallpaper: {}", response);
+        }
+        send("/keyword exec hyprctl hyprpaper unload unused");
+    }
+
     // Events
 
     Events::Events() : Events(getSocketPath(".socket2.sock")) {}
@@ -116,7 +128,7 @@ namespace hyprland {
     void Events::run(EventCallback cb) {
         int localFd = socket(AF_UNIX, SOCK_STREAM, 0);
         if (localFd < 0) {
-            std::cerr << "Failed to create event socket\n";
+            debug::log(ERR, "Failed to create event socket");
             return;
         }
 
@@ -125,7 +137,7 @@ namespace hyprland {
         std::strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
         if (connect(localFd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
-            std::cerr << "Failed to connect to event socket\n";
+            debug::log(ERR, "Failed to connect to event socket: {}", std::strerror(errno));
             close(fd);
             return;
         }

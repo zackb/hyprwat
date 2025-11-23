@@ -3,22 +3,6 @@
 #include "../ui.hpp"
 #include <string>
 
-// result returned by a frame after user interaction
-struct FrameResult {
-    enum class Action {
-        CONTINUE, // Keep showing this frame
-        SUBMIT,   // User submitted (Enter pressed, item selected)
-        CANCEL    // User cancelled (ESC pressed)
-    };
-
-    Action action = Action::CONTINUE;
-    std::string value; // The submitted value (selected id, input text, password, etc.)
-
-    static FrameResult Continue() { return {Action::CONTINUE, ""}; }
-    static FrameResult Submit(const std::string& val) { return {Action::SUBMIT, val}; }
-    static FrameResult Cancel() { return {Action::CANCEL, ""}; }
-};
-
 // Base class for multi-step flows
 class Flow {
 public:

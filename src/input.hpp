@@ -1,6 +1,7 @@
 #pragma once
 
 #include "choice.hpp"
+#include <filesystem>
 #include <functional>
 #include <mutex>
 #include <string>
@@ -12,12 +13,16 @@ enum class InputMode {
     PASSWORD, // password input mode
     WIFI,     // wifi selection + password mode
     AUDIO,    // audio input/output selection mode
+    CUSTOM,   // custom menu from config file
+    WALLPAPER // wallpaper selection mode
 };
 
 struct ParseResult {
     InputMode mode = InputMode::MENU;
     std::vector<Choice> choices;
-    std::string hint; // For INPUT mode only
+    std::string hint;         // For INPUT mode only
+    std::string configPath;   // For CUSTOM mode only
+    std::string wallpaperDir; // For WALLPAPER mode only
 };
 
 class Input {
@@ -27,6 +32,8 @@ public:
     static ParseResult parseArgv(int argc, const char* argv[]);
     static void parseStdin(Callback callback);
     static std::mutex mutex;
+
+    static std::filesystem::path expandPath(const std::string& path);
 
 private:
     static Choice parseLine(std::string line);

@@ -16,6 +16,10 @@ install: release
 package: release
 	cpack --config build/release/CPackConfig.cmake
 
+package-pacman: release
+	makepkg -s
+	# then in ../hypwat-bin: makepkg --printsrcinfo > .SRCINFO
+
 run: debug
 	./build/debug/hyprwat foo:FooZZZZZZZZZZZZZZZZZZZZZZZZZZZZ bar:Bar* zbz:'Zack Bartel'
 
@@ -36,6 +40,11 @@ run-wifi: debug
 run-audio: debug
 	./build/debug/hyprwat --audio
 
+run-custom: debug
+	./build/debug/hyprwat --custom examples/custom_menu/main.yaml
+
+run-wallpaper: debug
+	./build/debug/hyprwat --wallpaper ~/.local/share/wallpapers
 
 reset-wifi:
 	sudo nmcli device disconnect wlan0

@@ -1,0 +1,63 @@
+title: "UI Controls Examples"
+sections:
+  - type: input
+    id: "input_id"
+    hint: "Input Example"
+    password: false
+    action:
+      type: execute
+      command: "echo Input value: {value}"
+
+  - type: input
+    id: "password_id"
+    hint: "Password Example"
+    password: true
+    action:
+      type: execute
+      command: "echo Password value: {value}"
+
+  - type: slider
+    id: "slider_id"
+    label: "Slider Example"
+    min: 0
+    max: 100
+    default: 50
+    action:
+      type: execute
+      command: "echo Slider value: {value}"
+      trigger: on_release
+  - type: checkbox
+    id: "checkbox_id"
+    label: "Checkbox Example"
+    default: true
+    action:
+      type: execute
+      command: "echo Checkbox is {value}"
+  - type: combo
+    id: "combo_id"
+    label: "Combo Box Example"
+    items:
+      - "Option 1"
+      - "Option 2"
+      - "Option 3"
+    default: 1
+    action:
+      type: execute
+      command: "echo Selected option index: {index}"
+  - type: color_picker
+    id: "color_picker_id"
+    label: "Color Picker Example"
+    default: "#ff0000"
+    action:
+      type: execute
+      command: "echo Selected color: {value}"
+      trigger: on_release
+  - type: separator
+  - type: button
+    label: "← Back"
+    action:
+      type: back
+shortcuts:
+  - key: "Escape"
+    action:
+      type: back # ESC goes back instead of canceling

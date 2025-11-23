@@ -9,11 +9,11 @@ namespace wl {
     public:
         Wayland();
         ~Wayland();
-        Display& display() { return m_display; }
-        InputHandler& input() { return *m_input; }
+        Display& display() { return display_; }
+        InputHandler& input() { return *input_; }
 
     private:
-        Display m_display;
-        std::unique_ptr<InputHandler> m_input;
+        Display display_;
+        std::unique_ptr<InputHandler> input_;
     };
 } // namespace wl

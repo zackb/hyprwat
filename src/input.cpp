@@ -1,5 +1,7 @@
 #include "input.hpp"
 #include <algorithm>
+#include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <thread>
 
@@ -29,6 +31,31 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
 
     if (std::string(argv[1]) == "--audio") {
         result.mode = InputMode::AUDIO;
+        return result;
+    }
+
+    if (std::string(argv[1]) == "--custom") {
+        result.mode = InputMode::CUSTOM;
+        if (argc > 2) {
+            result.configPath = argv[2];
+        }
+        return result;
+    }
+
+    if (std::string(argv[1]) == "--wallpaper") {
+        result.mode = InputMode::WALLPAPER;
+        if (argc > 2) {
+            result.wallpaperDir = Input::expandPath(argv[2]);
+        } else {
+            std::filesystem::path userWallpapers = Input::expandPath("~/.local/share/wallpapers");
+            if (std::filesystem::exists(userWallpapers)) {
+                result.wallpaperDir = userWallpapers.string();
+                return result;
+            } else if (std::filesystem::exists("/usr/share/wallpapers")) {
+                result.wallpaperDir = "/usr/share/wallpapers";
+                return result;
+            }
+        }
         return result;
     }
 
@@ -83,4 +110,28 @@ Choice Input::parseLine(std::string line) {
     }
 
     return item;
+}
+
+std::filesystem::path Input::expandPath(const std::string& path) {
+    if (path.empty())
+        return path;
+
+    // ~ expansion
+    if (path[0] == '~') {
+        const char* home = std::getenv("HOME");
+        if (!home) {
+            throw std::runtime_error("HOME environment variable not set");
+        }
+        return std::filesystem::path(home) / path.substr(2);
+    }
+
+    if (path.find("$HOME") == 0) {
+        const char* home = std::getenv("HOME");
+        if (!home) {
+            throw std::runtime_error("HOME environment variable not set");
+        }
+        return std::filesystem::path(home) / path.substr(6);
+    }
+
+    return path;
 }

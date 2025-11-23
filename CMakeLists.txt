@@ -54,6 +54,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(inih)
 
+# stb_image
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
+
 add_library(inih STATIC
     ${inih_SOURCE_DIR}/ini.c
     ${inih_SOURCE_DIR}/cpp/INIReader.cpp
@@ -64,7 +73,23 @@ target_include_directories(inih PUBLIC
     ${PIPEWIRE_INCLUDE_DIRS}
     ${SDBUSCPP_INCLUDE_DIRS}
     ${inih_SOURCE_DIR}/cpp
+    ${stb_SOURCE_DIR}
 )
+
+# yaml-cpp
+FetchContent_Declare(
+    yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG master
+)
+
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(yaml-cpp)
+
 
 # Main executable
 add_executable(hyprwat
@@ -82,11 +107,17 @@ add_executable(hyprwat
     src/frames/selector.cpp
     src/frames/input.cpp
     src/frames/text.cpp
+    src/frames/custom.cpp
+    src/frames/images.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
     src/flows/audio_flow.cpp
+    src/flows/custom_flow.cpp
+    src/flows/wallpaper_flow.cpp
     src/net/network_manager.cpp
     src/audio/audio.cpp
+    src/wallpaper/thumbnail.cpp
+    src/wallpaper/wallpaper.cpp
     ${IMGUI_SOURCES}
     ${WAYLAND_PROTOCOLS}
 )
@@ -123,6 +154,7 @@ target_link_libraries(hyprwat PRIVATE
     ${PIPEWIRE_LIBRARIES}
     ${SDBUSCPP_LIBRARIES}
     inih
+    yaml-cpp
     ${CMAKE_DL_LIBS}
     m
     pthread
@@ -138,7 +170,7 @@ install(FILES man/hyprwat.6
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_NAME "hyprwat")
-set(CPACK_PACKAGE_VERSION "0.5.0")
+set(CPACK_PACKAGE_VERSION "0.9.1")
 set(CPACK_PACKAGE_CONTACT "zack@bartel.com")
 set(CPACK_GENERATOR "DEB;RPM;TGZ")
 

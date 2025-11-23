@@ -1,19 +1,44 @@
 # hyprwat
 
-A simple Wayland panel to present selectable options with a customizable interface. Designed to work seamlessly with Hyprland compositor.
+A Hyprland menu utility to present selectable options with a customizable interface.
 
 ## Description
 
-hyprwat creates a popup menu at your cursor position where you can select from a list of options. It's particularly useful for creating interactive menus for system controls, WiFi networks, or any other selectable items in a Wayland environment. It can also present input prompts for text or passwords. Different modes can be triggered via command line arguments including a WiFi network selector and audio device selector.
+hyprwat creates a popup menu at your cursor position where you can select from a list of options. It also has built-in support for WiFi networks, audio devices, wallpapers, and custom menus. Custom menus can be defined using simple YAML configuration files.
 
 ## Features
 
 - **Wayland native**: Built specifically for Wayland compositors
 - **Hyprland integration**: Designed to work with Hyprland compositor
 - **Cursor positioning**: Automatically appears at your current cursor position
-- **Flexible input**: Accept options via command line arguments or stdin
-- **UI**: Interface built with ImGui
-- **Pre-selection support**: Mark items as initially selected
+- **WiFi selector**: Built-in support for selecting WiFi networks (via dbus and NetworkManager
+- **Audio selector**: Built-in support for selecting audio input/output devices (via Pipewire)
+- **Wallpaper selection**: Easily select a wallpaper from a directory of images (hyprpaper only)
+- **Custom menus**: Define your own menus using simple YAML configuration files
+- **Theming**: Customize the appearance with a configuration file
+
+### Examples
+
+#### WiFi Network Selector
+
+![wifi](examples/img/wifi.png)
+
+#### Wallpaper Selector
+
+![wallpapers](examples/img/wallpapers.png)
+
+#### Power Profile Selector
+
+![powerprofilesctl](examples/img/powerprofiles.png)
+
+See the [examples](examples) directory for more.
+
+## Installation
+
+```
+yay -S hyprwat
+```
+Or build from source (see Build Instructions below).
 
 ## Usage
 
@@ -42,19 +67,11 @@ If no arguments are provided, hyprwat will read from stdin, expecting one item p
 - `--password <hint>`: Show a password input prompt (masked input) with optional hint text
 - `--audio`: Show audio input/output device selector (requires pipewire)
 - `--wifi`:  Show WiFi network selection
+- `--custom <file>`: Load a custom menu from a YAML configuration file
+- `--wallpaper <dir>`: Select a wallpaper from the specified directory (for hyprpaper)
 
 
-### Examples
-
-#### WiFi Network Selector
-
-![wifi](examples/img/wifi.png)
-
-#### Power Profile Selector
-
-![powerprofilesctl](examples/img/powerprofiles.png)
-
-See the [examples](examples) directory for more.
+### More Examples
 
 ```bash
 # Simple options with custom display names and pre-selection
@@ -74,6 +91,12 @@ hyprwat --wifi
 
 # Audio device selection
 hyprwat --audio
+
+# Custom menu defined in yaml config files
+hyprwat --custom ~/.config/hyprwat/menus/powermenu.yaml
+
+# Wallpaper selection from a directory
+hyprwat --wallpaper ~/.local/share/wallpapers
 
 ```
 See the [examples](examples) directory for more.
@@ -164,6 +187,10 @@ cmake --build --preset debug
   - `renderer/`: EGL/OpenGL rendering context
   - `selection/`: Selection/Menu handling logic and UI
   - `hyprland/`: Hyprland IPC integration
+  - `audio/`: Pipewire audio device handling
+  - `wifi/`: WiFi network handling via DBus and NetworkManager
+  - `frames/`: UI frame components
+  - `flows/`: UI flow definitions (select network -> input password)
 - `ext/imgui/`: ImGui library (git submodule)
 - `CMakeLists.txt`: Build configuration
 - `Makefile`: Convenience build targets
@@ -209,7 +236,7 @@ fi
 
 ### Passphrase Input Prompt
 ```bash
-PASSPHRASE=$(./build/debug/hyprwat --input Passphrase)
+PASSPHRASE=$(hyprwat --input Passphrase)
 echo $PASSPHRASE
 ```
 
@@ -232,7 +259,7 @@ I created hyprwat to fill a gap in the Wayland ecosystem for a simple, flexible,
 
 If nothing else a pretty cool [cpp wrapper for Wayland protocols](src/wayland).
 
-If there's enough interest I'd like to expand it to have different kinds of UI like text input (wifi passwords) or sliders (volume control) and have it be a more general purpose hyprland control.
+As time passed I added more features and built-in selectors for things I couldn't find elsewhere. I didn't want to rice rofi to make a wallpaper selector, so I added that too (hyprpaper only)!
 
 ## License
 

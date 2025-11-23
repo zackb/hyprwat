@@ -1,6 +1,6 @@
 #include "network_manager.hpp"
+#include "../debug/log.hpp"
 #include "../util.hpp"
-#include <iostream>
 
 NetworkManagerClient::NetworkManagerClient() {
     connection = sdbus::createSystemBusConnection();
@@ -47,7 +47,7 @@ std::vector<sdbus::ObjectPath> NetworkManagerClient::getAccessPoints(const sdbus
             .onInterface("org.freedesktop.NetworkManager.Device.Wireless")
             .storeResultsTo(aps);
     } catch (const sdbus::Error& e) {
-        std::cerr << "Failed to get access points for device " << devicePath << ": " << e.getMessage() << std::endl;
+        debug::log(ERR, "Failed to get access points for device {}: {}", devicePath.c_str(), e.getMessage());
     }
     return aps;
 }
@@ -59,7 +59,7 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
 
     auto wifiDevices = getWifiDevices();
     if (wifiDevices.empty()) {
-        std::cerr << "No Wi-Fi devices found" << std::endl;
+        debug::log(ERR, "No Wi-Fi devices found");
         return {};
     }
 
@@ -68,7 +68,7 @@ std::vector<WifiNetwork> NetworkManagerClient::listWifiNetworks() {
         try {
             apPaths = getAccessPoints(devicePath);
         } catch (const sdbus::Error& e) {
-            std::cerr << "Failed to get access points for device " << devicePath << ": " << e.getMessage() << std::endl;
+            debug::log(ERR, "Failed to get access points for device {}: {}", devicePath.c_str(), e.getMessage());
             continue;
         }
 
@@ -115,7 +115,7 @@ void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork
 
     auto wifiDevices = getWifiDevices();
     if (wifiDevices.empty()) {
-        std::cerr << "No Wi-Fi devices found" << std::endl;
+        debug::log(ERR, "No Wi-Fi devices found");
         return;
     }
 
@@ -158,7 +158,7 @@ void NetworkManagerClient::scanWifiNetworks(std::function<void(const WifiNetwork
                 .onInterface("org.freedesktop.NetworkManager.Device.Wireless")
                 .withArguments(std::map<std::string, sdbus::Variant>{});
         } catch (const sdbus::Error& e) {
-            std::cerr << "RequestScan failed on device " << devicePath << ": " << e.getMessage() << std::endl;
+            debug::log(ERR, "RequestScan failed on device {}: {}", devicePath.c_str(), e.getMessage());
         }
 
         // Process events until timeout
@@ -246,7 +246,7 @@ bool NetworkManagerClient::connectToNetwork(const std::string& ssid,
             });
         return true;
     } catch (const sdbus::Error& e) {
-        std::cerr << "Failed to connect: " << e.getName() << " " << e.getMessage() << std::endl;
+        debug::log(ERR, "Failed to connect to network {}: {}", ssid, e.getMessage());
         return false;
     }
 }

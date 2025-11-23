@@ -49,6 +49,7 @@ void UI::init(int x, int y, float scale) {
     ImGui::CreateContext();
     ImGui_ImplOpenGL3_Init("#version 100");
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     // Logical size in points
     io.DisplaySize = ImVec2((float)surface->width(), (float)surface->height());
@@ -105,6 +106,7 @@ void UI::runFlow(Flow& flow) {
         if (currentFrame != lastFrame && currentConfig) {
             currentFrame->applyTheme(*currentConfig);
         }
+
         lastFrame = currentFrame;
 
         // run the frame until it returns a result
@@ -132,7 +134,6 @@ FrameResult UI::renderFrame(Frame& frame) {
     static Vec2 lastWindowSize;
     static int resizeStabilityCounter = 0;
     static int frameCount = 0;
-    static bool hasRepositioned = false;
     frameCount++;
 
     FrameResult result = frame.render();
@@ -154,7 +155,7 @@ FrameResult UI::renderFrame(Frame& frame) {
     // Resize conditions: immediately for first frames, or after stability for later frames
     bool shouldResize = (resizeStabilityCounter >= RESIZE_STABILITY_FRAMES) &&
                         (desiredSize.x != surface->width() || desiredSize.y != surface->height()) &&
-                        (desiredSize.x > 0 && desiredSize.y > 0); // Ensure valid size
+                        (desiredSize.x > 0 && desiredSize.y > 0);
 
     if (shouldResize) {
         // Clamp to reasonable bounds
@@ -167,24 +168,27 @@ FrameResult UI::renderFrame(Frame& frame) {
 
         // Update display size immediately for current frame
         io.DisplaySize = ImVec2((float)newWidth, (float)newHeight);
+
+        // reposition window based on frame preferences
+        if (frame.shouldRepositionOnResize()) {
+            // cursor-based positioning for menus
+            // compute viewport in Hyprland logical units
+            auto [viewport_physical_w, viewport_physical_h] = wayland.display().getOutputSize();
+            int vw_hypr = (int)(viewport_physical_w / currentFractionalScale);
+            int vh_hypr = (int)(viewport_physical_h / currentFractionalScale);
+
+            // window size in Hyprland logical units
+            int width_hypr = surface->width();
+            int height_hypr = surface->height();
+
+            surface->reposition(initialX, initialY, vw_hypr, vh_hypr, width_hypr, height_hypr);
+        } else if (!frame.shouldPositionAtCursor()) {
+            // center window for non-menu frames
+            centerWindow();
+        }
     } else {
         // Ensure DisplaySize is always current
         io.DisplaySize = ImVec2((float)surface->width(), (float)surface->height());
-    }
-
-    // reposition after resize is stable to prevent ui from going off screen
-    if (!hasRepositioned && resizeStabilityCounter >= RESIZE_STABILITY_FRAMES) {
-        hasRepositioned = true;
-        auto [viewport_w, viewport_h] = wayland.display().getOutputSize();
-
-        int vw_hypr = viewport_w / currentFractionalScale;
-        int vh_hypr = viewport_h / currentFractionalScale;
-
-        // window size also needs to be in Hyprland / fractional scale space
-        int width_hypr = surface->width() * currentScale / currentFractionalScale;
-        int height_hypr = surface->height() * currentScale / currentFractionalScale;
-
-        surface->reposition(initialX, initialY, vw_hypr, vh_hypr, width_hypr, height_hypr);
     }
 
     // Use buffer pixel size for viewport (after any resize)
@@ -238,6 +242,7 @@ void UI::applyTheme(const Config& config) {
     style.ItemSpacing = ImVec2(10, 6);
     style.WindowPadding = ImVec2(10, 10);
     style.FramePadding = ImVec2(8, 4);
+    style.Colors[ImGuiCol_Border] = config.getColor("theme", "border_color", "#33ccffee");
 
     // transparency
     style.Alpha = config.getFloat("theme", "background_blur", 0.95f);
@@ -259,4 +264,29 @@ void UI::setupFont(ImGuiIO& io, const Config& config) {
 
     // hidpi handled by DisplayFramebufferScale
     io.FontGlobalScale = 1.0f;
+}
+
+void UI::centerWindow() {
+    if (!surface) {
+        return;
+    }
+
+    // get viewport size in physical pixels
+    auto [viewport_physical_w, viewport_physical_h] = wayland.display().getOutputSize();
+
+    // convert viewport to hyprland logical units
+    int vw_hypr = (int)(viewport_physical_w / currentFractionalScale);
+    int vh_hypr = (int)(viewport_physical_h / currentFractionalScale);
+
+    // window size from surface->width() is in hyprland logical units
+    // (because getSize() returns hyprland logical and that's what we pass to resize())
+    int width_hypr = surface->width();
+    int height_hypr = surface->height();
+
+    // calculate centered position in hyprland logical units
+    int centered_x_hypr = (vw_hypr - width_hypr) / 2;
+    int centered_y_hypr = (vh_hypr - height_hypr) / 2;
+
+    // reposition to center
+    surface->reposition(centered_x_hypr, centered_y_hypr, vw_hypr, vh_hypr, width_hypr, height_hypr);
 }

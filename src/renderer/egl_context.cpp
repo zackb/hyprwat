@@ -1,17 +1,17 @@
 #include "egl_context.hpp"
-#include <cstdio>
+#include "../debug/log.hpp"
 
 namespace egl {
 
     Context::Context(wl_display* display) : display(display) {
         egl_display = eglGetDisplay((EGLNativeDisplayType)display);
         if (egl_display == EGL_NO_DISPLAY) {
-            fprintf(stderr, "Failed to get EGL display\n");
+            debug::log(ERR, "Failed to get EGL display");
             return;
         }
 
         if (!eglInitialize(egl_display, nullptr, nullptr)) {
-            fprintf(stderr, "Failed to initialize EGL\n");
+            debug::log(ERR, "Failed to initialize EGL");
             return;
         }
 
@@ -38,8 +38,8 @@ namespace egl {
                                                  EGL_NONE};
         egl_context = eglCreateContext(egl_display, egl_config, EGL_NO_CONTEXT, context_attribs);
         if (egl_context == EGL_NO_CONTEXT) {
-            fprintf(stderr, "Failed to create EGL context\n");
-            fprintf(stderr, "Error code: %d\n", eglGetError());
+            debug::log(ERR, "Failed to create EGL context");
+            debug::log(ERR, "Error code: 0x%x", eglGetError());
             return;
         }
 
@@ -66,7 +66,7 @@ namespace egl {
     bool Context::createWindowSurface(wl_surface* surface, int width, int height) {
         egl_window = wl_egl_window_create(surface, width, height);
         if (!egl_window) {
-            fprintf(stderr, "Failed to create EGL window\n");
+            debug::log(ERR, "Failed to create EGL window");
             return false;
         }
 
@@ -74,8 +74,8 @@ namespace egl {
 
         egl_surface = eglCreateWindowSurface(egl_display, egl_config, (EGLNativeWindowType)egl_window, surface_attribs);
         if (egl_surface == EGL_NO_SURFACE) {
-            fprintf(stderr, "Failed to create EGL surface\n");
-            fprintf(stderr, "Error code: 0x%x\n", eglGetError());
+            debug::log(ERR, "Failed to create EGL surface");
+            debug::log(ERR, "Error code: 0x%x", eglGetError());
             return false;
         }
 
