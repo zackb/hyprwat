@@ -149,10 +149,9 @@ int main(const int argc, const char** argv) {
             flow = std::make_unique<MenuFlow>(args.choices);
         } else {
             // parse stdin asynchronously for choices
-            auto menuFlowPtr = std::make_unique<MenuFlow>();
-            MenuFlow* menuFlow = menuFlowPtr.get();
-            flow = std::move(menuFlowPtr);
-            Input::parseStdin([&](Choice choice) { menuFlow->addChoice(choice); });
+            flow = std::make_unique<MenuFlow>();
+            MenuFlow* menuFlow = static_cast<MenuFlow*>(flow.get());
+            Input::parseStdin([menuFlow](Choice choice) { menuFlow->addChoice(choice); });
         }
         break;
     }
