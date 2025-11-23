@@ -223,7 +223,7 @@ CustomFrame::Action CustomFrame::parseAction(const YAML::Node& node) {
         action.value = node["value"] ? node["value"].as<std::string>() : "";
     } else if (typeStr == "submenu") {
         action.type = ActionType::SubMenu;
-        action.submenu_path = node["path"].as<std::string>();
+        action.submenuPath = node["path"].as<std::string>();
     } else if (typeStr == "back") {
         action.type = ActionType::Back;
     } else if (typeStr == "cancel") {
@@ -274,7 +274,7 @@ FrameResult CustomFrame::executeAction(const Action& action, const std::string& 
         return FrameResult::Submit(value.empty() ? action.value : value);
     case ActionType::SubMenu:
         // a special marker for submenu
-        return FrameResult::Submit("__SUBMENU__:" + action.submenu_path);
+        return FrameResult::Submit("__SUBMENU__:" + action.submenuPath);
     case ActionType::Back:
         // special marker for going back
         return FrameResult::Submit("__BACK__");

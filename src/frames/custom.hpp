@@ -35,7 +35,7 @@ private:
         ActionType type;
         std::string command;        // Execute
         std::string value;          // Submit
-        std::string submenu_path;   // SubMenu
+        std::string submenuPath;    // SubMenu
         bool closeOnSuccess = true; // Execute
 
         enum TriggerType { OnClick, OnChange, OnRelease } trigger = OnClick;
