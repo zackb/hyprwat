@@ -6,10 +6,10 @@
 CustomFrame::CustomFrame(const std::string& configPath) : title("Custom Menu") {
     if (!loadConfig(configPath)) {
         // add error widget if config fails to load
-        auto errorWidget = std::make_unique<TextWidget>();
-        errorWidget->content = "Failed to load config: " + configPath;
-        errorWidget->style = TextWidget::Bold;
-        widgets.push_back(std::move(errorWidget));
+        auto error_widget = std::make_unique<TextWidget>();
+        error_widget->content = "Failed to load config: " + configPath;
+        error_widget->style = TextWidget::Bold;
+        widgets.push_back(std::move(error_widget));
     }
 }
 
@@ -24,10 +24,10 @@ bool CustomFrame::loadConfig(const std::string& path) {
 
         // dimensions
         if (config["width"]) {
-            fixedWidth = config["width"].as<float>();
+            fixed_width = config["width"].as<float>();
         }
         if (config["height"]) {
-            fixedHeight = config["height"].as<float>();
+            fixed_height = config["height"].as<float>();
         }
 
         // sections/widgets
@@ -121,7 +121,7 @@ std::unique_ptr<CustomFrame::Widget> CustomFrame::parseWidget(const YAML::Node& 
                 si.action = parseAction(item["action"]);
 
                 if (si.selected) {
-                    widget->selectedIndex = idx;
+                    widget->selected_index = idx;
                 }
 
                 widget->items.push_back(si);
@@ -153,9 +153,9 @@ std::unique_ptr<CustomFrame::Widget> CustomFrame::parseWidget(const YAML::Node& 
         auto widget = std::make_unique<SliderWidget>();
         widget->id = node["id"].as<std::string>();
         widget->label = node["label"].as<std::string>();
-        widget->minValue = node["min"] ? node["min"].as<float>() : 0.0f;
-        widget->maxValue = node["max"] ? node["max"].as<float>() : 100.0f;
-        widget->value = node["default"] ? node["default"].as<float>() : widget->minValue;
+        widget->min_value = node["min"] ? node["min"].as<float>() : 0.0f;
+        widget->max_value = node["max"] ? node["max"].as<float>() : 100.0f;
+        widget->value = node["default"] ? node["default"].as<float>() : widget->min_value;
         widget->action = parseAction(node["action"]);
         return widget;
     }
@@ -169,7 +169,7 @@ std::unique_ptr<CustomFrame::Widget> CustomFrame::parseWidget(const YAML::Node& 
                 widget->items.push_back(item.as<std::string>());
             }
         }
-        widget->currentIndex = node["default"] ? node["default"].as<int>() : 0;
+        widget->current_index = node["default"] ? node["default"].as<int>() : 0;
         widget->action = parseAction(node["action"]);
         return widget;
     }
@@ -209,7 +209,7 @@ CustomFrame::Action CustomFrame::parseAction(const YAML::Node& node) {
     if (typeStr == "execute") {
         action.type = ActionType::Execute;
         action.command = node["command"].as<std::string>();
-        action.closeOnSuccess = !node["close_on_success"] || node["close_on_success"].as<bool>();
+        action.close_on_success = !node["close_on_success"] || node["close_on_success"].as<bool>();
 
         if (node["trigger"]) {
             std::string trigger = node["trigger"].as<std::string>();
@@ -223,7 +223,7 @@ CustomFrame::Action CustomFrame::parseAction(const YAML::Node& node) {
         action.value = node["value"] ? node["value"].as<std::string>() : "";
     } else if (typeStr == "submenu") {
         action.type = ActionType::SubMenu;
-        action.submenuPath = node["path"].as<std::string>();
+        action.submenu_path = node["path"].as<std::string>();
     } else if (typeStr == "back") {
         action.type = ActionType::Back;
     } else if (typeStr == "cancel") {
@@ -265,7 +265,7 @@ FrameResult CustomFrame::executeAction(const Action& action, const std::string& 
     case ActionType::Execute: {
         std::string cmd = replaceTokens(action.command, value);
         int result = system(cmd.c_str());
-        if (action.closeOnSuccess && result == 0) {
+        if (action.close_on_success && result == 0) {
             return FrameResult::Submit(cmd);
         }
         return FrameResult::Continue();
@@ -274,7 +274,7 @@ FrameResult CustomFrame::executeAction(const Action& action, const std::string& 
         return FrameResult::Submit(value.empty() ? action.value : value);
     case ActionType::SubMenu:
         // a special marker for submenu
-        return FrameResult::Submit("__SUBMENU__:" + action.submenuPath);
+        return FrameResult::Submit("__SUBMENU__:" + action.submenu_path);
     case ActionType::Back:
         // special marker for going back
         return FrameResult::Submit("__BACK__");
@@ -286,22 +286,22 @@ FrameResult CustomFrame::executeAction(const Action& action, const std::string& 
 }
 
 FrameResult CustomFrame::render() {
-    // Calculate desired size
-    if (fixedWidth > 0 && fixedHeight > 0) {
-        lastSize = ImVec2(fixedWidth, fixedHeight);
+    // calculate desired size
+    if (fixed_width > 0 && fixed_height > 0) {
+        last_size = ImVec2(fixed_width, fixed_height);
     } else {
         ImGuiStyle& style = ImGui::GetStyle();
         float totalHeight = style.WindowPadding.y * 2;
-        float maxWidth = fixedWidth > 0 ? fixedWidth : 400.0f;
+        float maxWidth = fixed_width > 0 ? fixed_width : 400.0f;
 
         for (const auto& widget : widgets) {
             totalHeight += widget->getHeight() + style.ItemSpacing.y;
         }
 
-        lastSize = ImVec2(maxWidth, totalHeight);
+        last_size = ImVec2(maxWidth, totalHeight);
     }
 
-    // Set window to fill display
+    // window to fill display
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
     ImGui::SetNextWindowPos(ImVec2(0, 0));
 
@@ -310,7 +310,7 @@ FrameResult CustomFrame::render() {
                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
                      ImGuiWindowFlags_NoResize);
 
-    // Render all widgets
+    // render all widgets
     FrameResult result = FrameResult::Continue();
     for (auto& widget : widgets) {
         FrameResult widgetResult = widget->render(*this);
@@ -319,7 +319,7 @@ FrameResult CustomFrame::render() {
         }
     }
 
-    // Check shortcuts
+    // check shortcuts
     for (const auto& shortcut : shortcuts) {
         bool ctrlMatch = !shortcut.ctrl || ImGui::GetIO().KeyCtrl;
         bool shiftMatch = !shortcut.shift || ImGui::GetIO().KeyShift;
@@ -332,15 +332,15 @@ FrameResult CustomFrame::render() {
 
     ImGui::End();
 
-    firstFrame = false;
+    first_frame = false;
     return result;
 }
 
-Vec2 CustomFrame::getSize() { return Vec2{lastSize.x, lastSize.y}; }
+Vec2 CustomFrame::getSize() { return Vec2{last_size.x, last_size.y}; }
 
 void CustomFrame::applyTheme(const Config& config) {
-    hoverColor = config.getColor("theme", "hover_color", "#3366B3FF");
-    activeColor = config.getColor("theme", "active_color", "#3366B366");
+    hover_color = config.getColor("theme", "hover_color", "#3366B3FF");
+    active_color = config.getColor("theme", "active_color", "#3366B366");
 }
 
 // widget implementations
@@ -356,8 +356,8 @@ FrameResult CustomFrame::TextWidget::render(CustomFrame& frame) {
 }
 
 float CustomFrame::TextWidget::getHeight() const {
-    ImVec2 textSize = ImGui::CalcTextSize(content.c_str());
-    return textSize.y;
+    ImVec2 text_size = ImGui::CalcTextSize(content.c_str());
+    return text_size.y;
 }
 
 FrameResult CustomFrame::SeparatorWidget::render(CustomFrame& frame) {
@@ -376,16 +376,16 @@ FrameResult CustomFrame::ButtonWidget::render(CustomFrame& frame) {
 
 float CustomFrame::ButtonWidget::getHeight() const {
     ImGuiStyle& style = ImGui::GetStyle();
-    ImVec2 textSize = ImGui::CalcTextSize(label.c_str());
-    return textSize.y + style.FramePadding.y * 2;
+    ImVec2 text_size = ImGui::CalcTextSize(label.c_str());
+    return text_size.y + style.FramePadding.y * 2;
 }
 
 FrameResult CustomFrame::SelectableListWidget::render(CustomFrame& frame) {
     FrameResult result = FrameResult::Continue();
     for (size_t i = 0; i < items.size(); i++) {
-        bool isSelected = (int)i == selectedIndex;
-        if (ImGui::Selectable(items[i].label.c_str(), isSelected)) {
-            selectedIndex = i;
+        bool is_selected = (int)i == selected_index;
+        if (ImGui::Selectable(items[i].label.c_str(), is_selected)) {
+            selected_index = i;
             result = frame.executeAction(items[i].action, items[i].id);
         }
     }
@@ -396,8 +396,8 @@ float CustomFrame::SelectableListWidget::getHeight() const {
     float height = 0;
     ImGuiStyle& style = ImGui::GetStyle();
     for (const auto& item : items) {
-        ImVec2 textSize = ImGui::CalcTextSize(item.label.c_str());
-        height += textSize.y + style.FramePadding.y * 2 + style.ItemSpacing.y;
+        ImVec2 text_size = ImGui::CalcTextSize(item.label.c_str());
+        height += text_size.y + style.FramePadding.y * 2 + style.ItemSpacing.y;
     }
     return height;
 }
@@ -405,7 +405,7 @@ float CustomFrame::SelectableListWidget::getHeight() const {
 FrameResult CustomFrame::InputWidget::render(CustomFrame& frame) {
     ImGui::SetNextItemWidth(-1);
 
-    if (frame.firstFrame) {
+    if (frame.first_frame) {
         ImGui::SetKeyboardFocusHere();
     }
 
@@ -414,9 +414,9 @@ FrameResult CustomFrame::InputWidget::render(CustomFrame& frame) {
         flags |= ImGuiInputTextFlags_Password;
     }
 
-    bool enterPressed = ImGui::InputTextWithHint(("##" + id).c_str(), hint.c_str(), buffer, sizeof(buffer), flags);
+    bool enter_pressed = ImGui::InputTextWithHint(("##" + id).c_str(), hint.c_str(), buffer, sizeof(buffer), flags);
 
-    if (enterPressed) {
+    if (enter_pressed) {
         return frame.executeAction(action, std::string(buffer));
     }
 
@@ -425,8 +425,8 @@ FrameResult CustomFrame::InputWidget::render(CustomFrame& frame) {
 
 float CustomFrame::InputWidget::getHeight() const {
     ImGuiStyle& style = ImGui::GetStyle();
-    ImVec2 textSize = ImGui::CalcTextSize("Ay");
-    return textSize.y + style.FramePadding.y * 2;
+    ImVec2 text_size = ImGui::CalcTextSize("Ay");
+    return text_size.y + style.FramePadding.y * 2;
 }
 
 FrameResult CustomFrame::CheckboxWidget::render(CustomFrame& frame) {
@@ -438,16 +438,16 @@ FrameResult CustomFrame::CheckboxWidget::render(CustomFrame& frame) {
 
 float CustomFrame::CheckboxWidget::getHeight() const {
     ImGuiStyle& style = ImGui::GetStyle();
-    ImVec2 textSize = ImGui::CalcTextSize(label.c_str());
-    return textSize.y + style.FramePadding.y * 2;
+    ImVec2 text_size = ImGui::CalcTextSize(label.c_str());
+    return text_size.y + style.FramePadding.y * 2;
 }
 
 FrameResult CustomFrame::SliderWidget::render(CustomFrame& frame) {
     ImGui::Text("%s", label.c_str());
 
-    bool valueChanged = ImGui::SliderFloat(("##" + id).c_str(), &value, minValue, maxValue);
+    bool value_changed = ImGui::SliderFloat(("##" + id).c_str(), &value, min_value, max_value);
 
-    if (action.trigger == Action::OnChange && valueChanged) {
+    if (action.trigger == Action::OnChange && value_changed) {
         return frame.executeAction(action, std::to_string((int)value));
     }
 
@@ -460,23 +460,23 @@ FrameResult CustomFrame::SliderWidget::render(CustomFrame& frame) {
 
 float CustomFrame::SliderWidget::getHeight() const {
     ImGuiStyle& style = ImGui::GetStyle();
-    ImVec2 textSize = ImGui::CalcTextSize(label.c_str());
-    return textSize.y * 2 + style.FramePadding.y * 2 + style.ItemSpacing.y;
+    ImVec2 text_size = ImGui::CalcTextSize(label.c_str());
+    return text_size.y * 2 + style.FramePadding.y * 2 + style.ItemSpacing.y;
 }
 
 FrameResult CustomFrame::ComboWidget::render(CustomFrame& frame) {
     ImGui::Text("%s", label.c_str());
 
     if (ImGui::BeginCombo(("##" + id).c_str(),
-                          currentIndex >= 0 && currentIndex < items.size() ? items[currentIndex].c_str() : "")) {
+                          current_index >= 0 && current_index < items.size() ? items[current_index].c_str() : "")) {
         for (int i = 0; i < items.size(); i++) {
-            bool isSelected = (currentIndex == i);
-            if (ImGui::Selectable(items[i].c_str(), isSelected)) {
-                currentIndex = i;
+            bool is_selected = (current_index == i);
+            if (ImGui::Selectable(items[i].c_str(), is_selected)) {
+                current_index = i;
                 ImGui::EndCombo();
                 return frame.executeAction(action, std::to_string(i));
             }
-            if (isSelected) {
+            if (is_selected) {
                 ImGui::SetItemDefaultFocus();
             }
         }
@@ -488,22 +488,22 @@ FrameResult CustomFrame::ComboWidget::render(CustomFrame& frame) {
 
 float CustomFrame::ComboWidget::getHeight() const {
     ImGuiStyle& style = ImGui::GetStyle();
-    ImVec2 textSize = ImGui::CalcTextSize(label.c_str());
-    return textSize.y * 2 + style.FramePadding.y * 2 + style.ItemSpacing.y;
+    ImVec2 text_size = ImGui::CalcTextSize(label.c_str());
+    return text_size.y * 2 + style.FramePadding.y * 2 + style.ItemSpacing.y;
 }
 
 FrameResult CustomFrame::ColorPickerWidget::render(CustomFrame& frame) {
     ImGui::Text("%s", label.c_str());
 
-    bool colorChosen = false;
+    bool color_chosen = false;
 
     bool valueChanged = ImGui::ColorEdit3(("##" + id).c_str(), color);
     if (action.trigger == Action::OnChange && valueChanged) {
-        colorChosen = true;
+        color_chosen = true;
     } else if (action.trigger == Action::OnRelease && ImGui::IsItemDeactivatedAfterEdit()) {
-        colorChosen = true;
+        color_chosen = true;
     }
-    if (colorChosen) {
+    if (color_chosen) {
         // convert to hex
         char hex[8];
         snprintf(
@@ -515,6 +515,6 @@ FrameResult CustomFrame::ColorPickerWidget::render(CustomFrame& frame) {
 
 float CustomFrame::ColorPickerWidget::getHeight() const {
     ImGuiStyle& style = ImGui::GetStyle();
-    ImVec2 textSize = ImGui::CalcTextSize(label.c_str());
-    return textSize.y * 3 + style.FramePadding.y * 2 + style.ItemSpacing.y;
+    ImVec2 text_size = ImGui::CalcTextSize(label.c_str());
+    return text_size.y * 3 + style.FramePadding.y * 2 + style.ItemSpacing.y;
 }

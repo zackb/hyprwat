@@ -33,10 +33,10 @@ private:
 
     struct Action {
         ActionType type;
-        std::string command;        // Execute
-        std::string value;          // Submit
-        std::string submenuPath;    // SubMenu
-        bool closeOnSuccess = true; // Execute
+        std::string command;          // Execute
+        std::string value;            // Submit
+        std::string submenu_path;     // SubMenu
+        bool close_on_success = true; // Execute
 
         enum TriggerType { OnClick, OnChange, OnRelease } trigger = OnClick;
     };
@@ -77,7 +77,7 @@ private:
 
     struct SelectableListWidget : Widget {
         std::vector<SelectableItem> items;
-        int selectedIndex = -1;
+        int selected_index = -1;
         FrameResult render(CustomFrame& frame) override;
         float getHeight() const override;
     };
@@ -103,8 +103,8 @@ private:
     struct SliderWidget : Widget {
         std::string label;
         float value = 0.0f;
-        float minValue = 0.0f;
-        float maxValue = 100.0f;
+        float min_value = 0.0f;
+        float max_value = 100.0f;
         Action action;
         FrameResult render(CustomFrame& frame) override;
         float getHeight() const override;
@@ -113,7 +113,7 @@ private:
     struct ComboWidget : Widget {
         std::string label;
         std::vector<std::string> items;
-        int currentIndex = 0;
+        int current_index = 0;
         Action action;
         FrameResult render(CustomFrame& frame) override;
         float getHeight() const override;
@@ -135,13 +135,13 @@ private:
 
     std::vector<std::unique_ptr<Widget>> widgets;
     std::string title;
-    float fixedWidth = 0.0f;
-    float fixedHeight = 0.0f;
-    ImVec2 lastSize = ImVec2(400, 300);
+    float fixed_width = 0.0f;
+    float fixed_height = 0.0f;
+    ImVec2 last_size = ImVec2(400, 300);
 
     // theme colors
-    ImVec4 hoverColor;
-    ImVec4 activeColor;
+    ImVec4 hover_color;
+    ImVec4 active_color;
 
     // keyboard shortcuts
     struct Shortcut {
@@ -153,5 +153,5 @@ private:
     };
     std::vector<Shortcut> shortcuts;
 
-    bool firstFrame = true;
+    bool first_frame = true;
 };
