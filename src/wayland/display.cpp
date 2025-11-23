@@ -13,8 +13,8 @@ namespace wl {
         }
         if (seat_)
             wl_seat_destroy(seat_);
-        if (layer_shell)
-            zwlr_layer_shell_v1_destroy(layer_shell);
+        if (layerShell_)
+            zwlr_layer_shell_v1_destroy(layerShell_);
         if (compositor_)
             wl_compositor_destroy(compositor_);
         if (registry)
@@ -35,7 +35,7 @@ namespace wl {
         wl_registry_add_listener(registry, &listener, this);
         wl_display_roundtrip(display_);
 
-        if (!compositor_ || !layer_shell) {
+        if (!compositor_ || !layerShell_) {
             debug::log(ERR, "Compositor or layer shell not available");
             return false;
         }
@@ -67,7 +67,7 @@ namespace wl {
             self->compositor_ =
                 static_cast<wl_compositor*>(wl_registry_bind(registry, id, &wl_compositor_interface, 4));
         } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
-            self->layer_shell =
+            self->layerShell_ =
                 static_cast<zwlr_layer_shell_v1*>(wl_registry_bind(registry, id, &zwlr_layer_shell_v1_interface, 1));
         } else if (strcmp(interface, wl_seat_interface.name) == 0) {
             self->seat_ = static_cast<wl_seat*>(wl_registry_bind(registry, id, &wl_seat_interface, 5));
@@ -116,8 +116,8 @@ namespace wl {
             self->outputs_.erase(it);
 
             // Notify about scale change
-            if (self->scale_callback) {
-                self->scale_callback(self->getMaxScale());
+            if (self->scaleCallback) {
+                self->scaleCallback(self->getMaxScale());
             }
         }
     }
@@ -153,8 +153,8 @@ namespace wl {
                 out.scale = factor;
 
                 // Notify about scale change
-                if (self->scale_callback) {
-                    self->scale_callback(self->getMaxScale());
+                if (self->scaleCallback) {
+                    self->scaleCallback(self->getMaxScale());
                 }
                 break;
             }

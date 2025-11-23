@@ -32,13 +32,13 @@ namespace wl {
 
         wl_display* display() const { return display_; }
         wl_compositor* compositor() const { return compositor_; }
-        zwlr_layer_shell_v1* layerShell() const { return layer_shell; }
+        zwlr_layer_shell_v1* layerShell() const { return layerShell_; }
         wl_seat* seat() const { return seat_; }
 
         // Output scale management
         const std::vector<Output>& outputs() const { return outputs_; }
         int32_t getMaxScale() const;
-        void setScaleChangeCallback(std::function<void(int32_t)> callback) { scale_callback = callback; }
+        void setScaleChangeCallback(std::function<void(int32_t)> callback) { scaleCallback = callback; }
 
         // get the size of the first output in physical pixels
         std::pair<int32_t, int32_t> getOutputSize() const;
@@ -47,11 +47,11 @@ namespace wl {
         wl_display* display_;
         wl_registry* registry = nullptr;
         wl_compositor* compositor_ = nullptr;
-        zwlr_layer_shell_v1* layer_shell = nullptr;
+        zwlr_layer_shell_v1* layerShell_ = nullptr;
         wl_seat* seat_ = nullptr;
 
         std::vector<Output> outputs_;
-        std::function<void(int32_t)> scale_callback;
+        std::function<void(int32_t)> scaleCallback;
 
         static void
             registryHandler(void* data, wl_registry* registry, uint32_t id, const char* interface, uint32_t version);
@@ -62,8 +62,8 @@ namespace wl {
                                    wl_output* output,
                                    int32_t x,
                                    int32_t y,
-                                   int32_t physical_width,
-                                   int32_t physical_height,
+                                   int32_t physicalWidth,
+                                   int32_t physicalHeight,
                                    int32_t subpixel,
                                    const char* make,
                                    const char* model,

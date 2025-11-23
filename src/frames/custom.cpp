@@ -24,10 +24,10 @@ bool CustomFrame::loadConfig(const std::string& path) {
 
         // dimensions
         if (config["width"]) {
-            fixed_width = config["width"].as<float>();
+            fixedWidth = config["width"].as<float>();
         }
         if (config["height"]) {
-            fixed_height = config["height"].as<float>();
+            fixedHeight = config["height"].as<float>();
         }
 
         // sections/widgets
@@ -77,7 +77,7 @@ bool CustomFrame::loadConfig(const std::string& path) {
 
         return true;
     } catch (const std::exception& e) {
-        fprintf(stderr, "Error loading custom config: %s\n", e.what());
+        debug::log(ERR, "Error loading custom config: %s", e.what());
         return false;
     }
 }
@@ -121,7 +121,7 @@ std::unique_ptr<CustomFrame::Widget> CustomFrame::parseWidget(const YAML::Node& 
                 si.action = parseAction(item["action"]);
 
                 if (si.selected) {
-                    widget->selected_index = idx;
+                    widget->selectedIndex = idx;
                 }
 
                 widget->items.push_back(si);
@@ -153,9 +153,9 @@ std::unique_ptr<CustomFrame::Widget> CustomFrame::parseWidget(const YAML::Node& 
         auto widget = std::make_unique<SliderWidget>();
         widget->id = node["id"].as<std::string>();
         widget->label = node["label"].as<std::string>();
-        widget->min_value = node["min"] ? node["min"].as<float>() : 0.0f;
-        widget->max_value = node["max"] ? node["max"].as<float>() : 100.0f;
-        widget->value = node["default"] ? node["default"].as<float>() : widget->min_value;
+        widget->minValue = node["min"] ? node["min"].as<float>() : 0.0f;
+        widget->maxValue = node["max"] ? node["max"].as<float>() : 100.0f;
+        widget->value = node["default"] ? node["default"].as<float>() : widget->minValue;
         widget->action = parseAction(node["action"]);
         return widget;
     }
@@ -169,7 +169,7 @@ std::unique_ptr<CustomFrame::Widget> CustomFrame::parseWidget(const YAML::Node& 
                 widget->items.push_back(item.as<std::string>());
             }
         }
-        widget->current_index = node["default"] ? node["default"].as<int>() : 0;
+        widget->currentIndex = node["default"] ? node["default"].as<int>() : 0;
         widget->action = parseAction(node["action"]);
         return widget;
     }
@@ -209,7 +209,7 @@ CustomFrame::Action CustomFrame::parseAction(const YAML::Node& node) {
     if (typeStr == "execute") {
         action.type = ActionType::Execute;
         action.command = node["command"].as<std::string>();
-        action.close_on_success = !node["close_on_success"] || node["close_on_success"].as<bool>();
+        action.closeOnSuccess = !node["close_on_success"] || node["close_on_success"].as<bool>();
 
         if (node["trigger"]) {
             std::string trigger = node["trigger"].as<std::string>();
@@ -265,7 +265,7 @@ FrameResult CustomFrame::executeAction(const Action& action, const std::string& 
     case ActionType::Execute: {
         std::string cmd = replaceTokens(action.command, value);
         int result = system(cmd.c_str());
-        if (action.close_on_success && result == 0) {
+        if (action.closeOnSuccess && result == 0) {
             return FrameResult::Submit(cmd);
         }
         return FrameResult::Continue();
@@ -287,18 +287,18 @@ FrameResult CustomFrame::executeAction(const Action& action, const std::string& 
 
 FrameResult CustomFrame::render() {
     // calculate desired size
-    if (fixed_width > 0 && fixed_height > 0) {
-        last_size = ImVec2(fixed_width, fixed_height);
+    if (fixedWidth > 0 && fixedHeight > 0) {
+        lastSize = ImVec2(fixedWidth, fixedHeight);
     } else {
         ImGuiStyle& style = ImGui::GetStyle();
         float totalHeight = style.WindowPadding.y * 2;
-        float maxWidth = fixed_width > 0 ? fixed_width : 400.0f;
+        float maxWidth = fixedWidth > 0 ? fixedWidth : 400.0f;
 
         for (const auto& widget : widgets) {
             totalHeight += widget->getHeight() + style.ItemSpacing.y;
         }
 
-        last_size = ImVec2(maxWidth, totalHeight);
+        lastSize = ImVec2(maxWidth, totalHeight);
     }
 
     // window to fill display
@@ -332,15 +332,15 @@ FrameResult CustomFrame::render() {
 
     ImGui::End();
 
-    first_frame = false;
+    firstFrame = false;
     return result;
 }
 
-Vec2 CustomFrame::getSize() { return Vec2{last_size.x, last_size.y}; }
+Vec2 CustomFrame::getSize() { return Vec2{lastSize.x, lastSize.y}; }
 
 void CustomFrame::applyTheme(const Config& config) {
-    hover_color = config.getColor("theme", "hover_color", "#3366B3FF");
-    active_color = config.getColor("theme", "active_color", "#3366B366");
+    hoverColor = config.getColor("theme", "hover_color", "#3366B3FF");
+    activeColor = config.getColor("theme", "active_color", "#3366B366");
 }
 
 // widget implementations
@@ -383,9 +383,9 @@ float CustomFrame::ButtonWidget::getHeight() const {
 FrameResult CustomFrame::SelectableListWidget::render(CustomFrame& frame) {
     FrameResult result = FrameResult::Continue();
     for (size_t i = 0; i < items.size(); i++) {
-        bool is_selected = (int)i == selected_index;
+        bool is_selected = (int)i == selectedIndex;
         if (ImGui::Selectable(items[i].label.c_str(), is_selected)) {
-            selected_index = i;
+            selectedIndex = i;
             result = frame.executeAction(items[i].action, items[i].id);
         }
     }
@@ -405,7 +405,7 @@ float CustomFrame::SelectableListWidget::getHeight() const {
 FrameResult CustomFrame::InputWidget::render(CustomFrame& frame) {
     ImGui::SetNextItemWidth(-1);
 
-    if (frame.first_frame) {
+    if (frame.firstFrame) {
         ImGui::SetKeyboardFocusHere();
     }
 
@@ -445,7 +445,7 @@ float CustomFrame::CheckboxWidget::getHeight() const {
 FrameResult CustomFrame::SliderWidget::render(CustomFrame& frame) {
     ImGui::Text("%s", label.c_str());
 
-    bool value_changed = ImGui::SliderFloat(("##" + id).c_str(), &value, min_value, max_value);
+    bool value_changed = ImGui::SliderFloat(("##" + id).c_str(), &value, minValue, maxValue);
 
     if (action.trigger == Action::OnChange && value_changed) {
         return frame.executeAction(action, std::to_string((int)value));
@@ -468,11 +468,11 @@ FrameResult CustomFrame::ComboWidget::render(CustomFrame& frame) {
     ImGui::Text("%s", label.c_str());
 
     if (ImGui::BeginCombo(("##" + id).c_str(),
-                          current_index >= 0 && current_index < items.size() ? items[current_index].c_str() : "")) {
+                          currentIndex >= 0 && currentIndex < items.size() ? items[currentIndex].c_str() : "")) {
         for (int i = 0; i < items.size(); i++) {
-            bool is_selected = (current_index == i);
+            bool is_selected = (currentIndex == i);
             if (ImGui::Selectable(items[i].c_str(), is_selected)) {
-                current_index = i;
+                currentIndex = i;
                 ImGui::EndCombo();
                 return frame.executeAction(action, std::to_string(i));
             }

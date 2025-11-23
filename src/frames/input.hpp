@@ -10,10 +10,10 @@ public:
     virtual Vec2 getSize() override;
 
 private:
-    static constexpr uint32_t buf_size = 128;
-    char input_buffer[buf_size] = {0};
-    ImVec2 last_size = ImVec2(0, 0);
+    static constexpr uint32_t bufSize = 128;
+    char inputBuffer[bufSize] = {0};
+    ImVec2 lastSize = ImVec2(0, 0);
     std::string hint;
     bool password = false;
-    bool should_focus = true;
+    bool shouldFocus = true;
 };

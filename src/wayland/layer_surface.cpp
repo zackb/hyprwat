@@ -2,52 +2,52 @@
 
 namespace wl {
     LayerSurface::LayerSurface(wl_compositor* compositor, zwlr_layer_shell_v1* shell)
-        : compositor(compositor), layer_shell(shell) {}
+        : compositor(compositor), layerShell(shell) {}
 
     LayerSurface::~LayerSurface() {
-        if (layer_surface)
-            zwlr_layer_surface_v1_destroy(layer_surface);
+        if (layerSurface)
+            zwlr_layer_surface_v1_destroy(layerSurface);
         if (surface_)
             wl_surface_destroy(surface_);
     }
 
     // create the layer surface at given position and size
     void LayerSurface::create(int x, int y, int width, int height) {
-        width = width;
+        width_ = width;
         height_ = height;
 
         surface_ = wl_compositor_create_surface(compositor);
-        layer_surface = zwlr_layer_shell_v1_get_layer_surface(
-            layer_shell, surface_, nullptr, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, "popup_menu");
+        layerSurface = zwlr_layer_shell_v1_get_layer_surface(
+            layerShell, surface_, nullptr, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, "popup_menu");
 
         static const zwlr_layer_surface_v1_listener listener = {.configure = configureHandler, .closed = closedHandler};
-        zwlr_layer_surface_v1_add_listener(layer_surface, &listener, this);
+        zwlr_layer_surface_v1_add_listener(layerSurface, &listener, this);
 
-        zwlr_layer_surface_v1_set_size(layer_surface, width, height);
-        zwlr_layer_surface_v1_set_anchor(layer_surface,
+        zwlr_layer_surface_v1_set_size(layerSurface, width, height);
+        zwlr_layer_surface_v1_set_anchor(layerSurface,
                                          ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT);
-        zwlr_layer_surface_v1_set_margin(layer_surface, y, 0, 0, x);
-        zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface,
+        zwlr_layer_surface_v1_set_margin(layerSurface, y, 0, 0, x);
+        zwlr_layer_surface_v1_set_keyboard_interactivity(layerSurface,
                                                          ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE);
-        zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, 0);
+        zwlr_layer_surface_v1_set_exclusive_zone(layerSurface, 0);
 
         wl_surface_commit(surface_);
     }
 
     // resize the layer surface and associated EGL window
-    void LayerSurface::resize(int new_width, int new_height, egl::Context& egl) {
-        width_ = new_width;
-        height_ = new_height;
+    void LayerSurface::resize(int newWidth, int newHeight, egl::Context& egl) {
+        width_ = newWidth;
+        height_ = newHeight;
 
         // Resize the layer surface
-        zwlr_layer_surface_v1_set_size(layer_surface, new_width, new_height);
+        zwlr_layer_surface_v1_set_size(layerSurface, newWidth, newHeight);
         wl_surface_commit(surface_);
 
         // Resize the EGL window
         if (egl.window()) {
-            const int buf_w = new_width * (scale_ > 0 ? scale_ : 1);
-            const int buf_h = new_height * (scale_ > 0 ? scale_ : 1);
-            wl_egl_window_resize(egl.window(), buf_w, buf_h, 0, 0);
+            const int bufW = newWidth * (scale_ > 0 ? scale_ : 1);
+            const int bufH = newHeight * (scale_ > 0 ? scale_ : 1);
+            wl_egl_window_resize(egl.window(), bufW, bufH, 0, 0);
         }
     }
 
@@ -59,7 +59,7 @@ namespace wl {
     }
 
     void LayerSurface::configureHandler(
-        void* data, zwlr_layer_surface_v1* layer_surface, uint32_t serial, uint32_t width, uint32_t height) {
+        void* data, zwlr_layer_surface_v1* layerSurface, uint32_t serial, uint32_t width, uint32_t height) {
         LayerSurface* self = static_cast<LayerSurface*>(data);
 
         if (width > 0)
@@ -67,34 +67,34 @@ namespace wl {
         if (height > 0)
             self->height_ = height;
 
-        zwlr_layer_surface_v1_ack_configure(layer_surface, serial);
+        zwlr_layer_surface_v1_ack_configure(layerSurface, serial);
         wl_surface_commit(self->surface_);
         self->configured = true;
     }
 
     void LayerSurface::closedHandler(void* data, zwlr_layer_surface_v1*) {
         LayerSurface* self = static_cast<LayerSurface*>(data);
-        self->should_exit = true;
+        self->shouldExit_ = true;
     }
 
     // logical pixel coordinates
     void LayerSurface::reposition(
-        int x, int y, int viewport_width, int viewport_height, int window_width, int window_height) {
-        int final_x = x;
-        int final_y = y;
+        int x, int y, int viewportWidth, int viewportHeight, int windowWidth, int windowHeight) {
+        int finalX = x;
+        int finalY = y;
 
-        if (x + window_width > viewport_width) {
-            final_x = viewport_width - window_width;
+        if (x + windowWidth > viewportWidth) {
+            finalX = viewportWidth - windowWidth;
         }
 
-        if (y + window_height > viewport_height) {
-            final_y = viewport_height - window_height;
+        if (y + windowHeight > viewportHeight) {
+            finalY = viewportHeight - windowHeight;
         }
 
-        final_x = std::max(0, final_x);
-        final_y = std::max(0, final_y);
+        finalX = std::max(0, finalX);
+        finalY = std::max(0, finalY);
 
-        zwlr_layer_surface_v1_set_margin(layer_surface, final_y, 0, 0, final_x);
+        zwlr_layer_surface_v1_set_margin(layerSurface, finalY, 0, 0, finalX);
         wl_surface_commit(surface_);
     }
 } // namespace wl

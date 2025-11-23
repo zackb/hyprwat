@@ -17,11 +17,11 @@ public:
     virtual FrameResult render() override;
 
     Vec2 getSize() override { return Vec2{lastSize.x, lastSize.y}; }
-    void done() { _done = true; }
+    void done() { done_ = true; }
 
 private:
     std::string text;
-    bool _done = false;
+    bool done_ = false;
     ImVec4 color;
     ImVec2 lastSize;
 };

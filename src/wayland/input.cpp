@@ -13,8 +13,8 @@ static ImGuiKey ImGui_ImplWayland_KeycodeToImGuiKey(uint32_t keycode);
 
 // map xkb keycode to ImGuiKey
 static const struct {
-    xkb_keycode_t xkb_keycode;
-    ImGuiKey imgui_key;
+    xkb_keycode_t xkbKeycode;
+    ImGuiKey imguiKey;
 } KeyMap[] = {
     {XKB_KEY_Return, ImGuiKey_Enter},
     {XKB_KEY_Tab, ImGuiKey_Tab},
@@ -103,12 +103,12 @@ static const struct {
 
 namespace wl {
     InputHandler::InputHandler(wl_seat* seat) : seat(seat), io(nullptr) {
-        wl_seat_add_listener(seat, &seat_listener, this);
+        wl_seat_add_listener(seat, &seatListener, this);
         context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     }
 
     InputHandler::InputHandler(wl_seat* seat, ImGuiIO* io) : seat(seat), io(io) {
-        wl_seat_add_listener(seat, &seat_listener, this);
+        wl_seat_add_listener(seat, &seatListener, this);
         context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     }
 
@@ -147,28 +147,28 @@ namespace wl {
         // check if the seat has pointer capabilities
         if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
             self->pointer = wl_seat_get_pointer(seat);
-            static const wl_pointer_listener pointer_listener = {.enter = pointerEnter,
-                                                                 .leave = pointerLeave,
-                                                                 .motion = pointerMotion,
-                                                                 .button = pointerButton,
-                                                                 .axis = pointerAxis,
-                                                                 .frame = pointerFrame,
-                                                                 .axis_source = pointerAxisSource,
-                                                                 .axis_stop = pointerAxisStop,
-                                                                 .axis_discrete = pointerAxisDiscrete};
-            wl_pointer_add_listener(self->pointer, &pointer_listener, self);
+            static const wl_pointer_listener pointerListener = {.enter = pointerEnter,
+                                                                .leave = pointerLeave,
+                                                                .motion = pointerMotion,
+                                                                .button = pointerButton,
+                                                                .axis = pointerAxis,
+                                                                .frame = pointerFrame,
+                                                                .axis_source = pointerAxisSource,
+                                                                .axis_stop = pointerAxisStop,
+                                                                .axis_discrete = pointerAxisDiscrete};
+            wl_pointer_add_listener(self->pointer, &pointerListener, self);
         }
 
         // check if the seat has keyboard capabilities
         if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
             self->keyboard = wl_seat_get_keyboard(seat);
-            static const wl_keyboard_listener keyboard_listener = {.keymap = keyboardKeymap,
-                                                                   .enter = keyboardEnter,
-                                                                   .leave = keyboardLeave,
-                                                                   .key = keyboardKey,
-                                                                   .modifiers = keyboardModifiers,
-                                                                   .repeat_info = keyboardRepeatInfo};
-            wl_keyboard_add_listener(self->keyboard, &keyboard_listener, self);
+            static const wl_keyboard_listener keyboardListener = {.keymap = keyboardKeymap,
+                                                                  .enter = keyboardEnter,
+                                                                  .leave = keyboardLeave,
+                                                                  .key = keyboardKey,
+                                                                  .modifiers = keyboardModifiers,
+                                                                  .repeat_info = keyboardRepeatInfo};
+            wl_keyboard_add_listener(self->keyboard, &keyboardListener, self);
         }
     }
 
@@ -201,7 +201,7 @@ namespace wl {
             float x = self->io->MousePos.x;
             float y = self->io->MousePos.y;
             if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
-                self->should_exit = true;
+                self->shouldExit_ = true;
             }
         }
     }
@@ -275,10 +275,10 @@ namespace wl {
         }
 
         // get modifier masks
-        xkb_keycode_t min_keycode = xkb_keymap_min_keycode(self->keymap);
-        xkb_keycode_t max_keycode = xkb_keymap_max_keycode(self->keymap);
+        xkb_keycode_t minKeycode = xkb_keymap_min_keycode(self->keymap);
+        xkb_keycode_t maxKeycode = xkb_keymap_max_keycode(self->keymap);
 
-        for (xkb_keycode_t keycode = min_keycode; keycode <= max_keycode; ++keycode) {
+        for (xkb_keycode_t keycode = minKeycode; keycode <= maxKeycode; ++keycode) {
             xkb_layout_index_t num_layouts = xkb_keymap_num_layouts_for_key(self->keymap, keycode);
             for (xkb_layout_index_t layout = 0; layout < num_layouts; ++layout) {
                 const xkb_keysym_t* syms;
@@ -287,13 +287,13 @@ namespace wl {
                 for (int i = 0; i < nsyms; ++i) {
                     xkb_keysym_t sym = syms[i];
                     if (sym == XKB_KEY_Control_L || sym == XKB_KEY_Control_R) {
-                        self->control_mask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_CTRL);
+                        self->controlMask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_CTRL);
                     } else if (sym == XKB_KEY_Shift_L || sym == XKB_KEY_Shift_R) {
-                        self->shift_mask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_SHIFT);
+                        self->shiftMask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_SHIFT);
                     } else if (sym == XKB_KEY_Alt_L || sym == XKB_KEY_Alt_R) {
-                        self->alt_mask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_ALT);
+                        self->altMask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_ALT);
                     } else if (sym == XKB_KEY_Super_L || sym == XKB_KEY_Super_R) {
-                        self->super_mask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_LOGO);
+                        self->superMask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_LOGO);
                     }
                 }
             }
@@ -335,26 +335,25 @@ namespace wl {
     void InputHandler::keyboardModifiers(void* data,
                                          wl_keyboard*,
                                          uint32_t,
-                                         uint32_t mods_depressed,
-                                         uint32_t mods_latched,
-                                         uint32_t mods_locked,
+                                         uint32_t modsDepressed,
+                                         uint32_t modsLatched,
+                                         uint32_t modsLocked,
                                          uint32_t group) {
         InputHandler* self = static_cast<InputHandler*>(data);
         if (!self->state || !self->io)
             return;
 
         // update the xkb state with the new modifiers
-        xkb_state_update_mask(self->state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+        xkb_state_update_mask(self->state, modsDepressed, modsLatched, modsLocked, 0, 0, group);
 
         // update modifier key states
-        bool ctrl = (mods_depressed & self->control_mask) || (mods_latched & self->control_mask) ||
-                    (mods_locked & self->control_mask);
-        bool shift = (mods_depressed & self->shift_mask) || (mods_latched & self->shift_mask) ||
-                     (mods_locked & self->shift_mask);
-        bool alt =
-            (mods_depressed & self->alt_mask) || (mods_latched & self->alt_mask) || (mods_locked & self->alt_mask);
-        bool super = (mods_depressed & self->super_mask) || (mods_latched & self->super_mask) ||
-                     (mods_locked & self->super_mask);
+        bool ctrl = (modsDepressed & self->controlMask) || (modsLatched & self->controlMask) ||
+                    (modsLocked & self->controlMask);
+        bool shift =
+            (modsDepressed & self->shiftMask) || (modsLatched & self->shiftMask) || (modsLocked & self->shiftMask);
+        bool alt = (modsDepressed & self->altMask) || (modsLatched & self->altMask) || (modsLocked & self->altMask);
+        bool super =
+            (modsDepressed & self->superMask) || (modsLatched & self->superMask) || (modsLocked & self->superMask);
 
         // update modifier keys
         self->io->AddKeyEvent(ImGuiMod_Ctrl, ctrl);
@@ -365,8 +364,8 @@ namespace wl {
 
     void InputHandler::keyboardRepeatInfo(void* data, wl_keyboard*, int32_t rate, int32_t delay) {
         InputHandler* self = static_cast<InputHandler*>(data);
-        self->repeat_rate = rate;
-        self->repeat_delay = delay;
+        self->repeatRate = rate;
+        self->repeatDelay = delay;
     }
 
     void InputHandler::handleKey(uint32_t key, bool pressed) {
@@ -378,17 +377,17 @@ namespace wl {
             xkb_keysym_t sym = xkb_state_key_get_one_sym(state, keycode);
 
             // map to ImGuiKey
-            ImGuiKey imgui_key = ImGuiKey_None;
+            ImGuiKey imguiKey = ImGuiKey_None;
             for (const auto& mapping : KeyMap) {
-                if (mapping.xkb_keycode == sym) {
-                    imgui_key = mapping.imgui_key;
+                if (mapping.xkbKeycode == sym) {
+                    imguiKey = mapping.imguiKey;
                     break;
                 }
             }
 
             // update key state
-            if (imgui_key != ImGuiKey_None) {
-                io->AddKeyEvent(imgui_key, pressed);
+            if (imguiKey != ImGuiKey_None) {
+                io->AddKeyEvent(imguiKey, pressed);
             }
 
             // get the utf-8 character for text input
@@ -406,8 +405,8 @@ namespace wl {
     // map xkb keysyms to ImGuiKey
     static ImGuiKey ImGui_ImplWayland_KeycodeToImGuiKey(uint32_t keycode) {
         for (const auto& mapping : KeyMap) {
-            if (mapping.xkb_keycode == keycode) {
-                return mapping.imgui_key;
+            if (mapping.xkbKeycode == keycode) {
+                return mapping.imguiKey;
             }
         }
         return ImGuiKey_None;

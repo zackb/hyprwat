@@ -16,17 +16,17 @@ public:
     void addImages(const std::vector<Wallpaper>& wallpapers);
 
 private:
-    int selected_index = 0;
-    float scroll_offset = 0.0f;
-    int logical_width;
-    int logical_height;
-    float image_rounding = 8;
-    float width_ratio = 0.8f;
+    int selectedIndex = 0;
+    float scrollOffset = 0.0f;
+    int logicalWidth;
+    int logicalHeight;
+    float imageRounding = 8;
+    float widthRatio = 0.8f;
     std::vector<GLuint> textures;
     std::vector<Wallpaper> wallpapers;
-    std::vector<Wallpaper> pending_wallpapers;
-    std::mutex wallpapers_mutex;
-    ImVec4 hover_color = ImVec4(0.2f, 0.4f, 0.7f, 1.0f);
+    std::vector<Wallpaper> pendingWallpapers;
+    std::mutex wallpapersMutex;
+    ImVec4 hoverColor = ImVec4(0.2f, 0.4f, 0.7f, 1.0f);
 
     void processPendingWallpapers();
     GLuint LoadTextureFromFile(const char* filename);

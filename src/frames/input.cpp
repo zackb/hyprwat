@@ -10,7 +10,7 @@ FrameResult TextInput::render() {
     float inputWidth = 300.0f; // default width for input
 
     // calculate actual size after rendering
-    last_size = ImVec2(inputWidth + windowPadding.x * 2, 50);
+    lastSize = ImVec2(inputWidth + windowPadding.x * 2, 50);
 
     // Set the window to fill the entire display
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
@@ -25,27 +25,27 @@ FrameResult TextInput::render() {
     ImGui::SetNextItemWidth(inputWidth);
 
     // if (ImGui::IsWindowAppearing())
-    if (should_focus) {
+    if (shouldFocus) {
         ImGui::SetKeyboardFocusHere();
-        should_focus = false;
+        shouldFocus = false;
     }
 
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
     if (password) {
         flags |= ImGuiInputTextFlags_Password;
     }
-    bool enterPressed = ImGui::InputTextWithHint("##pass", hint.c_str(), input_buffer, buf_size, flags);
+    bool enterPressed = ImGui::InputTextWithHint("##pass", hint.c_str(), inputBuffer, bufSize, flags);
 
     bool escPressed = ImGui::IsKeyPressed(ImGuiKey_Escape);
 
     // actual content size after rendering
     ImVec2 contentSize = ImGui::GetItemRectSize();
-    last_size = ImVec2(inputWidth + windowPadding.x * 2, contentSize.y + windowPadding.y * 2);
+    lastSize = ImVec2(inputWidth + windowPadding.x * 2, contentSize.y + windowPadding.y * 2);
 
     ImGui::End();
 
     if (enterPressed) {
-        return FrameResult::Submit(std::string(input_buffer));
+        return FrameResult::Submit(std::string(inputBuffer));
     }
 
     if (escPressed) {
@@ -55,4 +55,4 @@ FrameResult TextInput::render() {
     return FrameResult::Continue();
 }
 
-Vec2 TextInput::getSize() { return Vec2{last_size.x, last_size.y}; }
+Vec2 TextInput::getSize() { return Vec2{lastSize.x, lastSize.y}; }

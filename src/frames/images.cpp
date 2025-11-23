@@ -9,10 +9,10 @@
 #include <stb_image_write.h>
 
 ImageList::ImageList(const int logicalWidth, const int logicalHeight)
-    : Frame(), wallpapers(), logical_width(logicalWidth), logical_height(logicalHeight) {}
+    : Frame(), wallpapers(), logicalWidth(logicalWidth), logicalHeight(logicalHeight) {}
 
 void ImageList::addImages(const std::vector<Wallpaper>& newWallpapers) {
-    pending_wallpapers.insert(pending_wallpapers.end(), newWallpapers.begin(), newWallpapers.end());
+    pendingWallpapers.insert(pendingWallpapers.end(), newWallpapers.begin(), newWallpapers.end());
 }
 
 // https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users
@@ -28,8 +28,8 @@ FrameResult ImageList::render() {
         navigate(1);
     }
     if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_Space)) {
-        if (selected_index >= 0 && selected_index < wallpapers.size()) {
-            return FrameResult::Submit(wallpapers[selected_index].path);
+        if (selectedIndex >= 0 && selectedIndex < wallpapers.size()) {
+            return FrameResult::Submit(wallpapers[selectedIndex].path);
         }
     }
     if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
@@ -55,20 +55,20 @@ FrameResult ImageList::render() {
                      ImGuiWindowFlags_NoResize);
 
     // image display area
-    ImVec2 content_region = ImGui::GetContentRegionAvail();
-    float image_area_height = content_region.y;
+    ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+    float imageAreaHeight = contentRegion.y;
 
     // image size
-    float image_height = 225; // image_area_height - 40.0f; // padding
-    float image_width = 400;  // image_height * 0.75f;
+    float imageHeight = 225; // image_area_height - 40.0f; // padding
+    float imageWidth = 400;  // image_height * 0.75f;
     float spacing = 20.0f;
-    float total_width_per_image = image_width + spacing;
+    float totalWidthPerImage = imageWidth + spacing;
 
     // smooth scroll to selected image
-    float target_scroll = selected_index * total_width_per_image - (content_region.x - image_width) * 0.5f;
-    scroll_offset += (target_scroll - scroll_offset) * 0.15f; // smooth interpolation
+    float targetScroll = selectedIndex * totalWidthPerImage - (contentRegion.x - imageWidth) * 0.5f;
+    scrollOffset += (targetScroll - scrollOffset) * 0.15f; // smooth interpolation
 
-    std::lock_guard<std::mutex> lock(wallpapers_mutex);
+    std::lock_guard<std::mutex> lock(wallpapersMutex);
 
     if (textures.empty()) {
         ImGui::SetWindowFontScale(2.0f);
@@ -84,11 +84,11 @@ FrameResult ImageList::render() {
     } else {
 
         ImGui::BeginChild("ScrollRegion",
-                          ImVec2(0, image_area_height),
+                          ImVec2(0, imageAreaHeight),
                           false,
                           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-        ImGui::SetScrollX(scroll_offset);
+        ImGui::SetScrollX(scrollOffset);
 
         // render images horizontally
         for (int i = 0; i < textures.size(); i++) {
@@ -98,24 +98,24 @@ FrameResult ImageList::render() {
             ImGui::BeginGroup();
 
             // highlight selected image
-            bool is_selected = (i == selected_index);
+            bool is_selected = (i == selectedIndex);
 
             if (is_selected) {
                 ImVec2 p_min = ImGui::GetCursorScreenPos();
-                ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
-                ImU32 color = ImGui::GetColorU32(hover_color);
+                ImVec2 p_max = ImVec2(p_min.x + imageWidth, p_min.y + imageHeight);
+                ImU32 color = ImGui::GetColorU32(hoverColor);
                 // draw on foreground layer to avoid child clipping
-                ImGui::GetForegroundDrawList()->AddRect(p_min, p_max, color, image_rounding, 0, 4.0f);
+                ImGui::GetForegroundDrawList()->AddRect(p_min, p_max, color, imageRounding, 0, 4.0f);
             }
 
             // make images clickable
             ImGui::PushID(i);
             // ImGui::Image((void*)(intptr_t)textures[i], ImVec2(image_width, image_height));
             ImVec2 p_min = ImGui::GetCursorScreenPos();
-            ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
+            ImVec2 p_max = ImVec2(p_min.x + imageWidth, p_min.y + imageHeight);
             ImGui::GetWindowDrawList()->AddImageRounded(
-                (void*)(intptr_t)textures[i], p_min, p_max, ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE, image_rounding);
-            ImGui::Dummy(ImVec2(image_width, image_height));
+                (void*)(intptr_t)textures[i], p_min, p_max, ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE, imageRounding);
+            ImGui::Dummy(ImVec2(imageWidth, imageHeight));
             ImGui::PopID();
 
             ImGui::EndGroup();
@@ -136,39 +136,39 @@ FrameResult ImageList::render() {
 }
 
 void ImageList::processPendingWallpapers() {
-    std::lock_guard<std::mutex> lock(wallpapers_mutex);
+    std::lock_guard<std::mutex> lock(wallpapersMutex);
 
-    for (const auto& wallpaper : pending_wallpapers) {
+    for (const auto& wallpaper : pendingWallpapers) {
         GLuint texture = LoadTextureFromFile(wallpaper.thumbnailPath.c_str());
         if (texture != 0) {
             textures.push_back(texture);
         } else {
-            std::cerr << "Failed to load texture: " << wallpaper.thumbnailPath << std::endl;
+            debug::log(ERR, "Failed to load texture: {}", wallpaper.thumbnailPath);
             textures.push_back(0);
         }
         wallpapers.push_back(wallpaper);
     }
 
-    pending_wallpapers.clear();
+    pendingWallpapers.clear();
 }
 
 void ImageList::navigate(int direction) {
     if (textures.empty())
         return;
-    selected_index += direction;
-    if (selected_index < 0)
-        selected_index = 0;
-    if (selected_index >= textures.size())
-        selected_index = textures.size() - 1;
+    selectedIndex += direction;
+    if (selectedIndex < 0)
+        selectedIndex = 0;
+    if (selectedIndex >= textures.size())
+        selectedIndex = textures.size() - 1;
 }
 
 Vec2 ImageList::getSize() {
-    float w = (float)logical_width * width_ratio;
-    float edge_padding = 20.0f;    // padding we want on all sides
-    float content_height = 225.0f; // height of the image area
+    float w = (float)logicalWidth * widthRatio;
+    float edgePadding = 20.0f;    // padding we want on all sides
+    float contentHeight = 225.0f; // height of the image area
 
     // add padding to width and height to account for the space we need
-    return Vec2{w + (edge_padding * 2), content_height + (edge_padding * 2)};
+    return Vec2{w + (edgePadding * 2), contentHeight + (edgePadding * 2)};
 }
 
 // load image and create an OpenGL texture
@@ -200,7 +200,7 @@ GLuint ImageList::LoadTextureFromFile(const char* filename) {
 }
 
 void ImageList::applyTheme(const Config& config) {
-    hover_color = config.getColor("theme", "hover_color", "#3366B366");
-    image_rounding = config.getFloat("theme", "frame_rounding", 8.0);
-    width_ratio = config.getFloat("theme", "wallpaper_width_ratio", 0.8f);
+    hoverColor = config.getColor("theme", "hover_color", "#3366B366");
+    imageRounding = config.getFloat("theme", "frame_rounding", 8.0);
+    widthRatio = config.getFloat("theme", "wallpaper_width_ratio", 0.8f);
 }

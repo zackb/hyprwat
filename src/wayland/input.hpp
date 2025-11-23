@@ -23,7 +23,7 @@ namespace wl {
         ~InputHandler();
 
         void setWindowBounds(int width, int height);
-        bool shouldExit() const { return should_exit; }
+        bool shouldExit() const { return shouldExit_; }
         void setIO(ImGuiIO* new_io) { io = new_io; }
 
     private:
@@ -33,20 +33,20 @@ namespace wl {
         ImGuiIO* io;
         int width = 0;
         int height = 0;
-        bool should_exit = false;
+        bool shouldExit_ = false;
 
         // xkb state
         struct xkb_context* context = nullptr;
         struct xkb_keymap* keymap = nullptr;
         struct xkb_state* state = nullptr;
-        xkb_mod_mask_t control_mask = 0;
-        xkb_mod_mask_t alt_mask = 0;
-        xkb_mod_mask_t shift_mask = 0;
-        xkb_mod_mask_t super_mask = 0;
+        xkb_mod_mask_t controlMask = 0;
+        xkb_mod_mask_t altMask = 0;
+        xkb_mod_mask_t shiftMask = 0;
+        xkb_mod_mask_t superMask = 0;
 
         // key repeat state
-        int32_t repeat_rate = 0;
-        int32_t repeat_delay = 0;
+        int32_t repeatRate = 0;
+        int32_t repeatDelay = 0;
 
         // kb helper functions
         void updateModifiers(xkb_state* state);
@@ -57,7 +57,7 @@ namespace wl {
         static void seatName(void* data, wl_seat* seat, const char* name);
 
         // listener
-        constexpr static const wl_seat_listener seat_listener = {.capabilities = seatCapabilities, .name = seatName};
+        constexpr static const wl_seat_listener seatListener = {.capabilities = seatCapabilities, .name = seatName};
 
         // pointer callbacks
         static void pointerEnter(
@@ -82,9 +82,9 @@ namespace wl {
         static void keyboardModifiers(void* data,
                                       wl_keyboard* keyboard,
                                       uint32_t serial,
-                                      uint32_t mods_depressed,
-                                      uint32_t mods_latched,
-                                      uint32_t mods_locked,
+                                      uint32_t modsDepressed,
+                                      uint32_t modsLatched,
+                                      uint32_t modsLocked,
                                       uint32_t group);
         static void keyboardRepeatInfo(void* data, wl_keyboard* keyboard, int32_t rate, int32_t delay);
     };
