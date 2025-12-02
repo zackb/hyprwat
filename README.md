@@ -235,6 +235,21 @@ if [[ -n "$selection" ]]; then
 fi
 ```
 
+### Wallpaper Selector with hyprpaper and hyprlock persistence
+
+The included [wallpaper.sh](examples/wallpaper.sh) script demonstrates how to use hyprwat to select a wallpaper and update the hyprpaper and hyprlock configuration files:
+
+```
+#!/bin/bash
+wall=$(hyprwat --wallpaper ~/.local/share/wallpapers)
+
+if [ -n "$wall" ]; then
+    sed -i "s|^\$image = .*|\$image = $wall|" ~/.config/hypr/hyprlock.conf
+    sed -i "s|^preload = .*|preload = $wall|" ~/.config/hypr/hyprpaper.conf
+    sed -i "s|^wallpaper =.*,.*|wallpaper = , $wall|" ~/.config/hypr/hyprpaper.conf
+fi
+```
+
 ### Passphrase Input Prompt
 ```bash
 PASSPHRASE=$(hyprwat --input Passphrase)
