@@ -11,5 +11,5 @@ if [ -n "$wall" ]; then
     sed -i "s|^preload = .*|preload = $wall|" ~/.config/hypr/hyprpaper.conf
     sed -i "s|^wallpaper =.*,.*|wallpaper = , $wall|" ~/.config/hypr/hyprpaper.conf
     # hyprpaper >= 0.8.0
-    sed -i "s|^[[:space:]]*path[[:space:]]*=[[:space:]]*.*|    path = $wall|" ~/.config/hypr/hyprpaper.conf
+    sed -i "s|\(path[[:space:]]*=[[:space:]]*\).*|\1$wall|" ~/.config/hypr/hyprpaper.conf
 fi
