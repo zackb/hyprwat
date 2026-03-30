@@ -253,12 +253,6 @@ FrameResult OverviewFrame::render() {
                     wsMin, wsMax, IM_COL32(100, 100, 100, 150), workspaceRounding, 0, 1.0f);
             }
 
-            // add workspace name text
-            ImVec2 textSize = ImGui::CalcTextSize(workspaces[i].workspace.name.c_str());
-            ImGui::GetWindowDrawList()->AddText(ImVec2(wsMin.x + (wsWidth - textSize.x) / 2, wsMax.y + 5),
-                                                IM_COL32(255, 255, 255, 255),
-                                                workspaces[i].workspace.name.c_str());
-
             for (const auto& c : workspaces[i].clients) {
                 if (c->texture == 0)
                     continue;
@@ -281,7 +275,7 @@ FrameResult OverviewFrame::render() {
                     ImVec2(cx, cy), ImVec2(cx + cw, cy + ch), IM_COL32(50, 50, 50, 150), clientRounding, 0, 1.0f);
             }
 
-            ImGui::Dummy(ImVec2(wsWidth, wsHeight + 30.0f)); // text height space
+            ImGui::Dummy(ImVec2(wsWidth, wsHeight));
             ImGui::EndGroup();
 
             if (i < workspaces.size() - 1) {
@@ -301,8 +295,7 @@ Vec2 OverviewFrame::getSize() {
     float wsHeight = logicalHeight * scaleRatio;
     float w = (float)logicalWidth * widthRatio;
     float edgePadding = 20.0f;
-    float contentHeight = wsHeight + 30.0f;
-    return Vec2{w + (edgePadding * 2), contentHeight + (edgePadding * 2)};
+    return Vec2{w + (edgePadding * 2), wsHeight + (edgePadding * 2)};
 }
 
 void OverviewFrame::navigate(int direction) {
