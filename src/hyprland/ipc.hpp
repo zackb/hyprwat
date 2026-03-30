@@ -46,6 +46,7 @@ namespace hyprland {
 
         std::vector<Workspace> getWorkspaces();
         std::vector<Client> getClients();
+        int getActiveWorkspaceId();
         void dispatchWorkspace(int id);
 
     private:

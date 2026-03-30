@@ -47,7 +47,14 @@ void OverviewFrame::captureClients() {
     // sort workspaces by id
     std::sort(allWorkspaces.begin(), allWorkspaces.end(), [](const auto& a, const auto& b) { return a.id < b.id; });
 
-    for (const auto& w : allWorkspaces) {
+    int activeWsId = hyprctl.getActiveWorkspaceId();
+
+    for (size_t i = 0; i < allWorkspaces.size(); ++i) {
+        const auto& w = allWorkspaces[i];
+        if (w.id == activeWsId) {
+            selectedIndex = (int)i;
+        }
+
         WorkspaceView wv;
         wv.workspace = w;
         for (const auto& c : allClients) {
