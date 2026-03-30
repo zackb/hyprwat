@@ -18,6 +18,7 @@ static const struct {
 } KeyMap[] = {
     {XKB_KEY_Return, ImGuiKey_Enter},
     {XKB_KEY_Tab, ImGuiKey_Tab},
+    {XKB_KEY_ISO_Left_Tab, ImGuiKey_Tab},
     {XKB_KEY_Left, ImGuiKey_LeftArrow},
     {XKB_KEY_Right, ImGuiKey_RightArrow},
     {XKB_KEY_Up, ImGuiKey_UpArrow},
