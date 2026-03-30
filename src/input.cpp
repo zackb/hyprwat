@@ -42,6 +42,11 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
         return result;
     }
 
+    if (std::string(argv[1]) == "--overview") {
+        result.mode = InputMode::OVERVIEW;
+        return result;
+    }
+
     if (std::string(argv[1]) == "--wallpaper") {
         result.mode = InputMode::WALLPAPER;
         if (argc > 2) {

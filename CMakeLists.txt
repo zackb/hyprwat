@@ -43,6 +43,7 @@ set(IMGUI_SOURCES
 set(WAYLAND_PROTOCOLS
     src/wayland/protocols/wlr-layer-shell-unstable-v1-client-protocol.c
     src/wayland/protocols/xdg-shell-client-protocol.c
+    src/wayland/protocols/hyprland-toplevel-export-v1-client-protocol.c
 )
 
 # INIH
@@ -100,6 +101,7 @@ add_executable(hyprwat
     src/hyprland/ipc.cpp
     src/wayland/wayland.cpp
     src/wayland/display.cpp
+    src/wayland/shm.cpp
     src/wayland/layer_surface.cpp
     src/wayland/input.cpp
     src/renderer/egl_context.cpp
@@ -109,11 +111,13 @@ add_executable(hyprwat
     src/frames/text.cpp
     src/frames/custom.cpp
     src/frames/images.cpp
+    src/frames/overview.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
     src/flows/audio_flow.cpp
     src/flows/custom_flow.cpp
     src/flows/wallpaper_flow.cpp
+    src/flows/overview_flow.cpp
     src/net/network_manager.cpp
     src/audio/audio.cpp
     src/wallpaper/thumbnail.cpp

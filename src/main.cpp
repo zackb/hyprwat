@@ -1,6 +1,7 @@
 #include "flows/audio_flow.hpp"
 #include "flows/custom_flow.hpp"
 #include "flows/flow.hpp"
+#include "flows/overview_flow.hpp"
 #include "flows/simple_flows.hpp"
 #include "flows/wallpaper_flow.hpp"
 #include "flows/wifi_flow.hpp"
@@ -20,6 +21,7 @@ void usage() {
   hyprwat --password [hint]
   hyprwat --wifi
   hyprwat --audio
+  hyprwat --overview
   hyprwat --wallpaper <directory>
 
 Description:
@@ -63,6 +65,9 @@ CUSTOM MODE:
 WALLPAPER MODE:
     Use --wallpaper <dir> to select wallpapers from a specified directory and set them using hyprpaper.
 
+OVERVIEW MODE:
+    Use --overview to show a visual grid of all workspaces and windows and navigate between them.
+
 Options:
   -h, --help        Show this help message
   --input [hint]    Show text input mode with optional hint text
@@ -71,6 +76,7 @@ Options:
   --audio           Show audio input/output device selection mode
   --custom <path>   Load a custom flow from the specified configuration file
   --wallpaper <dir> Select wallpapers from the specified directory and set using hyprpaper
+  --overview        Show a visual workspace overview and selector
 )");
 }
 
@@ -139,6 +145,9 @@ int main(const int argc, const char** argv) {
         break;
     case InputMode::CUSTOM:
         flow = std::make_unique<CustomFlow>(args.configPath);
+        break;
+    case InputMode::OVERVIEW:
+        flow = std::make_unique<OverviewFlow>(hyprctl, wayland.display(), logicalDisplayWidth, logicalDisplayHeight);
         break;
     case InputMode::WALLPAPER:
         flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);

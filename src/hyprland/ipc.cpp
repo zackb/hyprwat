@@ -1,5 +1,6 @@
 #include "ipc.hpp"
 #include "../debug/log.hpp"
+#include <yaml-cpp/yaml.h>
 
 #include <cstring>
 #include <stdexcept>
@@ -90,6 +91,64 @@ namespace hyprland {
         }
         send("/keyword exec hyprctl hyprpaper unload unused");
     }
+
+    std::vector<Workspace> Control::getWorkspaces() {
+        std::vector<Workspace> result;
+        std::string response = send("j/workspaces");
+        try {
+            auto node = YAML::Load(response);
+            if (node.IsSequence()) {
+                for (const auto& w : node) {
+                    Workspace workspace;
+                    workspace.id = w["id"].as<int>();
+                    workspace.name = w["name"].as<std::string>();
+                    workspace.monitor = w["monitor"].as<std::string>();
+                    workspace.active = false; // not provided easily, hyprctl activeworkspace has it
+                    result.push_back(workspace);
+                }
+            }
+        } catch (const std::exception& e) {
+            debug::log(ERR, "Failed to parse workspaces: {}", e.what());
+        }
+        return result;
+    }
+
+    std::vector<Client> Control::getClients() {
+        std::vector<Client> result;
+        std::string response = send("j/clients");
+        try {
+            auto node = YAML::Load(response);
+            if (node.IsSequence()) {
+                for (const auto& c : node) {
+                    Client client;
+                    client.address = c["address"].as<std::string>();
+                    client.title = c["title"].as<std::string>();
+                    client.class_ = c["class"].as<std::string>();
+                    client.initialClass = c["initialClass"].as<std::string>();
+                    client.initialTitle = c["initialTitle"].as<std::string>();
+                    client.workspaceId = c["workspace"]["id"].as<int>();
+                    auto at = c["at"].as<std::vector<int>>();
+                    if (at.size() >= 2) {
+                        client.x = at[0];
+                        client.y = at[1];
+                    }
+                    auto size = c["size"].as<std::vector<int>>();
+                    if (size.size() >= 2) {
+                        client.width = size[0];
+                        client.height = size[1];
+                    }
+                    client.mapped = c["mapped"].as<bool>(true);
+                    client.hidden = c["hidden"].as<bool>(false);
+                    result.push_back(client);
+                }
+            }
+        } catch (const std::exception& e) {
+            debug::log(ERR, "Failed to parse clients: {}", e.what());
+        }
+        return result;
+    }
+
+    void Control::dispatchWorkspace(int id) { send("dispatch workspace " + std::to_string(id)); }
 
     // Events
 
