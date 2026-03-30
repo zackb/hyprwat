@@ -273,31 +273,6 @@ namespace wl {
             self->keymap = nullptr;
             return;
         }
-
-        // get modifier masks
-        xkb_keycode_t minKeycode = xkb_keymap_min_keycode(self->keymap);
-        xkb_keycode_t maxKeycode = xkb_keymap_max_keycode(self->keymap);
-
-        for (xkb_keycode_t keycode = minKeycode; keycode <= maxKeycode; ++keycode) {
-            xkb_layout_index_t num_layouts = xkb_keymap_num_layouts_for_key(self->keymap, keycode);
-            for (xkb_layout_index_t layout = 0; layout < num_layouts; ++layout) {
-                const xkb_keysym_t* syms;
-                int nsyms = xkb_keymap_key_get_syms_by_level(self->keymap, keycode, layout, 0, &syms);
-
-                for (int i = 0; i < nsyms; ++i) {
-                    xkb_keysym_t sym = syms[i];
-                    if (sym == XKB_KEY_Control_L || sym == XKB_KEY_Control_R) {
-                        self->controlMask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_CTRL);
-                    } else if (sym == XKB_KEY_Shift_L || sym == XKB_KEY_Shift_R) {
-                        self->shiftMask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_SHIFT);
-                    } else if (sym == XKB_KEY_Alt_L || sym == XKB_KEY_Alt_R) {
-                        self->altMask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_ALT);
-                    } else if (sym == XKB_KEY_Super_L || sym == XKB_KEY_Super_R) {
-                        self->superMask = 1 << xkb_keymap_mod_get_index(self->keymap, XKB_MOD_NAME_LOGO);
-                    }
-                }
-            }
-        }
     }
 
     void InputHandler::keyboardEnter(void* data, wl_keyboard*, uint32_t, wl_surface*, wl_array* keys) {
@@ -346,20 +321,22 @@ namespace wl {
         // update the xkb state with the new modifiers
         xkb_state_update_mask(self->state, modsDepressed, modsLatched, modsLocked, 0, 0, group);
 
-        // update modifier key states
-        bool ctrl = (modsDepressed & self->controlMask) || (modsLatched & self->controlMask) ||
-                    (modsLocked & self->controlMask);
-        bool shift =
-            (modsDepressed & self->shiftMask) || (modsLatched & self->shiftMask) || (modsLocked & self->shiftMask);
-        bool alt = (modsDepressed & self->altMask) || (modsLatched & self->altMask) || (modsLocked & self->altMask);
-        bool super =
-            (modsDepressed & self->superMask) || (modsLatched & self->superMask) || (modsLocked & self->superMask);
+        bool ctrl = xkb_state_mod_name_is_active(self->state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE) > 0;
+        bool shift = xkb_state_mod_name_is_active(self->state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE) > 0;
+        bool alt = xkb_state_mod_name_is_active(self->state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_EFFECTIVE) > 0;
+        bool super = xkb_state_mod_name_is_active(self->state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE) > 0;
 
         // update modifier keys
         self->io->AddKeyEvent(ImGuiMod_Ctrl, ctrl);
         self->io->AddKeyEvent(ImGuiMod_Shift, shift);
         self->io->AddKeyEvent(ImGuiMod_Alt, alt);
         self->io->AddKeyEvent(ImGuiMod_Super, super);
+
+        // ensure legacy fields are correctly set just in case
+        self->io->KeyCtrl = ctrl;
+        self->io->KeyShift = shift;
+        self->io->KeyAlt = alt;
+        self->io->KeySuper = super;
     }
 
     void InputHandler::keyboardRepeatInfo(void* data, wl_keyboard*, int32_t rate, int32_t delay) {
