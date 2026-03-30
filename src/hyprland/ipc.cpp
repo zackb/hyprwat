@@ -154,6 +154,19 @@ namespace hyprland {
         return result;
     }
 
+    int Control::getActiveWorkspaceId() {
+        std::string response = send("j/activeworkspace");
+        try {
+            auto node = YAML::Load(response);
+            if (node["id"]) {
+                return node["id"].as<int>();
+            }
+        } catch (const std::exception& e) {
+            debug::log(ERR, "Failed to parse activeworkspace: {}", e.what());
+        }
+        return -1;
+    }
+
     void Control::dispatchWorkspace(int id) { send("dispatch workspace " + std::to_string(id)); }
 
     // Events

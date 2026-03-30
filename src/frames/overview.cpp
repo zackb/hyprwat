@@ -47,7 +47,14 @@ void OverviewFrame::captureClients() {
     // sort workspaces by id
     std::sort(allWorkspaces.begin(), allWorkspaces.end(), [](const auto& a, const auto& b) { return a.id < b.id; });
 
-    for (const auto& w : allWorkspaces) {
+    int activeWsId = hyprctl.getActiveWorkspaceId();
+
+    for (size_t i = 0; i < allWorkspaces.size(); ++i) {
+        const auto& w = allWorkspaces[i];
+        if (w.id == activeWsId) {
+            selectedIndex = (int)i;
+        }
+
         WorkspaceView wv;
         wv.workspace = w;
         for (const auto& c : allClients) {
@@ -188,9 +195,11 @@ FrameResult OverviewFrame::render() {
         }
     }
 
-    if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_H))
+    if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_H) ||
+        (ImGui::IsKeyPressed(ImGuiKey_Tab) && ImGui::GetIO().KeyShift))
         navigate(-1);
-    if (ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_L))
+    else if (ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_L) ||
+             (ImGui::IsKeyPressed(ImGuiKey_Tab) && !ImGui::GetIO().KeyShift))
         navigate(1);
     if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_Space)) {
         if (!workspaces.empty() && selectedIndex >= 0 && selectedIndex < workspaces.size()) {
