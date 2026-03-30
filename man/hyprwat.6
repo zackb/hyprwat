@@ -18,6 +18,9 @@ hyprwat \- A Hyprland menu utility to present selectable options with a customiz
 --audio
 .br
 .B hyprwat
+--overview
+.br
+.B hyprwat
 --custom \fIconfig.yaml\fR
 .br
 .B hyprwat
@@ -91,6 +94,12 @@ Select an image file from the specified directory to set as the desktop wallpape
 $ hyprwat --wallpaper ~/.local/share/wallpapers
 .EE
 .TP
+.B OVERVIEW MODE
+Show a visual overview of all workspaces and their windows, allowing you to easily browse and switch to a selected workspace.
+.EX
+$ hyprwat --overview
+.EE
+.TP
 .B CUSTOM MODE
 Render a fully custom menu from a YAML configuration file. Custom menus
 support multiple widget types (buttons, inputs, sliders, checkboxes, color
@@ -115,6 +124,9 @@ Show Wi-Fi network selection mode.
 .TP
 .BR --audio
 Show audio input/output device selection mode.
+.TP
+.BR --overview
+Show a visual workspace overview and selector.
 .TP
 .BR --wallpaper
 Select an image file from the specified directory to set as the desktop wallpaper.
@@ -265,6 +277,11 @@ Select Wi-Fi or audio device:
 .EX
 $ hyprwat --wifi
 $ hyprwat --audio
+.EE
+.TP
+Show the workspace overview:
+.EX
+$ hyprwat --overview
 .EE
 .TP
 Launch a custom control panel:
