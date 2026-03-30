@@ -11,6 +11,10 @@ namespace wl {
             if (output.output)
                 wl_output_destroy(output.output);
         }
+        if (exportManager_)
+            hyprland_toplevel_export_manager_v1_destroy(exportManager_);
+        if (shm_)
+            wl_shm_destroy(shm_);
         if (seat_)
             wl_seat_destroy(seat_);
         if (layerShell_)
@@ -71,6 +75,11 @@ namespace wl {
                 static_cast<zwlr_layer_shell_v1*>(wl_registry_bind(registry, id, &zwlr_layer_shell_v1_interface, 1));
         } else if (strcmp(interface, wl_seat_interface.name) == 0) {
             self->seat_ = static_cast<wl_seat*>(wl_registry_bind(registry, id, &wl_seat_interface, 5));
+        } else if (strcmp(interface, wl_shm_interface.name) == 0) {
+            self->shm_ = static_cast<wl_shm*>(wl_registry_bind(registry, id, &wl_shm_interface, 1));
+        } else if (strcmp(interface, hyprland_toplevel_export_manager_v1_interface.name) == 0) {
+            self->exportManager_ = static_cast<hyprland_toplevel_export_manager_v1*>(
+                wl_registry_bind(registry, id, &hyprland_toplevel_export_manager_v1_interface, 2));
         } else if (strcmp(interface, wl_output_interface.name) == 0) {
             wl_output* output = static_cast<wl_output*>(wl_registry_bind(registry, id, &wl_output_interface, 4));
 

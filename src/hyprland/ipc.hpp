@@ -5,8 +5,30 @@
 #include <functional>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace hyprland {
+    struct Workspace {
+        int id;
+        std::string name;
+        std::string monitor;
+        bool active = false;
+    };
+
+    struct Client {
+        std::string address;
+        std::string title;
+        std::string class_;
+        std::string initialClass;
+        std::string initialTitle;
+        int workspaceId = -1;
+        int x = 0;
+        int y = 0;
+        int width = 0;
+        int height = 0;
+        bool mapped = false;
+        bool hidden = false;
+    };
     class Control {
     public:
         explicit Control();
@@ -21,6 +43,10 @@ namespace hyprland {
         float scale();
 
         void setWallpaper(const std::string& path);
+
+        std::vector<Workspace> getWorkspaces();
+        std::vector<Client> getClients();
+        void dispatchWorkspace(int id);
 
     private:
         std::string socketPath;
