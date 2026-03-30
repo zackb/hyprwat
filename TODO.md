@@ -9,3 +9,6 @@
 - [x] de-dupe wifi networks and choose the best one
 - [x] connection specific frame while "Connecting..."
     - [x] present error/success
+- [ ] workspace overview
+    - [ ] implement hyprland-toplevel-export-v1
+        - https://github.com/hyprwm/hyprland-protocols/blob/main/protocols/hyprland-toplevel-export-v1.xml
