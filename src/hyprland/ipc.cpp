@@ -45,15 +45,21 @@ namespace hyprland {
 
         // read response
         char buf[4096];
-        ssize_t n = read(wfd, buf, sizeof(buf) - 1);
-        if (n < 0) {
-            close(wfd);
-            throw std::runtime_error("Failed to read response");
+        std::string response;
+        while (true) {
+            ssize_t n = read(wfd, buf, sizeof(buf));
+            if (n < 0) {
+                close(wfd);
+                throw std::runtime_error("Failed to read response");
+            }
+            if (n == 0) {
+                break;
+            }
+            response.append(buf, n);
         }
-        buf[n] = '\0';
 
         close(wfd);
-        return std::string(buf);
+        return response;
     }
 
     Vec2 Control::cursorPos() {

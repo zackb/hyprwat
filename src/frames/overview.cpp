@@ -293,7 +293,16 @@ FrameResult OverviewFrame::render() {
 
 Vec2 OverviewFrame::getSize() {
     float wsHeight = logicalHeight * scaleRatio;
-    float w = (float)logicalWidth * widthRatio;
+    float wsWidth = logicalWidth * scaleRatio;
+    float spacing = 20.0f;
+
+    float requiredWidth = workspaces.size() * wsWidth + (workspaces.empty() ? 0 : (workspaces.size() - 1) * spacing);
+    float maxW = (float)logicalWidth * widthRatio;
+
+    float w = std::min(requiredWidth, maxW);
+    if (w < wsWidth)
+        w = wsWidth; // At least one workspace width if empty
+
     float edgePadding = 20.0f;
     return Vec2{w + (edgePadding * 2), wsHeight + (edgePadding * 2)};
 }
