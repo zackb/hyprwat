@@ -46,6 +46,9 @@ run-custom: debug
 run-wallpaper: debug
 	./build/debug/hyprwat --wallpaper ~/.local/share/wallpapers
 
+run-overview: debug
+	./build/debug/hyprwat --overview
+
 reset-wifi:
 	sudo nmcli device disconnect wlan0
 	sudo nmcli device connect wlan0

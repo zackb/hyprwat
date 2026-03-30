@@ -1,3 +1,4 @@
+#define GL_GLEXT_PROTOTYPES 1
 #include "overview.hpp"
 #include <algorithm>
 #include <imgui.h>
@@ -9,6 +10,8 @@ extern "C" {
 extern const struct wl_interface zwlr_foreign_toplevel_handle_v1_interface = {
     "zwlr_foreign_toplevel_handle_v1", 3, 0, nullptr, 0, nullptr};
 }
+
+#define GL_GLEXT_PROTOTYPES 1
 
 const struct hyprland_toplevel_export_frame_v1_listener OverviewFrame::export_frame_listener = {
     .buffer = OverviewFrame::handle_buffer,
@@ -41,7 +44,7 @@ void OverviewFrame::captureClients() {
     auto allWorkspaces = hyprctl.getWorkspaces();
     auto allClients = hyprctl.getClients();
 
-    // Sort workspaces by id
+    // sort workspaces by id
     std::sort(allWorkspaces.begin(), allWorkspaces.end(), [](const auto& a, const auto& b) { return a.id < b.id; });
 
     for (const auto& w : allWorkspaces) {
@@ -61,7 +64,7 @@ void OverviewFrame::captureClients() {
     }
 
     if (!wlDisplay.exportManager()) {
-        std::cerr << "Toplevel export manager not available" << std::endl;
+        debug::log(ERR, "Toplevel export manager not available");
         return;
     }
 
@@ -79,6 +82,11 @@ void OverviewFrame::captureClients() {
                 hyprland_toplevel_export_frame_v1_add_listener(c->frame, &export_frame_listener, c.get());
             }
         } catch (...) {
+            debug::log(ERR,
+                       "Failed to capture client {} on workspace {}",
+                       c->client.title.empty() ? std::to_string(c->client.workspaceId) : c->client.title,
+                       c->client.workspaceId);
+            c->failed = true;
         }
     }
 }
@@ -147,7 +155,7 @@ void OverviewFrame::createTexture(CapturedClient& c) {
     glGenTextures(1, &c.texture);
     glBindTexture(GL_TEXTURE_2D, c.texture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -163,6 +171,8 @@ void OverviewFrame::createTexture(CapturedClient& c) {
                  GL_BGRA_EXT,
                  GL_UNSIGNED_BYTE,
                  c.shmBuffer->getData());
+
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     // clean up shmBuffer as it's no longer needed in CPU RAM
     c.shmBuffer.reset();
@@ -192,75 +202,107 @@ FrameResult OverviewFrame::render() {
     }
 
     Vec2 size = getSize();
+    float edge_padding = 20.0f;
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(edge_padding, edge_padding));
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(size.x, size.y), ImGuiCond_Always);
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // transparent
     ImGui::Begin("Overview",
                  nullptr,
                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground);
+                     ImGuiWindowFlags_NoResize);
 
-    ImDrawList* drawList = ImGui::GetWindowDrawList();
-    ImVec2 p = ImGui::GetCursorScreenPos();
-
+    ImVec2 contentRegion = ImGui::GetContentRegionAvail();
     float wsWidth = logicalWidth * scaleRatio;
     float wsHeight = logicalHeight * scaleRatio;
+    float spacing = 20.0f;
+    float totalWidthPerWs = wsWidth + spacing;
 
-    for (size_t i = 0; i < workspaces.size(); ++i) {
-        ImVec2 wsMin = ImVec2(p.x + padding + i * (wsWidth + padding), p.y + padding);
-        ImVec2 wsMax = ImVec2(wsMin.x + wsWidth, wsMin.y + wsHeight);
+    float targetScroll = selectedIndex * totalWidthPerWs - (contentRegion.x - wsWidth) * 0.5f;
+    if (targetScroll < 0)
+        targetScroll = 0;
+    scrollOffset += (targetScroll - scrollOffset) * 0.15f;
 
-        // highlight active or selected
-        if (i == selectedIndex) {
-            drawList->AddRectFilled(wsMin, wsMax, ImGui::GetColorU32(hoverColor), workspaceRounding);
-            drawList->AddRect(wsMin, wsMax, IM_COL32(255, 255, 255, 200), workspaceRounding, 0, 2.0f);
-        } else {
-            drawList->AddRectFilled(wsMin, wsMax, ImGui::GetColorU32(workspaceColor), workspaceRounding);
-            drawList->AddRect(wsMin, wsMax, IM_COL32(100, 100, 100, 150), workspaceRounding, 0, 1.0f);
+    if (!workspaces.empty()) {
+        ImGui::BeginChild("ScrollRegion",
+                          ImVec2(0, contentRegion.y),
+                          false,
+                          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+        ImGui::SetScrollX(scrollOffset);
+
+        for (size_t i = 0; i < workspaces.size(); ++i) {
+            if (i > 0)
+                ImGui::SameLine();
+
+            ImGui::BeginGroup();
+
+            ImVec2 wsMin = ImGui::GetCursorScreenPos();
+            ImVec2 wsMax = ImVec2(wsMin.x + wsWidth, wsMin.y + wsHeight);
+
+            bool is_selected = (i == selectedIndex);
+
+            // highlight active or selected
+            ImU32 bgColor = is_selected ? ImGui::GetColorU32(hoverColor) : ImGui::GetColorU32(workspaceColor);
+            ImGui::GetWindowDrawList()->AddRectFilled(wsMin, wsMax, bgColor, workspaceRounding);
+
+            if (is_selected) {
+                ImGui::GetForegroundDrawList()->AddRect(
+                    wsMin, wsMax, IM_COL32(255, 255, 255, 200), workspaceRounding, 0, 2.0f);
+            } else {
+                ImGui::GetWindowDrawList()->AddRect(
+                    wsMin, wsMax, IM_COL32(100, 100, 100, 150), workspaceRounding, 0, 1.0f);
+            }
+
+            // add workspace name text
+            ImVec2 textSize = ImGui::CalcTextSize(workspaces[i].workspace.name.c_str());
+            ImGui::GetWindowDrawList()->AddText(ImVec2(wsMin.x + (wsWidth - textSize.x) / 2, wsMax.y + 5),
+                                                IM_COL32(255, 255, 255, 255),
+                                                workspaces[i].workspace.name.c_str());
+
+            for (const auto& c : workspaces[i].clients) {
+                if (c->texture == 0)
+                    continue;
+
+                // calc scaled bounds
+                float cx = wsMin.x + c->client.x * scaleRatio;
+                float cy = wsMin.y + c->client.y * scaleRatio;
+                float cw = c->client.width * scaleRatio;
+                float ch = c->client.height * scaleRatio;
+
+                // draw client texture
+                ImGui::GetWindowDrawList()->AddImageRounded((void*)(intptr_t)c->texture,
+                                                            ImVec2(cx, cy),
+                                                            ImVec2(cx + cw, cy + ch),
+                                                            ImVec2(0, 0),
+                                                            ImVec2(1, 1),
+                                                            IM_COL32_WHITE,
+                                                            clientRounding);
+                ImGui::GetWindowDrawList()->AddRect(
+                    ImVec2(cx, cy), ImVec2(cx + cw, cy + ch), IM_COL32(50, 50, 50, 150), clientRounding, 0, 1.0f);
+            }
+
+            ImGui::Dummy(ImVec2(wsWidth, wsHeight + 30.0f)); // text height space
+            ImGui::EndGroup();
+
+            if (i < workspaces.size() - 1) {
+                ImGui::SameLine(0.0f, spacing);
+            }
         }
-
-        // add workspace name text
-        ImVec2 textSize = ImGui::CalcTextSize(workspaces[i].workspace.name.c_str());
-        drawList->AddText(ImVec2(wsMin.x + (wsWidth - textSize.x) / 2, wsMax.y + 5),
-                          IM_COL32(255, 255, 255, 255),
-                          workspaces[i].workspace.name.c_str());
-
-        for (const auto& c : workspaces[i].clients) {
-            if (c->texture == 0)
-                continue;
-
-            // Calc scaled bounds
-            float cx = wsMin.x + c->client.x * scaleRatio;
-            float cy = wsMin.y + c->client.y * scaleRatio;
-            float cw = c->client.width * scaleRatio;
-            float ch = c->client.height * scaleRatio;
-
-            // Draw client texture
-            drawList->AddImageRounded((void*)(intptr_t)c->texture,
-                                      ImVec2(cx, cy),
-                                      ImVec2(cx + cw, cy + ch),
-                                      ImVec2(0, 0),
-                                      ImVec2(1, 1),
-                                      IM_COL32_WHITE,
-                                      clientRounding);
-            drawList->AddRect(
-                ImVec2(cx, cy), ImVec2(cx + cw, cy + ch), IM_COL32(50, 50, 50, 150), clientRounding, 0, 1.0f);
-        }
+        ImGui::EndChild();
     }
 
     ImGui::End();
-    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
 
     return FrameResult::Continue();
 }
 
 Vec2 OverviewFrame::getSize() {
-    float wsWidth = logicalWidth * scaleRatio;
     float wsHeight = logicalHeight * scaleRatio;
-    float totalWidth = padding + (workspaces.size() * (wsWidth + padding));
-    float totalHeight = padding + wsHeight + padding + 30.0f; // extra 30 for text labels
-    return Vec2{totalWidth, totalHeight};
+    float w = (float)logicalWidth * widthRatio;
+    float edgePadding = 20.0f;
+    float contentHeight = wsHeight + 30.0f;
+    return Vec2{w + (edgePadding * 2), contentHeight + (edgePadding * 2)};
 }
 
 void OverviewFrame::navigate(int direction) {
@@ -278,4 +320,5 @@ void OverviewFrame::applyTheme(const Config& config) {
     hoverColor = config.getColor("theme", "hover_color", "#3366B366");
     workspaceColor = config.getColor("theme", "workspace_color", "#1A1A1CCC");
     workspaceRounding = config.getFloat("theme", "frame_rounding", 12.0f);
+    widthRatio = config.getFloat("theme", "wallpaper_width_ratio", 0.8f);
 }
