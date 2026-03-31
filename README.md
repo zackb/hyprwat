@@ -28,6 +28,10 @@ hyprwat creates a popup menu at your cursor position where you can select from a
 
 ![wallpapers](examples/img/wallpapers.png)
 
+#### Workspace Overview
+
+![workspaces](examples/img/overview.png)
+
 #### Power Profile Selector
 
 ![powerprofilesctl](examples/img/powerprofiles.png)
