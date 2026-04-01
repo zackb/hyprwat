@@ -48,7 +48,6 @@ private:
     wl::Display& wlDisplay;
 
     std::vector<WorkspaceView> workspaces;
-    std::vector<std::shared_ptr<CapturedClient>> pendingCaptures;
     std::mutex captureMutex;
 
     float padding = 20.0f;
@@ -63,6 +62,7 @@ private:
     void captureClients();
     void navigate(int direction);
     void createTexture(CapturedClient& c);
+    void requestCapture(std::shared_ptr<CapturedClient> c);
 
     static void handle_buffer(void* data,
                               struct hyprland_toplevel_export_frame_v1* export_frame,

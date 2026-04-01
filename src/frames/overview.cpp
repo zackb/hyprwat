@@ -63,38 +63,35 @@ void OverviewFrame::captureClients() {
                 capture->owner = this;
                 capture->client = c;
                 wv.clients.push_back(capture);
-                // Also add to global capture list
-                pendingCaptures.push_back(capture);
             }
         }
         workspaces.push_back(wv);
     }
+}
 
-    if (!wlDisplay.exportManager()) {
-        debug::log(ERR, "Toplevel export manager not available");
+void OverviewFrame::requestCapture(std::shared_ptr<CapturedClient> c) {
+    if (!wlDisplay.exportManager() || c->frame || c->failed || c->ready)
         return;
-    }
 
-    for (auto& c : pendingCaptures) {
-        try {
-            unsigned long long addr;
-            std::stringstream ss;
-            ss << std::hex << c->client.address;
-            ss >> addr;
+    try {
+        unsigned long long addr;
+        std::stringstream ss;
+        ss << std::hex << c->client.address;
+        ss >> addr;
 
-            c->frame =
-                hyprland_toplevel_export_manager_v1_capture_toplevel(wlDisplay.exportManager(), 0, (uint32_t)addr);
+        c->frame = hyprland_toplevel_export_manager_v1_capture_toplevel(wlDisplay.exportManager(), 0, (uint32_t)addr);
 
-            if (c->frame) {
-                hyprland_toplevel_export_frame_v1_add_listener(c->frame, &export_frame_listener, c.get());
-            }
-        } catch (...) {
-            debug::log(ERR,
-                       "Failed to capture client {} on workspace {}",
-                       c->client.title.empty() ? std::to_string(c->client.workspaceId) : c->client.title,
-                       c->client.workspaceId);
+        if (c->frame) {
+            hyprland_toplevel_export_frame_v1_add_listener(c->frame, &export_frame_listener, c.get());
+        } else {
             c->failed = true;
         }
+    } catch (...) {
+        debug::log(ERR,
+                   "Failed to capture client {} on workspace {}",
+                   c->client.title.empty() ? std::to_string(c->client.workspaceId) : c->client.title,
+                   c->client.workspaceId);
+        c->failed = true;
     }
 }
 
@@ -162,7 +159,7 @@ void OverviewFrame::createTexture(CapturedClient& c) {
     glGenTextures(1, &c.texture);
     glBindTexture(GL_TEXTURE_2D, c.texture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -179,18 +176,35 @@ void OverviewFrame::createTexture(CapturedClient& c) {
                  GL_UNSIGNED_BYTE,
                  c.shmBuffer->getData());
 
-    glGenerateMipmap(GL_TEXTURE_2D);
-
     // clean up shmBuffer as it's no longer needed in CPU RAM
     c.shmBuffer.reset();
 }
 
 FrameResult OverviewFrame::render() {
-    // process generated textures
+    // request captures for visible workspaces
+    int startIdx = std::max(0, selectedIndex - 2);
+    int endIdx = std::min((int)workspaces.size() - 1, selectedIndex + 2);
+    for (int i = startIdx; i <= endIdx; ++i) {
+        if (i >= 0 && i < workspaces.size()) {
+            for (auto& c : workspaces[i].clients) {
+                if (!c->frame && !c->failed && !c->ready) {
+                    requestCapture(c);
+                }
+            }
+        }
+    }
+
+    // process generated textures time-sliced
+    int texturesCreatedThisFrame = 0;
+    const int MAX_TEXTURES_PER_FRAME = 2;
+
     for (auto& w : workspaces) {
         for (auto& c : w.clients) {
             if (c->ready && c->texture == 0) {
-                createTexture(*c);
+                if (texturesCreatedThisFrame < MAX_TEXTURES_PER_FRAME) {
+                    createTexture(*c);
+                    texturesCreatedThisFrame++;
+                }
             }
         }
     }
