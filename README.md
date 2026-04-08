@@ -40,9 +40,16 @@ See the [examples](examples) directory for more.
 
 ## Installation
 
-```
+```bash
 yay -S hyprwat
 ```
+
+### Uninstallation
+
+```bash
+yay -R hyprwat-bin
+```
+
 Or build from source (see Build Instructions below).
 
 ## Usage
