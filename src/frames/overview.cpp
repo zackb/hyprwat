@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
 
 extern "C" {
 // mock for undefined reference in hyprland-toplevel-export protocol
@@ -36,6 +37,12 @@ OverviewFrame::~OverviewFrame() {
             if (c->texture) {
                 glDeleteTextures(1, &c->texture);
             }
+            if (c->buffer)
+                wl_buffer_destroy(c->buffer);
+            if (c->bo)
+                gbm_bo_destroy(c->bo);
+            if (c->fdToClose >= 0)
+                close(c->fdToClose);
         }
     }
 }
@@ -134,7 +141,12 @@ void OverviewFrame::handle_linux_dmabuf(void* data,
                                         struct hyprland_toplevel_export_frame_v1* export_frame,
                                         uint32_t format,
                                         uint32_t width,
-                                        uint32_t height) {}
+                                        uint32_t height) {
+    auto* c = static_cast<CapturedClient*>(data);
+    c->dmabufFormat = format;
+    c->dmabufWidth = width;
+    c->dmabufHeight = height;
+}
 
 void OverviewFrame::handle_buffer_done(void* data, struct hyprland_toplevel_export_frame_v1* export_frame) {
     auto* c = static_cast<CapturedClient*>(data);
@@ -142,48 +154,124 @@ void OverviewFrame::handle_buffer_done(void* data, struct hyprland_toplevel_expo
         return;
 
     try {
-        c->shmBuffer = std::make_unique<wl::ShmBuffer>(
-            c->owner->wlDisplay.shm(), c->captureWidth, c->captureHeight, c->captureStride, c->captureFormat);
-        hyprland_toplevel_export_frame_v1_copy(export_frame, c->shmBuffer->getBuffer(), 1);
+        if (c->owner->wlDisplay.gbmDevice() && c->owner->wlDisplay.linuxDmabuf() && c->dmabufFormat != 0) {
+            c->bo = gbm_bo_create(c->owner->wlDisplay.gbmDevice(),
+                                  c->dmabufWidth,
+                                  c->dmabufHeight,
+                                  c->dmabufFormat,
+                                  GBM_BO_USE_LINEAR | GBM_BO_USE_RENDERING);
+
+            if (!c->bo) {
+                c->failed = true;
+                return;
+            }
+
+            int fd = gbm_bo_get_fd(c->bo);
+            uint32_t stride = gbm_bo_get_stride(c->bo);
+            uint32_t offset = gbm_bo_get_offset(c->bo, 0);
+            uint64_t modifier = gbm_bo_get_modifier(c->bo);
+
+            zwp_linux_buffer_params_v1* params = zwp_linux_dmabuf_v1_create_params(c->owner->wlDisplay.linuxDmabuf());
+            zwp_linux_buffer_params_v1_add(params, fd, 0, offset, stride, modifier >> 32, modifier & 0xffffffff);
+
+            c->buffer =
+                zwp_linux_buffer_params_v1_create_immed(params, c->dmabufWidth, c->dmabufHeight, c->dmabufFormat, 0);
+            zwp_linux_buffer_params_v1_destroy(params);
+
+            c->fdToClose = fd;
+            hyprland_toplevel_export_frame_v1_copy(export_frame, c->buffer, 1);
+        } else {
+            c->shmBuffer = std::make_unique<wl::ShmBuffer>(
+                c->owner->wlDisplay.shm(), c->captureWidth, c->captureHeight, c->captureStride, c->captureFormat);
+            hyprland_toplevel_export_frame_v1_copy(export_frame, c->shmBuffer->getBuffer(), 1);
+        }
     } catch (...) {
         c->failed = true;
     }
 }
 
 void OverviewFrame::createTexture(CapturedClient& c) {
-    if (c.texture != 0 || !c.ready || !c.shmBuffer)
+    if (c.texture != 0 || !c.ready)
         return;
 
-    // ARGB to RGBA if necessary. SHM format is typically ARGB8888 or XRGB8888.
-    // OpenGL expects RGBA, so we might need to swap channels.
-    glGenTextures(1, &c.texture);
-    glBindTexture(GL_TEXTURE_2D, c.texture);
+    if (c.bo && c.buffer && c.fdToClose >= 0) {
+        typedef void (*PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)(GLenum target, void* image);
+        static PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR_ptr = nullptr;
+        static PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR_ptr = nullptr;
+        static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES_ptr = nullptr;
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        if (!eglCreateImageKHR_ptr) {
+            eglCreateImageKHR_ptr = (PFNEGLCREATEIMAGEKHRPROC)eglGetProcAddress("eglCreateImageKHR");
+            eglDestroyImageKHR_ptr = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
+            glEGLImageTargetTexture2DOES_ptr =
+                (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
+        }
 
-    // assuming format is WL_SHM_FORMAT_XRGB8888 or ARGB8888 which is BGRA in memory (little endian)
-    // upload using GL_BGRA_EXT or we manual swizzle.
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 c.captureWidth,
-                 c.captureHeight,
-                 0,
-                 GL_BGRA_EXT,
-                 GL_UNSIGNED_BYTE,
-                 c.shmBuffer->getData());
+        EGLDisplay display = eglGetDisplay((EGLNativeDisplayType)wlDisplay.display());
+        uint64_t modifier = gbm_bo_get_modifier(c.bo);
+        EGLint attribs[] = {EGL_WIDTH,
+                            c.dmabufWidth,
+                            EGL_HEIGHT,
+                            c.dmabufHeight,
+                            EGL_LINUX_DRM_FOURCC_EXT,
+                            c.dmabufFormat,
+                            EGL_DMA_BUF_PLANE0_FD_EXT,
+                            c.fdToClose,
+                            EGL_DMA_BUF_PLANE0_OFFSET_EXT,
+                            (EGLint)gbm_bo_get_offset(c.bo, 0),
+                            EGL_DMA_BUF_PLANE0_PITCH_EXT,
+                            (EGLint)gbm_bo_get_stride(c.bo),
+                            EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
+                            (EGLint)(modifier & 0xFFFFFFFF),
+                            EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT,
+                            (EGLint)(modifier >> 32),
+                            EGL_NONE};
 
-    // clean up shmBuffer as it's no longer needed in CPU RAM
-    c.shmBuffer.reset();
+        EGLImageKHR image =
+            eglCreateImageKHR_ptr(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, (EGLClientBuffer) nullptr, attribs);
+
+        glGenTextures(1, &c.texture);
+        glBindTexture(GL_TEXTURE_2D, c.texture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glEGLImageTargetTexture2DOES_ptr(GL_TEXTURE_2D, image);
+
+        close(c.fdToClose);
+        c.fdToClose = -1;
+        eglDestroyImageKHR_ptr(display, image);
+
+    } else if (c.shmBuffer) {
+        glGenTextures(1, &c.texture);
+        glBindTexture(GL_TEXTURE_2D, c.texture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        // assuming format is WL_SHM_FORMAT_XRGB8888 or ARGB8888 which is BGRA in memory (little endian)
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RGBA,
+                     c.captureWidth,
+                     c.captureHeight,
+                     0,
+                     GL_BGRA_EXT,
+                     GL_UNSIGNED_BYTE,
+                     c.shmBuffer->getData());
+
+        c.shmBuffer.reset();
+    }
 }
 
 FrameResult OverviewFrame::render() {
-    // request captures for visible workspaces
-    int startIdx = std::max(0, selectedIndex - 2);
-    int endIdx = std::min((int)workspaces.size() - 1, selectedIndex + 2);
+    // request captures for visible workspaces (expanded buffer window)
+    int startIdx = std::max(0, selectedIndex - 4);
+    int endIdx = std::min((int)workspaces.size() - 1, selectedIndex + 4);
     for (int i = startIdx; i <= endIdx; ++i) {
         if (i >= 0 && i < workspaces.size()) {
             for (auto& c : workspaces[i].clients) {

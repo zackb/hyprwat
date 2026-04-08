@@ -7,6 +7,7 @@ extern "C" {
 }
 
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 namespace egl {
     class Context {
@@ -19,6 +20,7 @@ namespace egl {
         void swapBuffers();
         Vec2 getBufferSize() const;
         wl_egl_window* window() const { return egl_window; }
+        EGLDisplay getEGLDisplay() const { return egl_display; }
 
     private:
         wl_display* display;
