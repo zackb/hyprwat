@@ -3,7 +3,9 @@
 extern "C" {
 #include "protocols/hyprland-toplevel-export-v1-client-protocol.h"
 #include "protocols/wlr-layer-shell-unstable-v1-client-protocol.h"
+#include "protocols/linux-dmabuf-unstable-v1-client-protocol.h"
 #include <wayland-client.h>
+#include <gbm.h>
 }
 
 #include <functional>
@@ -37,6 +39,8 @@ namespace wl {
         wl_seat* seat() const { return seat_; }
         wl_shm* shm() const { return shm_; }
         hyprland_toplevel_export_manager_v1* exportManager() const { return exportManager_; }
+        zwp_linux_dmabuf_v1* linuxDmabuf() const { return linuxDmabuf_; }
+        struct gbm_device* gbmDevice() const { return gbmDevice_; }
 
         // Output scale management
         const std::vector<Output>& outputs() const { return outputs_; }
@@ -54,6 +58,9 @@ namespace wl {
         wl_seat* seat_ = nullptr;
         wl_shm* shm_ = nullptr;
         hyprland_toplevel_export_manager_v1* exportManager_ = nullptr;
+        zwp_linux_dmabuf_v1* linuxDmabuf_ = nullptr;
+        int drmFd = -1;
+        struct gbm_device* gbmDevice_ = nullptr;
 
         std::vector<Output> outputs_;
         std::function<void(int32_t)> scaleCallback;

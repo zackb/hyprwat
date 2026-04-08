@@ -137,7 +137,7 @@ wallpaper_width_ratio = 0.8
 #### Arch Linux
 
 ```bash
-sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf libxkbcommon pipewire sdbus-c++
+sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf libxkbcommon pipewire sdbus-c++ libdrm
 ```
 
 #### Debian/Ubuntu
@@ -146,7 +146,8 @@ sudo pacman -S cmake make gcc wayland wayland-protocols mesa fontconfig pkgconf 
 sudo apt update
 sudo apt install cmake make g++ libwayland-dev wayland-protocols \
                  libegl1-mesa-dev libgl1-mesa-dev libfontconfig1-dev \
-                 pkg-config libxkbcommon-dev libsdbus-c++-dev libpipewire-0.3-dev
+                 pkg-config libxkbcommon-dev libsdbus-c++-dev libpipewire-0.3-dev \
+                 libgbm-dev libdrm-dev
 ```
 
 ### Building

@@ -2,11 +2,17 @@
 #include "../debug/log.hpp"
 #include <algorithm>
 #include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
 
 namespace wl {
     Display::Display() {}
 
     Display::~Display() {
+        if (gbmDevice_)
+            gbm_device_destroy(gbmDevice_);
+        if (drmFd >= 0)
+            close(drmFd);
         for (auto& output : outputs_) {
             if (output.output)
                 wl_output_destroy(output.output);
@@ -17,6 +23,8 @@ namespace wl {
             wl_shm_destroy(shm_);
         if (seat_)
             wl_seat_destroy(seat_);
+        if (linuxDmabuf_)
+            zwp_linux_dmabuf_v1_destroy(linuxDmabuf_);
         if (layerShell_)
             zwlr_layer_shell_v1_destroy(layerShell_);
         if (compositor_)
@@ -42,6 +50,13 @@ namespace wl {
         if (!compositor_ || !layerShell_) {
             debug::log(ERR, "Compositor or layer shell not available");
             return false;
+        }
+
+        drmFd = open("/dev/dri/renderD128", O_RDWR | O_CLOEXEC);
+        if (drmFd >= 0) {
+            gbmDevice_ = gbm_create_device(drmFd);
+        } else {
+            debug::log(WARN, "Could not open /dev/dri/renderD128 for GBM");
         }
 
         return true;
@@ -80,6 +95,9 @@ namespace wl {
         } else if (strcmp(interface, hyprland_toplevel_export_manager_v1_interface.name) == 0) {
             self->exportManager_ = static_cast<hyprland_toplevel_export_manager_v1*>(
                 wl_registry_bind(registry, id, &hyprland_toplevel_export_manager_v1_interface, 2));
+        } else if (strcmp(interface, zwp_linux_dmabuf_v1_interface.name) == 0) {
+            self->linuxDmabuf_ = static_cast<zwp_linux_dmabuf_v1*>(
+                wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, 3));
         } else if (strcmp(interface, wl_output_interface.name) == 0) {
             wl_output* output = static_cast<wl_output*>(wl_registry_bind(registry, id, &wl_output_interface, 4));
 

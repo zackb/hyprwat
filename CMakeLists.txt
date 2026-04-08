@@ -27,6 +27,10 @@ pkg_check_modules(SDBUSCPP REQUIRED sdbus-c++)
 # pipewire
 pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
 
+# GBM & DRM
+pkg_check_modules(GBM REQUIRED IMPORTED_TARGET gbm)
+pkg_check_modules(LIBDRM REQUIRED IMPORTED_TARGET libdrm)
+
 
 # ImGui sources
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/imgui")
@@ -44,6 +48,7 @@ set(WAYLAND_PROTOCOLS
     src/wayland/protocols/wlr-layer-shell-unstable-v1-client-protocol.c
     src/wayland/protocols/xdg-shell-client-protocol.c
     src/wayland/protocols/hyprland-toplevel-export-v1-client-protocol.c
+    src/wayland/protocols/linux-dmabuf-unstable-v1-client-protocol.c
 )
 
 # INIH
@@ -155,6 +160,8 @@ target_link_libraries(hyprwat PRIVATE
     OpenGL::EGL
     ${Fontconfig_LIBRARIES}
     PkgConfig::XKBCOMMON
+    PkgConfig::GBM
+    PkgConfig::LIBDRM
     ${PIPEWIRE_LIBRARIES}
     ${SDBUSCPP_LIBRARIES}
     inih
@@ -183,9 +190,9 @@ set(CPACK_RPM_PACKAGE_RELEASE 1)
 
 # deb and rpm dependencies
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-    "libwayland-client0, wayland-protocols, libegl1-mesa, libgl1-mesa-glx, libfontconfig1, libxkbcommon0, libpipewire-0.3-0, libsdbus-c++-1")
+    "libwayland-client0, wayland-protocols, libegl1-mesa, libgl1-mesa-glx, libfontconfig1, libxkbcommon0, libpipewire-0.3-0, libsdbus-c++-1, libgbm1, libdrm2")
 set(CPACK_RPM_PACKAGE_REQUIRES
-    "wayland-libs, wayland-protocols, mesa-libEGL, mesa-libGL, fontconfig, libxkbcommon, pipewire, sdbus-c++")
+    "wayland-libs, wayland-protocols, mesa-libEGL, mesa-libGL, fontconfig, libxkbcommon, pipewire, sdbus-c++, mesa-libgbm, libdrm")
 
 
 # remove the "-Linux" suffix

@@ -4,8 +4,12 @@
 #include "../ui.hpp"
 #include "../wayland/display.hpp"
 #include "../wayland/protocols/hyprland-toplevel-export-v1-client-protocol.h"
+#include "../wayland/protocols/linux-dmabuf-unstable-v1-client-protocol.h"
 #include "../wayland/shm.hpp"
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GL/gl.h>
+#include <gbm.h>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -34,6 +38,13 @@ private:
         int captureWidth = 0;
         int captureHeight = 0;
         int captureStride = 0;
+
+        struct gbm_bo* bo = nullptr;
+        wl_buffer* buffer = nullptr;
+        int dmabufFormat = 0;
+        int dmabufWidth = 0;
+        int dmabufHeight = 0;
+        int fdToClose = -1;
     };
 
     struct WorkspaceView {
@@ -48,7 +59,6 @@ private:
     wl::Display& wlDisplay;
 
     std::vector<WorkspaceView> workspaces;
-    std::vector<std::shared_ptr<CapturedClient>> pendingCaptures;
     std::mutex captureMutex;
 
     float padding = 20.0f;
@@ -63,6 +73,7 @@ private:
     void captureClients();
     void navigate(int direction);
     void createTexture(CapturedClient& c);
+    void requestCapture(std::shared_ptr<CapturedClient> c);
 
     static void handle_buffer(void* data,
                               struct hyprland_toplevel_export_frame_v1* export_frame,
