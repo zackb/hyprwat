@@ -4,6 +4,7 @@
 #include <atomic>
 #include <functional>
 #include <string>
+#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -51,6 +52,9 @@ namespace hyprland {
 
     private:
         std::string socketPath;
+        bool luaProtocol = false;
+
+        void detectLuaProtocol();
     };
 
     class Events {

@@ -22,9 +22,26 @@ namespace hyprland {
 
     // Control
     Control::Control() : Control(getSocketPath(".socket.sock")) {}
-    Control::Control(const std::string& socketPath) : socketPath(socketPath) {}
+    Control::Control(const std::string& socketPath) : socketPath(socketPath) {
+        detectLuaProtocol();
+    }
 
     Control::~Control() {}
+
+    void Control::detectLuaProtocol() {
+        try {
+            std::string response = send("dispatch workspace __hyprwat_probe__");
+            if (response.find("hl.dispatch") != std::string::npos) {
+                luaProtocol = true;
+                debug::log(INFO, "Hyprland Lua IPC protocol detected");
+            } else {
+                luaProtocol = false;
+            }
+        } catch (...) {
+            // fallback to legacy
+            luaProtocol = false;
+        }
+    }
 
     std::string Control::send(const std::string& command) {
         int wfd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -87,15 +104,27 @@ namespace hyprland {
     }
 
     void Control::setWallpaper(const std::string& path) {
-        std::string response = send("/keyword exec hyprctl hyprpaper preload \"" + path + "\"");
-        if (response != "ok") {
-            debug::log(ERR, "Failed to preload wallpaper: {}", response);
+        if (luaProtocol) {
+            std::string response = send("/dispatch hl.dsp.exec_cmd(\"hyprctl hyprpaper preload \\\"" + path + "\\\"\")");
+            if (response != "ok") {
+                debug::log(ERR, "Failed to preload wallpaper: {}", response);
+            }
+            response = send("/dispatch hl.dsp.exec_cmd(\"hyprctl hyprpaper wallpaper \\\", " + path + "\\\"\")");
+            if (response != "ok") {
+                debug::log(ERR, "Failed to set wallpaper: {}", response);
+            }
+            send("/dispatch hl.dsp.exec_cmd(\"hyprctl hyprpaper unload unused\")");
+        } else {
+            std::string response = send("/keyword exec hyprctl hyprpaper preload \"" + path + "\"");
+            if (response != "ok") {
+                debug::log(ERR, "Failed to preload wallpaper: {}", response);
+            }
+            response = send("/keyword exec hyprctl hyprpaper wallpaper \"," + path + "\"");
+            if (response != "ok") {
+                debug::log(ERR, "Failed to set wallpaper: {}", response);
+            }
+            send("/keyword exec hyprctl hyprpaper unload unused");
         }
-        response = send("/keyword exec hyprctl hyprpaper wallpaper \"," + path + "\"");
-        if (response != "ok") {
-            debug::log(ERR, "Failed to set wallpaper: {}", response);
-        }
-        send("/keyword exec hyprctl hyprpaper unload unused");
     }
 
     std::vector<Workspace> Control::getWorkspaces() {
@@ -167,7 +196,13 @@ namespace hyprland {
         return -1;
     }
 
-    void Control::dispatchWorkspace(int id) { send("dispatch workspace " + std::to_string(id)); }
+    void Control::dispatchWorkspace(int id) {
+        if (luaProtocol) {
+            send("/dispatch hl.dsp.focus({ workspace = \"" + std::to_string(id) + "\" })");
+        } else {
+            send("dispatch workspace " + std::to_string(id));
+        }
+    }
 
     // Events
 
