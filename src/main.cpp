@@ -123,6 +123,8 @@ int main(const int argc, const char** argv) {
     int y_wayland = y_physical / waylandScale;
 
     auto [displayWidth, displayHeight] = wayland.display().getOutputSize();
+    int logicalDisplayWidth = displayWidth / hyprlandScale;
+    int logicalDisplayHeight = displayHeight / hyprlandScale;
 
     // load config
     Config config("~/.config/hyprwat/hyprwat.conf");
@@ -160,10 +162,10 @@ int main(const int argc, const char** argv) {
         flow = std::make_unique<CustomFlow>(args.configPath);
         break;
     case InputMode::OVERVIEW:
-        flow = std::make_unique<OverviewFlow>(hyprctl, wayland.display(), monitor.width, monitor.height);
+        flow = std::make_unique<OverviewFlow>(hyprctl, wayland.display(), logicalDisplayWidth, logicalDisplayHeight);
         break;
     case InputMode::WALLPAPER:
-        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, monitor.width, monitor.height);
+        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);
         break;
     case InputMode::MENU:
         if (args.choices.size() > 0) {
