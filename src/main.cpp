@@ -98,16 +98,26 @@ int main(const int argc, const char** argv) {
     hyprland::Control hyprctl;
     Vec2 pos = hyprctl.cursorPos();
 
-    // deal with hyprland fractional scaling vs wayland integer scaling
-    float hyprlandScale = hyprctl.scale();
-    int waylandScale = wayland.display().getMaxScale();
-    auto [displayWidth, displayHeight] = wayland.display().getOutputSize();
+    // Get the monitor the cursor is currently on
+    auto monitor = hyprctl.monitorAtCursor();
+    float hyprlandScale = monitor.scale;
 
-    // convert hyprland logical->physical->wayland logical
-    int x_physical = (int)(pos.x * hyprlandScale);
-    int y_physical = (int)(pos.y * hyprlandScale);
+    // global offset of this monitor
+    int monitorOffsetX = monitor.x;
+    int monitorOffsetY = monitor.y;
+
+    // cursor position local to this monitor in hyprland logical
+    float localX = pos.x - monitorOffsetX;
+    float localY = pos.y - monitorOffsetY;
+
+    // convert hyprland logical to physical to wayland logical
+    int waylandScale = wayland.display().getMaxScale();
+    int x_physical = (int)(localX * hyprlandScale);
+    int y_physical = (int)(localY * hyprlandScale);
     int x_wayland = x_physical / waylandScale;
     int y_wayland = y_physical / waylandScale;
+
+    auto [displayWidth, displayHeight] = wayland.display().getOutputSize();
     int logicalDisplayWidth = displayWidth / hyprlandScale;
     int logicalDisplayHeight = displayHeight / hyprlandScale;
 
@@ -115,7 +125,7 @@ int main(const int argc, const char** argv) {
     Config config("~/.config/hyprwat/hyprwat.conf");
 
     // initialize UI at wayland scaled cursor position
-    ui.init(pos.x, pos.y, hyprlandScale);
+    ui.init(x_wayland, y_wayland, hyprlandScale);
 
     // apply theme to UI
     ui.applyTheme(config);
