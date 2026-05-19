@@ -98,8 +98,13 @@ int main(const int argc, const char** argv) {
     hyprland::Control hyprctl;
     Vec2 pos = hyprctl.cursorPos();
 
-    // Get the monitor the cursor is currently on
+    // get the monitor the cursor is currently on
     auto monitor = hyprctl.monitorAtCursor();
+    if (monitor.id < 0) {
+        debug::log(ERR, "Failed to find monitor at cursor, aborting");
+        return 1;
+    }
+
     float hyprlandScale = monitor.scale;
 
     // global offset of this monitor
@@ -118,8 +123,6 @@ int main(const int argc, const char** argv) {
     int y_wayland = y_physical / waylandScale;
 
     auto [displayWidth, displayHeight] = wayland.display().getOutputSize();
-    int logicalDisplayWidth = displayWidth / hyprlandScale;
-    int logicalDisplayHeight = displayHeight / hyprlandScale;
 
     // load config
     Config config("~/.config/hyprwat/hyprwat.conf");
@@ -157,10 +160,10 @@ int main(const int argc, const char** argv) {
         flow = std::make_unique<CustomFlow>(args.configPath);
         break;
     case InputMode::OVERVIEW:
-        flow = std::make_unique<OverviewFlow>(hyprctl, wayland.display(), logicalDisplayWidth, logicalDisplayHeight);
+        flow = std::make_unique<OverviewFlow>(hyprctl, wayland.display(), monitor.width, monitor.height);
         break;
     case InputMode::WALLPAPER:
-        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);
+        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, monitor.width, monitor.height);
         break;
     case InputMode::MENU:
         if (args.choices.size() > 0) {
