@@ -98,24 +98,37 @@ int main(const int argc, const char** argv) {
     hyprland::Control hyprctl;
     Vec2 pos = hyprctl.cursorPos();
 
-    // deal with hyprland fractional scaling vs wayland integer scaling
-    float hyprlandScale = hyprctl.scale();
-    int waylandScale = wayland.display().getMaxScale();
-    auto [displayWidth, displayHeight] = wayland.display().getOutputSize();
+    // get the monitor the cursor is currently on
+    auto monitor = hyprctl.monitorAtCursor();
+    if (monitor.id < 0) {
+        debug::log(ERR, "Failed to find monitor at cursor, aborting");
+        return 1;
+    }
 
-    // convert hyprland logical->physical->wayland logical
-    int x_physical = (int)(pos.x * hyprlandScale);
-    int y_physical = (int)(pos.y * hyprlandScale);
+    float hyprlandScale = monitor.scale;
+
+    // global offset of this monitor
+    int monitorOffsetX = monitor.x;
+    int monitorOffsetY = monitor.y;
+
+    // cursor position local to this monitor in hyprland logical
+    float localX = pos.x - monitorOffsetX;
+    float localY = pos.y - monitorOffsetY;
+
+    // convert hyprland logical to physical to wayland logical
+    int waylandScale = wayland.display().getMaxScale();
+    int x_physical = (int)(localX * hyprlandScale);
+    int y_physical = (int)(localY * hyprlandScale);
     int x_wayland = x_physical / waylandScale;
     int y_wayland = y_physical / waylandScale;
-    int logicalDisplayWidth = displayWidth / hyprlandScale;
-    int logicalDisplayHeight = displayHeight / hyprlandScale;
+
+    auto [displayWidth, displayHeight] = wayland.display().getOutputSize();
 
     // load config
     Config config("~/.config/hyprwat/hyprwat.conf");
 
     // initialize UI at wayland scaled cursor position
-    ui.init(pos.x, pos.y, hyprlandScale);
+    ui.init(x_wayland, y_wayland, hyprlandScale);
 
     // apply theme to UI
     ui.applyTheme(config);
@@ -147,10 +160,10 @@ int main(const int argc, const char** argv) {
         flow = std::make_unique<CustomFlow>(args.configPath);
         break;
     case InputMode::OVERVIEW:
-        flow = std::make_unique<OverviewFlow>(hyprctl, wayland.display(), logicalDisplayWidth, logicalDisplayHeight);
+        flow = std::make_unique<OverviewFlow>(hyprctl, wayland.display(), monitor.width, monitor.height);
         break;
     case InputMode::WALLPAPER:
-        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);
+        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, monitor.width, monitor.height);
         break;
     case InputMode::MENU:
         if (args.choices.size() > 0) {

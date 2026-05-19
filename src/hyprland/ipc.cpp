@@ -22,9 +22,7 @@ namespace hyprland {
 
     // Control
     Control::Control() : Control(getSocketPath(".socket.sock")) {}
-    Control::Control(const std::string& socketPath) : socketPath(socketPath) {
-        detectLuaProtocol();
-    }
+    Control::Control(const std::string& socketPath) : socketPath(socketPath) { detectLuaProtocol(); }
 
     Control::~Control() {}
 
@@ -88,6 +86,42 @@ namespace hyprland {
         return {(float)x, (float)y};
     }
 
+    std::vector<Monitor> Control::getMonitors() {
+        std::vector<Monitor> result;
+        std::string response = send("j/monitors");
+        try {
+            auto node = YAML::Load(response);
+            if (node.IsSequence()) {
+                for (const auto& m : node) {
+                    Monitor monitor;
+                    monitor.id = m["id"].as<int>();
+                    monitor.name = m["name"].as<std::string>();
+                    monitor.x = m["x"].as<int>();
+                    monitor.y = m["y"].as<int>();
+                    monitor.width = m["width"].as<int>();
+                    monitor.height = m["height"].as<int>();
+                    monitor.scale = m["scale"].as<float>();
+                    monitor.focused = m["focused"].as<bool>();
+                    result.push_back(monitor);
+                }
+            }
+        } catch (const std::exception& e) {
+            debug::log(ERR, "Failed to parse monitors: {}", e.what());
+        }
+        return result;
+    }
+
+    Monitor hyprland::Control::monitorAtCursor() {
+        Vec2 cursor = cursorPos();
+        auto monitors = getMonitors();
+        for (auto& m : monitors) {
+            if (cursor.x >= m.x && cursor.x < m.x + m.width && cursor.y >= m.y && cursor.y < m.y + m.height) {
+                return m;
+            }
+        }
+        return monitors[0]; // fallback
+    }
+
     float Control::scale() {
         std::string response = send("monitors");
 
@@ -105,7 +139,8 @@ namespace hyprland {
 
     void Control::setWallpaper(const std::string& path) {
         if (luaProtocol) {
-            std::string response = send("/dispatch hl.dsp.exec_cmd(\"hyprctl hyprpaper preload \\\"" + path + "\\\"\")");
+            std::string response =
+                send("/dispatch hl.dsp.exec_cmd(\"hyprctl hyprpaper preload \\\"" + path + "\\\"\")");
             if (response != "ok") {
                 debug::log(ERR, "Failed to preload wallpaper: {}", response);
             }

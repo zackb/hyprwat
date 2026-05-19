@@ -3,8 +3,8 @@
 #include "../vec.hpp"
 #include <atomic>
 #include <functional>
-#include <string>
 #include <mutex>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -30,6 +30,18 @@ namespace hyprland {
         bool mapped = false;
         bool hidden = false;
     };
+
+    struct Monitor {
+        int id;
+        std::string name;
+        int x;
+        int y;
+        int width;
+        int height;
+        float scale;
+        bool focused;
+    };
+
     class Control {
     public:
         explicit Control();
@@ -40,8 +52,10 @@ namespace hyprland {
         std::string send(const std::string& command);
 
         // these are in fractional scale pixels
-        Vec2 cursorPos();
         float scale();
+        Vec2 cursorPos();
+        std::vector<Monitor> getMonitors();
+        Monitor monitorAtCursor();
 
         void setWallpaper(const std::string& path);
 
