@@ -34,6 +34,18 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
         return result;
     }
 
+    if (std::string(argv[1]) == "--volume-up") {
+        result.mode = InputMode::VOLUME_OSD;
+        result.volumeAction = VolumeAction::UP;
+        return result;
+    }
+
+    if (std::string(argv[1]) == "--volume-down") {
+        result.mode = InputMode::VOLUME_OSD;
+        result.volumeAction = VolumeAction::DOWN;
+        return result;
+    }
+
     if (std::string(argv[1]) == "--custom") {
         result.mode = InputMode::CUSTOM;
         if (argc > 2) {

@@ -15,7 +15,14 @@ enum class InputMode {
     AUDIO,     // audio input/output selection mode
     CUSTOM,    // custom menu from config file
     WALLPAPER, // wallpaper selection mode
-    OVERVIEW   // overview mode
+    OVERVIEW,  // overview mode
+    VOLUME_OSD // volume OSD mode
+};
+
+enum class VolumeAction {
+    NONE,
+    UP,
+    DOWN
 };
 
 struct ParseResult {
@@ -24,6 +31,7 @@ struct ParseResult {
     std::string hint;         // For INPUT mode only
     std::string configPath;   // For CUSTOM mode only
     std::string wallpaperDir; // For WALLPAPER mode only
+    VolumeAction volumeAction = VolumeAction::NONE; // For VOLUME_OSD mode
 };
 
 class Input {

@@ -117,9 +117,11 @@ add_executable(hyprwat
     src/frames/custom.cpp
     src/frames/images.cpp
     src/frames/overview.cpp
+    src/frames/volume.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
     src/flows/audio_flow.cpp
+    src/flows/volume_flow.cpp
     src/flows/custom_flow.cpp
     src/flows/wallpaper_flow.cpp
     src/flows/overview_flow.cpp

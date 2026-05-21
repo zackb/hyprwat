@@ -100,6 +100,9 @@ static const struct {
     {XKB_KEY_backslash, ImGuiKey_Backslash},
     {XKB_KEY_bracketright, ImGuiKey_RightBracket},
     {XKB_KEY_apostrophe, ImGuiKey_Apostrophe},
+    {XKB_KEY_XF86AudioRaiseVolume, ImGuiKey_F13},
+    {XKB_KEY_XF86AudioLowerVolume, ImGuiKey_F14},
+    {XKB_KEY_XF86AudioMute, ImGuiKey_F15},
 };
 
 namespace wl {

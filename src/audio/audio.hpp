@@ -43,12 +43,22 @@ private:
     std::map<uint32_t, AudioDevice> sources;
     uint32_t default_sink_id;
     uint32_t default_source_id;
+    uint32_t default_sink_channels = 2;
 
     bool initialized;
 
     void updateDevices();
     std::vector<AudioDevice> getDevices(const std::map<uint32_t, AudioDevice>& deviceMap);
     bool setDefault(uint32_t deviceId, const std::string& key);
+
+public:
+    struct VolumeInfo {
+        float volume = 0.0f;
+        bool mute = false;
+    };
+    VolumeInfo getVolume();
+    bool setVolume(float volume);
+    bool setMute(bool mute);
 
 public:
     // Static callbacks need to be public for C-style callback registration

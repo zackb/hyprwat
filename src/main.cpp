@@ -3,6 +3,7 @@
 #include "flows/flow.hpp"
 #include "flows/overview_flow.hpp"
 #include "flows/simple_flows.hpp"
+#include "flows/volume_flow.hpp"
 #include "flows/wallpaper_flow.hpp"
 #include "flows/wifi_flow.hpp"
 #include "hyprland/ipc.hpp"
@@ -21,6 +22,8 @@ void usage() {
   hyprwat --password [hint]
   hyprwat --wifi
   hyprwat --audio
+  hyprwat --volume-up
+  hyprwat --volume-down
   hyprwat --overview
   hyprwat --wallpaper <directory>
 
@@ -59,6 +62,9 @@ WIFI MODE:
 AUDIO MODE:
   Use --audio to show available audio input/output devices and select one.
 
+VOLUME MODE:
+  Use --volume-up or --volume-down to adjust output volume and show centered dots OSD.
+
 CUSTOM MODE:
     Use --custom <file> to render a fully custom menu from a YAML configuration file.
 
@@ -74,6 +80,8 @@ Options:
   --password [hint] Show password input mode with optional hint text
   --wifi            Show WiFi network selection mode
   --audio           Show audio input/output device selection mode
+  --volume-up       Adjust volume up and show centered volume HUD
+  --volume-down     Adjust volume down and show centered volume HUD
   --custom <path>   Load a custom flow from the specified configuration file
   --wallpaper <dir> Select wallpapers from the specified directory and set using hyprpaper
   --overview        Show a visual workspace overview and selector
@@ -157,6 +165,9 @@ int main(const int argc, const char** argv) {
     }
     case InputMode::AUDIO:
         flow = std::make_unique<AudioFlow>();
+        break;
+    case InputMode::VOLUME_OSD:
+        flow = std::make_unique<VolumeFlow>(args.volumeAction);
         break;
     case InputMode::CUSTOM:
         flow = std::make_unique<CustomFlow>(args.configPath);
