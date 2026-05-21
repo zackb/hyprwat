@@ -4,6 +4,7 @@
 #include "../input.hpp"
 #include "../ui.hpp"
 #include <chrono>
+#include <mutex>
 
 class VolumeFrame : public Frame {
 public:
@@ -17,13 +18,14 @@ public:
     bool shouldPositionAtCursor() const override { return false; }
     void applyTheme(const Config& config) override;
 
+    void adjustVolume(float delta);
+    void toggleMute();
+    std::mutex frameMutex;
+
 private:
     AudioManagerClient& audioManager;
     std::chrono::steady_clock::time_point lastUpdateTime;
     float baseAlpha = 0.95f;
     bool initialAdjustDone = false;
     VolumeAction initialAction;
-
-    void adjustVolume(float delta);
-    void toggleMute();
 };

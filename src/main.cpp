@@ -11,6 +11,7 @@
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
 
+#include "audio/volume_daemon.hpp"
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -146,6 +147,16 @@ int main(const int argc, const char** argv) {
     // parse command line arguments
     auto args = Input::parseArgv(argc, argv);
 
+    // if it's a volume operation, check single-instance
+    if (args.mode == InputMode::VOLUME_OSD) {
+        std::string cmd = (args.volumeAction == VolumeAction::UP) ? "up" : "down";
+        if (VolumeDaemon::sendCommand(cmd)) {
+            return 0; // Command sent to existing instance, exit successfully!
+        }
+    }
+
+    VolumeDaemon daemon;
+
     // find which flow to run
     std::unique_ptr<Flow> flow;
 
@@ -166,9 +177,15 @@ int main(const int argc, const char** argv) {
     case InputMode::AUDIO:
         flow = std::make_unique<AudioFlow>();
         break;
-    case InputMode::VOLUME_OSD:
-        flow = std::make_unique<VolumeFlow>(args.volumeAction);
+    case InputMode::VOLUME_OSD: {
+        auto volumeFlow = std::make_unique<VolumeFlow>(args.volumeAction);
+        VolumeFlow* flowPtr = volumeFlow.get();
+
+        daemon.startServer([flowPtr](const std::string& cmd) { flowPtr->handleCommand(cmd); });
+
+        flow = std::move(volumeFlow);
         break;
+    }
     case InputMode::CUSTOM:
         flow = std::make_unique<CustomFlow>(args.configPath);
         break;

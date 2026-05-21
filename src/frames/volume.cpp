@@ -13,6 +13,7 @@ VolumeFrame::VolumeFrame(AudioManagerClient& audioManager, VolumeAction initialA
 void VolumeFrame::applyTheme(const Config& config) { baseAlpha = config.getFloat("theme", "background_blur", 0.95f); }
 
 void VolumeFrame::adjustVolume(float delta) {
+    std::lock_guard<std::mutex> lock(frameMutex);
     auto info = audioManager.getVolume();
     float new_vol = info.volume + delta;
     if (new_vol < 0.0f)
@@ -24,6 +25,7 @@ void VolumeFrame::adjustVolume(float delta) {
 }
 
 void VolumeFrame::toggleMute() {
+    std::lock_guard<std::mutex> lock(frameMutex);
     auto info = audioManager.getVolume();
     audioManager.setMute(!info.mute);
     lastUpdateTime = std::chrono::steady_clock::now();
@@ -118,7 +120,11 @@ FrameResult VolumeFrame::render() {
 
     // 4. Handle time-based close and fading
     auto now = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdateTime).count();
+    long long elapsed;
+    {
+        std::lock_guard<std::mutex> lock(frameMutex);
+        elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdateTime).count();
+    }
 
     if (elapsed > 1500) {
         return FrameResult::Submit("");

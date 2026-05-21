@@ -13,6 +13,8 @@ public:
     bool handleResult(const FrameResult& result) override;
     bool isDone() const override;
 
+    void handleCommand(const std::string& cmd);
+
 private:
     AudioManagerClient audioManager;
     std::unique_ptr<VolumeFrame> frame;
