@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <mutex>
 #include <pipewire/extensions/metadata.h>
 #include <pipewire/pipewire.h>
 #include <spa/debug/types.h>
@@ -13,6 +14,8 @@ struct AudioDevice {
     std::string description;
     uint32_t id;
     bool isDefault;
+    uint32_t deviceId = 0;
+    uint32_t profileDevice = 0;
 };
 
 class AudioManagerClient {
@@ -27,6 +30,7 @@ public:
     // Set default devices
     bool setDefaultInput(uint32_t deviceId);
     bool setDefaultOutput(uint32_t deviceId);
+    uint32_t getDefaultSinkId() const;
 
 private:
     struct pw_thread_loop* loop;
@@ -44,12 +48,23 @@ private:
     uint32_t default_sink_id;
     uint32_t default_source_id;
     uint32_t default_sink_channels = 2;
+    uint32_t default_sink_device_id = 0;
+    uint32_t default_sink_profile_device = 0;
+    std::string default_sink_name;
+    std::string default_source_name;
 
     bool initialized;
+
+    struct pw_node* active_sink_node = nullptr;
+    struct spa_hook sink_node_listener;
+    float cached_volume = -1.0f;
+    bool cached_mute = false;
+    mutable std::mutex volume_mutex;
 
     void updateDevices();
     std::vector<AudioDevice> getDevices(const std::map<uint32_t, AudioDevice>& deviceMap);
     bool setDefault(uint32_t deviceId, const std::string& key);
+    void updateActiveSinkNode();
 
 public:
     struct VolumeInfo {

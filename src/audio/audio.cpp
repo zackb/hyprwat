@@ -1,22 +1,28 @@
 #include "audio.hpp"
 #include "../debug/log.hpp"
+#include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <condition_variable>
-#include <cstring>
+#include <iostream>
+#include <memory>
 #include <mutex>
+#include <spa/param/param.h>
 #include <spa/param/props.h>
+#include <spa/param/route.h>
 #include <spa/pod/builder.h>
 #include <spa/pod/iter.h>
 #include <spa/utils/json.h>
+#include <unistd.h>
 
-static const struct pw_registry_events registry_events = {
-    /* version */ PW_VERSION_REGISTRY_EVENTS,
+const struct pw_registry_events registry_events = {
+    PW_VERSION_REGISTRY_EVENTS,
     /* global */ AudioManagerClient::registryEventGlobal,
     /* global_remove */ AudioManagerClient::registryEventGlobalRemove,
 };
 
 static const struct pw_metadata_events metadata_events = {
-    /* version */ PW_VERSION_METADATA_EVENTS,
+    PW_VERSION_METADATA_EVENTS,
     /* property */ AudioManagerClient::metadataProperty,
 };
 
@@ -29,7 +35,10 @@ AudioManagerClient::AudioManagerClient()
     , metadata(nullptr)
     , default_sink_id(0)
     , default_source_id(0)
-    , initialized(false) {
+    , initialized(false)
+    , active_sink_node(nullptr)
+    , cached_volume(-1.0f)
+    , cached_mute(false) {
 
     pw_init(nullptr, nullptr);
 
@@ -64,8 +73,8 @@ AudioManagerClient::AudioManagerClient()
 
     pw_thread_loop_unlock(loop);
 
-    // TODO: can we not do this??
-    usleep(100000);
+    // Wait for registry connection to initialize default sink/source names
+    usleep(150000);
 
     initialized = true;
 }
@@ -73,6 +82,11 @@ AudioManagerClient::AudioManagerClient()
 AudioManagerClient::~AudioManagerClient() {
     if (loop) {
         pw_thread_loop_stop(loop);
+    }
+
+    if (active_sink_node) {
+        spa_hook_remove(&sink_node_listener);
+        pw_proxy_destroy((struct pw_proxy*)active_sink_node);
     }
 
     if (metadata_proxy) {
@@ -100,6 +114,74 @@ AudioManagerClient::~AudioManagerClient() {
     pw_deinit();
 }
 
+void AudioManagerClient::updateActiveSinkNode() {
+    pw_thread_loop_lock(loop);
+    if (active_sink_node) {
+        spa_hook_remove(&sink_node_listener);
+        pw_proxy_destroy((struct pw_proxy*)active_sink_node);
+        active_sink_node = nullptr;
+    }
+
+    if (default_sink_id != 0) {
+        active_sink_node =
+            (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
+        if (active_sink_node) {
+            static const struct pw_node_events node_events = {
+                .version = PW_VERSION_NODE_EVENTS,
+                .param =
+                    [](void* data, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod* param) {
+                        auto* self = static_cast<AudioManagerClient*>(data);
+                        if (id == SPA_PARAM_Props) {
+                            float volume = -1.0f;
+                            bool mute = false;
+                            bool found_vol = false;
+                            bool found_mute = false;
+                            uint32_t channels = 2;
+
+                            struct spa_pod_prop* p = nullptr;
+                            SPA_POD_OBJECT_FOREACH((const struct spa_pod_object*)param, p) {
+                                if (p->key == SPA_PROP_channelVolumes) {
+                                    uint32_t n_values = 0;
+                                    const void* val_data = spa_pod_get_array(&p->value, &n_values);
+                                    if (val_data && n_values > 0) {
+                                        const float* vols = (const float*)val_data;
+                                        channels = n_values;
+                                        float sum = 0.0f;
+                                        for (uint32_t i = 0; i < n_values; i++) {
+                                            sum += vols[i];
+                                        }
+                                        volume = sum / n_values;
+                                        found_vol = true;
+                                    }
+                                } else if (p->key == SPA_PROP_mute) {
+                                    bool m = false;
+                                    if (spa_pod_get_bool(&p->value, &m) == 0) {
+                                        mute = m;
+                                        found_mute = true;
+                                    }
+                                }
+                            }
+
+                            if (found_vol || found_mute) {
+                                std::lock_guard<std::mutex> lock(self->volume_mutex);
+                                if (found_vol) {
+                                    self->cached_volume = std::pow(volume, 1.0f / 3.0f);
+                                    self->default_sink_channels = channels;
+                                }
+                                if (found_mute) {
+                                    self->cached_mute = mute;
+                                }
+                            }
+                        }
+                    }};
+
+            pw_node_add_listener(active_sink_node, &sink_node_listener, &node_events, this);
+            pw_node_enum_params(active_sink_node, 0, SPA_PARAM_Props, 0, 0, nullptr);
+        }
+    }
+    pw_thread_loop_unlock(loop);
+}
+
 void AudioManagerClient::registryEventGlobal(
     void* data, uint32_t id, uint32_t permissions, const char* type, uint32_t version, const struct spa_dict* props) {
     auto* self = static_cast<AudioManagerClient*>(data);
@@ -120,10 +202,29 @@ void AudioManagerClient::registryEventGlobal(
         const char* node_nick = spa_dict_lookup(props, PW_KEY_NODE_NICK);
         dev.description = node_desc ? node_desc : (node_nick ? node_nick : dev.name);
 
+        const char* device_id_str = spa_dict_lookup(props, "device.id");
+        if (device_id_str) {
+            dev.deviceId = std::stoul(device_id_str);
+        }
+
+        const char* profile_device_str = spa_dict_lookup(props, "card.profile.device");
+        if (profile_device_str) {
+            dev.profileDevice = std::stoul(profile_device_str);
+        }
+
         if (strcmp(media_class, "Audio/Sink") == 0) {
             self->sinks[id] = dev;
+            if (dev.name == self->default_sink_name) {
+                self->default_sink_id = id;
+                self->default_sink_device_id = dev.deviceId;
+                self->default_sink_profile_device = dev.profileDevice;
+                self->updateActiveSinkNode();
+            }
         } else if (strcmp(media_class, "Audio/Source") == 0) {
             self->sources[id] = dev;
+            if (dev.name == self->default_source_name) {
+                self->default_source_id = id;
+            }
         }
     } else if (strcmp(type, PW_TYPE_INTERFACE_Metadata) == 0) {
         const char* metadata_name = spa_dict_lookup(props, PW_KEY_METADATA_NAME);
@@ -143,6 +244,10 @@ void AudioManagerClient::registryEventGlobalRemove(void* data, uint32_t id) {
     auto* self = static_cast<AudioManagerClient*>(data);
     self->sinks.erase(id);
     self->sources.erase(id);
+    if (self->default_sink_id == id) {
+        self->default_sink_id = 0;
+        self->updateActiveSinkNode();
+    }
 }
 
 int AudioManagerClient::metadataProperty(
@@ -163,9 +268,14 @@ int AudioManagerClient::metadataProperty(
                 if (strcmp(key_buf, "name") == 0) {
                     if (spa_json_get_string(&it[1], name_buf, sizeof(name_buf)) > 0) {
                         std::string name(name_buf);
-                        for (auto& [id, dev] : self->sinks) {
+                        self->default_sink_name = name;
+                        self->default_sink_id = 0;
+                        for (auto& [sid, dev] : self->sinks) {
                             if (dev.name == name) {
-                                self->default_sink_id = id;
+                                self->default_sink_id = sid;
+                                self->default_sink_device_id = dev.deviceId;
+                                self->default_sink_profile_device = dev.profileDevice;
+                                self->updateActiveSinkNode();
                                 break;
                             }
                         }
@@ -187,9 +297,11 @@ int AudioManagerClient::metadataProperty(
                 if (strcmp(key_buf, "name") == 0) {
                     if (spa_json_get_string(&it[1], name_buf, sizeof(name_buf)) > 0) {
                         std::string name(name_buf);
-                        for (auto& [id, dev] : self->sources) {
+                        self->default_source_name = name;
+                        self->default_source_id = 0;
+                        for (auto& [sid, dev] : self->sources) {
                             if (dev.name == name) {
-                                self->default_source_id = id;
+                                self->default_source_id = sid;
                                 break;
                             }
                         }
@@ -255,13 +367,13 @@ bool AudioManagerClient::setDefault(uint32_t deviceId, const std::string& key) {
         debug::log(ERR, "Device ID {} not found", deviceId);
         return false;
     }
-
     deviceName = it->second.name;
 
-    std::string value = "{\"name\":\"" + deviceName + "\"}";
+    char value_buf[512];
+    snprintf(value_buf, sizeof(value_buf), "{ \"name\": \"%s\" }", deviceName.c_str());
 
     pw_thread_loop_lock(loop);
-    int res = pw_metadata_set_property(metadata, PW_ID_CORE, key.c_str(), "Spa:String:JSON", value.c_str());
+    int res = pw_metadata_set_property(metadata, PW_ID_CORE, key.c_str(), "spa/json", value_buf);
     pw_thread_loop_unlock(loop);
 
     if (res < 0) {
@@ -273,6 +385,9 @@ bool AudioManagerClient::setDefault(uint32_t deviceId, const std::string& key) {
 
     if (key == "default.audio.sink") {
         default_sink_id = deviceId;
+        default_sink_device_id = it->second.deviceId;
+        default_sink_profile_device = it->second.profileDevice;
+        updateActiveSinkNode();
     } else {
         default_source_id = deviceId;
     }
@@ -286,147 +401,141 @@ bool AudioManagerClient::setDefaultOutput(uint32_t deviceId) { return setDefault
 
 AudioManagerClient::VolumeInfo AudioManagerClient::getVolume() {
     VolumeInfo info;
-    if (!initialized || default_sink_id == 0) {
-        return info;
-    }
-
-    struct VolumeState {
-        float volume = 1.0f;
-        bool mute = false;
-        uint32_t channels = 2;
-        bool done = false;
-        std::mutex mutex;
-        std::condition_variable cv;
-    };
-
-    auto state = std::make_shared<VolumeState>();
-
-    pw_thread_loop_lock(loop);
-
-    struct pw_node* node =
-        (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
-    if (!node) {
-        pw_thread_loop_unlock(loop);
-        return info;
-    }
-
-    struct spa_hook listener;
-
-    auto node_event_param =
-        [](void* data, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod* param) {
-            auto* st = static_cast<VolumeState*>(data);
-            if (id == SPA_PARAM_Props) {
-                const struct spa_pod_prop* prop = spa_pod_find_prop(param, nullptr, SPA_PROP_channelVolumes);
-                if (prop && spa_pod_is_array(&prop->value)) {
-                    uint32_t n_values = 0;
-                    const void* val_data = spa_pod_get_array(&prop->value, &n_values);
-                    if (val_data && n_values > 0) {
-                        const float* vols = (const float*)val_data;
-                        st->channels = n_values;
-                        float sum = 0.0f;
-                        for (uint32_t i = 0; i < n_values; i++) {
-                            sum += vols[i];
-                        }
-                        st->volume = sum / n_values;
-                    }
-                }
-                const struct spa_pod_prop* mute_prop = spa_pod_find_prop(param, nullptr, SPA_PROP_mute);
-                if (mute_prop && spa_pod_is_bool(&mute_prop->value)) {
-                    bool m = false;
-                    if (spa_pod_get_bool(&mute_prop->value, &m) == 0) {
-                        st->mute = m;
-                    }
-                }
-                {
-                    std::lock_guard<std::mutex> lock(st->mutex);
-                    st->done = true;
-                }
-                st->cv.notify_one();
-            }
-        };
-
-    static const struct pw_node_events node_events = {
-        .version = PW_VERSION_NODE_EVENTS,
-        .param = node_event_param,
-    };
-
-    pw_node_add_listener(node, &listener, &node_events, state.get());
-    pw_node_enum_params(node, 0, SPA_PARAM_Props, 0, 0, nullptr);
-
-    pw_thread_loop_unlock(loop);
-
-    // Wait for the result with timeout
-    {
-        std::unique_lock<std::mutex> lock(state->mutex);
-        state->cv.wait_for(lock, std::chrono::milliseconds(200), [&] { return state->done; });
-    }
-
-    pw_thread_loop_lock(loop);
-    spa_hook_remove(&listener);
-    pw_proxy_destroy((struct pw_proxy*)node);
-
-    // Store channels for subsequent volume setting
-    default_sink_channels = state->channels;
-
-    pw_thread_loop_unlock(loop);
-
-    info.volume = state->volume;
-    info.mute = state->mute;
+    std::lock_guard<std::mutex> lock(volume_mutex);
+    info.volume = cached_volume;
+    info.mute = cached_mute;
     return info;
 }
 
 bool AudioManagerClient::setVolume(float volume) {
-    if (!initialized || default_sink_id == 0) {
+    pw_thread_loop_lock(loop);
+    if (!active_sink_node) {
+        pw_thread_loop_unlock(loop);
         return false;
     }
 
-    std::vector<float> vols(default_sink_channels, volume);
+    // Convert to cubic scale: raw_val = linear_val^3
+    float cubic_volume = std::pow(std::max(0.0f, std::min(volume, 1.0f)), 3.0f);
+    std::vector<float> vols(default_sink_channels, cubic_volume);
 
-    uint8_t buffer[1024];
-    struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
-    struct spa_pod* param = (struct spa_pod*)spa_pod_builder_add_object(
-        &b,
-        SPA_TYPE_OBJECT_Props,
-        SPA_PARAM_Props,
-        SPA_PROP_channelVolumes,
-        SPA_POD_Array(sizeof(float), SPA_TYPE_Float, vols.size(), vols.data()),
-        SPA_PROP_mute,
-        SPA_POD_Bool(false));
+    if (default_sink_device_id != 0) {
+        // Build the nested Props object first
+        uint8_t props_buffer[512];
+        struct spa_pod_builder props_b = SPA_POD_BUILDER_INIT(props_buffer, sizeof(props_buffer));
+        struct spa_pod* props_pod = (struct spa_pod*)spa_pod_builder_add_object(
+            &props_b,
+            SPA_TYPE_OBJECT_Props,
+            SPA_PARAM_Route,
+            SPA_PROP_channelVolumes,
+            SPA_POD_Array(sizeof(float), SPA_TYPE_Float, vols.size(), vols.data()),
+            SPA_PROP_mute,
+            SPA_POD_Bool(cached_mute));
 
-    pw_thread_loop_lock(loop);
+        // Build the main Route parameter object
+        uint8_t route_buffer[1024];
+        struct spa_pod_builder route_b = SPA_POD_BUILDER_INIT(route_buffer, sizeof(route_buffer));
+        struct spa_pod* route_pod =
+            (struct spa_pod*)spa_pod_builder_add_object(&route_b,
+                                                        SPA_TYPE_OBJECT_ParamRoute,
+                                                        SPA_PARAM_Route,
+                                                        SPA_PARAM_ROUTE_index,
+                                                        SPA_POD_Int(default_sink_profile_device),
+                                                        SPA_PARAM_ROUTE_device,
+                                                        SPA_POD_Int(default_sink_profile_device),
+                                                        SPA_PARAM_ROUTE_props,
+                                                        SPA_POD_Pod(props_pod),
+                                                        SPA_PARAM_ROUTE_save,
+                                                        SPA_POD_Bool(true));
 
-    struct pw_node* node =
-        (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
-    if (node) {
-        pw_node_set_param(node, SPA_PARAM_Props, 0, param);
+        struct pw_device* device = (struct pw_device*)pw_registry_bind(
+            registry, default_sink_device_id, PW_TYPE_INTERFACE_Device, PW_VERSION_DEVICE, 0);
+        if (device) {
+            pw_device_set_param(device, SPA_PARAM_Route, 0, route_pod);
+            pw_core_sync(core, 0, 0);
+            pw_proxy_destroy((struct pw_proxy*)device);
+        }
+    } else {
+        uint8_t buffer[1024];
+        struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
+        struct spa_pod* param = (struct spa_pod*)spa_pod_builder_add_object(
+            &b,
+            SPA_TYPE_OBJECT_Props,
+            SPA_PARAM_Props,
+            SPA_PROP_channelVolumes,
+            SPA_POD_Array(sizeof(float), SPA_TYPE_Float, vols.size(), vols.data()),
+            SPA_PROP_mute,
+            SPA_POD_Bool(false));
+
+        pw_node_set_param(active_sink_node, SPA_PARAM_Props, 0, param);
         pw_core_sync(core, 0, 0);
-        pw_proxy_destroy((struct pw_proxy*)node);
     }
 
     pw_thread_loop_unlock(loop);
+
+    // Update local cache immediately
+    {
+        std::lock_guard<std::mutex> lock(volume_mutex);
+        cached_volume = volume;
+        cached_mute = false;
+    }
     return true;
 }
 
 bool AudioManagerClient::setMute(bool mute) {
-    if (!initialized || default_sink_id == 0) {
+    pw_thread_loop_lock(loop);
+    if (!active_sink_node) {
+        pw_thread_loop_unlock(loop);
         return false;
     }
 
-    uint8_t buffer[1024];
-    struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
-    struct spa_pod* param = (struct spa_pod*)spa_pod_builder_add_object(
-        &b, SPA_TYPE_OBJECT_Props, SPA_PARAM_Props, SPA_PROP_mute, SPA_POD_Bool(mute));
+    if (default_sink_device_id != 0) {
+        // Build the nested Props object first
+        uint8_t props_buffer[512];
+        struct spa_pod_builder props_b = SPA_POD_BUILDER_INIT(props_buffer, sizeof(props_buffer));
+        struct spa_pod* props_pod = (struct spa_pod*)spa_pod_builder_add_object(
+            &props_b, SPA_TYPE_OBJECT_Props, SPA_PARAM_Route, SPA_PROP_mute, SPA_POD_Bool(mute));
 
-    pw_thread_loop_lock(loop);
+        // Build the main Route parameter object
+        uint8_t route_buffer[1024];
+        struct spa_pod_builder route_b = SPA_POD_BUILDER_INIT(route_buffer, sizeof(route_buffer));
+        struct spa_pod* route_pod =
+            (struct spa_pod*)spa_pod_builder_add_object(&route_b,
+                                                        SPA_TYPE_OBJECT_ParamRoute,
+                                                        SPA_PARAM_Route,
+                                                        SPA_PARAM_ROUTE_index,
+                                                        SPA_POD_Int(default_sink_profile_device),
+                                                        SPA_PARAM_ROUTE_device,
+                                                        SPA_POD_Int(default_sink_profile_device),
+                                                        SPA_PARAM_ROUTE_props,
+                                                        SPA_POD_Pod(props_pod),
+                                                        SPA_PARAM_ROUTE_save,
+                                                        SPA_POD_Bool(true));
 
-    struct pw_node* node =
-        (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
-    if (node) {
-        pw_node_set_param(node, SPA_PARAM_Props, 0, param);
+        struct pw_device* device = (struct pw_device*)pw_registry_bind(
+            registry, default_sink_device_id, PW_TYPE_INTERFACE_Device, PW_VERSION_DEVICE, 0);
+        if (device) {
+            pw_device_set_param(device, SPA_PARAM_Route, 0, route_pod);
+            pw_core_sync(core, 0, 0);
+            pw_proxy_destroy((struct pw_proxy*)device);
+        }
+    } else {
+        uint8_t buffer[1024];
+        struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
+        struct spa_pod* param = (struct spa_pod*)spa_pod_builder_add_object(
+            &b, SPA_TYPE_OBJECT_Props, SPA_PARAM_Props, SPA_PROP_mute, SPA_POD_Bool(mute));
+
+        pw_node_set_param(active_sink_node, SPA_PARAM_Props, 0, param);
         pw_core_sync(core, 0, 0);
-        pw_proxy_destroy((struct pw_proxy*)node);
     }
 
     pw_thread_loop_unlock(loop);
+
+    // Update local cache immediately
+    {
+        std::lock_guard<std::mutex> lock(volume_mutex);
+        cached_mute = mute;
+    }
     return true;
 }
+
+uint32_t AudioManagerClient::getDefaultSinkId() const { return default_sink_id; }
