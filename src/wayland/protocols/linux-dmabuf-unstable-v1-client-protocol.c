@@ -23,17 +23,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include "wayland-util.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 #ifndef __has_attribute
-# define __has_attribute(x) 0  /* Compatibility with non-clang compilers. */
+#define __has_attribute(x) 0 /* Compatibility with non-clang compilers. */
 #endif
 
 #if (__has_attribute(visibility) || defined(__GNUC__) && __GNUC__ >= 4)
-#define WL_PRIVATE __attribute__ ((visibility("hidden")))
+#define WL_PRIVATE __attribute__((visibility("hidden")))
 #else
 #define WL_PRIVATE
 #endif
@@ -43,78 +43,86 @@ extern const struct wl_interface wl_surface_interface;
 extern const struct wl_interface zwp_linux_buffer_params_v1_interface;
 extern const struct wl_interface zwp_linux_dmabuf_feedback_v1_interface;
 
-static const struct wl_interface *linux_dmabuf_unstable_v1_types[] = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	&zwp_linux_buffer_params_v1_interface,
-	&zwp_linux_dmabuf_feedback_v1_interface,
-	&zwp_linux_dmabuf_feedback_v1_interface,
-	&wl_surface_interface,
-	&wl_buffer_interface,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	&wl_buffer_interface,
+static const struct wl_interface* linux_dmabuf_unstable_v1_types[] = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    &zwp_linux_buffer_params_v1_interface,
+    &zwp_linux_dmabuf_feedback_v1_interface,
+    &zwp_linux_dmabuf_feedback_v1_interface,
+    &wl_surface_interface,
+    &wl_buffer_interface,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    &wl_buffer_interface,
 };
 
 static const struct wl_message zwp_linux_dmabuf_v1_requests[] = {
-	{ "destroy", "", linux_dmabuf_unstable_v1_types + 0 },
-	{ "create_params", "n", linux_dmabuf_unstable_v1_types + 6 },
-	{ "get_default_feedback", "4n", linux_dmabuf_unstable_v1_types + 7 },
-	{ "get_surface_feedback", "4no", linux_dmabuf_unstable_v1_types + 8 },
+    {"destroy", "", linux_dmabuf_unstable_v1_types + 0},
+    {"create_params", "n", linux_dmabuf_unstable_v1_types + 6},
+    {"get_default_feedback", "4n", linux_dmabuf_unstable_v1_types + 7},
+    {"get_surface_feedback", "4no", linux_dmabuf_unstable_v1_types + 8},
 };
 
 static const struct wl_message zwp_linux_dmabuf_v1_events[] = {
-	{ "format", "u", linux_dmabuf_unstable_v1_types + 0 },
-	{ "modifier", "3uuu", linux_dmabuf_unstable_v1_types + 0 },
+    {"format", "u", linux_dmabuf_unstable_v1_types + 0},
+    {"modifier", "3uuu", linux_dmabuf_unstable_v1_types + 0},
 };
 
 WL_PRIVATE const struct wl_interface zwp_linux_dmabuf_v1_interface = {
-	"zwp_linux_dmabuf_v1", 5,
-	4, zwp_linux_dmabuf_v1_requests,
-	2, zwp_linux_dmabuf_v1_events,
+    "zwp_linux_dmabuf_v1",
+    5,
+    4,
+    zwp_linux_dmabuf_v1_requests,
+    2,
+    zwp_linux_dmabuf_v1_events,
 };
 
 static const struct wl_message zwp_linux_buffer_params_v1_requests[] = {
-	{ "destroy", "", linux_dmabuf_unstable_v1_types + 0 },
-	{ "add", "huuuuu", linux_dmabuf_unstable_v1_types + 0 },
-	{ "create", "iiuu", linux_dmabuf_unstable_v1_types + 0 },
-	{ "create_immed", "2niiuu", linux_dmabuf_unstable_v1_types + 10 },
+    {"destroy", "", linux_dmabuf_unstable_v1_types + 0},
+    {"add", "huuuuu", linux_dmabuf_unstable_v1_types + 0},
+    {"create", "iiuu", linux_dmabuf_unstable_v1_types + 0},
+    {"create_immed", "2niiuu", linux_dmabuf_unstable_v1_types + 10},
 };
 
 static const struct wl_message zwp_linux_buffer_params_v1_events[] = {
-	{ "created", "n", linux_dmabuf_unstable_v1_types + 15 },
-	{ "failed", "", linux_dmabuf_unstable_v1_types + 0 },
+    {"created", "n", linux_dmabuf_unstable_v1_types + 15},
+    {"failed", "", linux_dmabuf_unstable_v1_types + 0},
 };
 
 WL_PRIVATE const struct wl_interface zwp_linux_buffer_params_v1_interface = {
-	"zwp_linux_buffer_params_v1", 5,
-	4, zwp_linux_buffer_params_v1_requests,
-	2, zwp_linux_buffer_params_v1_events,
+    "zwp_linux_buffer_params_v1",
+    5,
+    4,
+    zwp_linux_buffer_params_v1_requests,
+    2,
+    zwp_linux_buffer_params_v1_events,
 };
 
 static const struct wl_message zwp_linux_dmabuf_feedback_v1_requests[] = {
-	{ "destroy", "", linux_dmabuf_unstable_v1_types + 0 },
+    {"destroy", "", linux_dmabuf_unstable_v1_types + 0},
 };
 
 static const struct wl_message zwp_linux_dmabuf_feedback_v1_events[] = {
-	{ "done", "", linux_dmabuf_unstable_v1_types + 0 },
-	{ "format_table", "hu", linux_dmabuf_unstable_v1_types + 0 },
-	{ "main_device", "a", linux_dmabuf_unstable_v1_types + 0 },
-	{ "tranche_done", "", linux_dmabuf_unstable_v1_types + 0 },
-	{ "tranche_target_device", "a", linux_dmabuf_unstable_v1_types + 0 },
-	{ "tranche_formats", "a", linux_dmabuf_unstable_v1_types + 0 },
-	{ "tranche_flags", "u", linux_dmabuf_unstable_v1_types + 0 },
+    {"done", "", linux_dmabuf_unstable_v1_types + 0},
+    {"format_table", "hu", linux_dmabuf_unstable_v1_types + 0},
+    {"main_device", "a", linux_dmabuf_unstable_v1_types + 0},
+    {"tranche_done", "", linux_dmabuf_unstable_v1_types + 0},
+    {"tranche_target_device", "a", linux_dmabuf_unstable_v1_types + 0},
+    {"tranche_formats", "a", linux_dmabuf_unstable_v1_types + 0},
+    {"tranche_flags", "u", linux_dmabuf_unstable_v1_types + 0},
 };
 
 WL_PRIVATE const struct wl_interface zwp_linux_dmabuf_feedback_v1_interface = {
-	"zwp_linux_dmabuf_feedback_v1", 5,
-	1, zwp_linux_dmabuf_feedback_v1_requests,
-	7, zwp_linux_dmabuf_feedback_v1_events,
+    "zwp_linux_dmabuf_feedback_v1",
+    5,
+    1,
+    zwp_linux_dmabuf_feedback_v1_requests,
+    7,
+    zwp_linux_dmabuf_feedback_v1_events,
 };
-

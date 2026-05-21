@@ -3,11 +3,11 @@
 #ifndef HYPRLAND_TOPLEVEL_EXPORT_V1_CLIENT_PROTOCOL_H
 #define HYPRLAND_TOPLEVEL_EXPORT_V1_CLIENT_PROTOCOL_H
 
-#include <stdint.h>
-#include <stddef.h>
 #include "wayland-client.h"
+#include <stddef.h>
+#include <stdint.h>
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -131,7 +131,6 @@ extern const struct wl_interface hyprland_toplevel_export_frame_v1_interface;
 #define HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_DESTROY 1
 #define HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_CAPTURE_TOPLEVEL_WITH_WLR_TOPLEVEL_HANDLE 2
 
-
 /**
  * @ingroup iface_hyprland_toplevel_export_manager_v1
  */
@@ -146,23 +145,20 @@ extern const struct wl_interface hyprland_toplevel_export_frame_v1_interface;
 #define HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_CAPTURE_TOPLEVEL_WITH_WLR_TOPLEVEL_HANDLE_SINCE_VERSION 2
 
 /** @ingroup iface_hyprland_toplevel_export_manager_v1 */
-static inline void
-hyprland_toplevel_export_manager_v1_set_user_data(struct hyprland_toplevel_export_manager_v1 *hyprland_toplevel_export_manager_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) hyprland_toplevel_export_manager_v1, user_data);
+static inline void hyprland_toplevel_export_manager_v1_set_user_data(
+    struct hyprland_toplevel_export_manager_v1* hyprland_toplevel_export_manager_v1, void* user_data) {
+    wl_proxy_set_user_data((struct wl_proxy*)hyprland_toplevel_export_manager_v1, user_data);
 }
 
 /** @ingroup iface_hyprland_toplevel_export_manager_v1 */
-static inline void *
-hyprland_toplevel_export_manager_v1_get_user_data(struct hyprland_toplevel_export_manager_v1 *hyprland_toplevel_export_manager_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) hyprland_toplevel_export_manager_v1);
+static inline void* hyprland_toplevel_export_manager_v1_get_user_data(
+    struct hyprland_toplevel_export_manager_v1* hyprland_toplevel_export_manager_v1) {
+    return wl_proxy_get_user_data((struct wl_proxy*)hyprland_toplevel_export_manager_v1);
 }
 
-static inline uint32_t
-hyprland_toplevel_export_manager_v1_get_version(struct hyprland_toplevel_export_manager_v1 *hyprland_toplevel_export_manager_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) hyprland_toplevel_export_manager_v1);
+static inline uint32_t hyprland_toplevel_export_manager_v1_get_version(
+    struct hyprland_toplevel_export_manager_v1* hyprland_toplevel_export_manager_v1) {
+    return wl_proxy_get_version((struct wl_proxy*)hyprland_toplevel_export_manager_v1);
 }
 
 /**
@@ -179,15 +175,22 @@ hyprland_toplevel_export_manager_v1_get_version(struct hyprland_toplevel_export_
  * The handle parameter refers to the address of the window as seen in `hyprctl clients`.
  * For example, for d161e7b0 it would be 3512854448.
  */
-static inline struct hyprland_toplevel_export_frame_v1 *
-hyprland_toplevel_export_manager_v1_capture_toplevel(struct hyprland_toplevel_export_manager_v1 *hyprland_toplevel_export_manager_v1, int32_t overlay_cursor, uint32_t handle)
-{
-	struct wl_proxy *frame;
+static inline struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_manager_v1_capture_toplevel(
+    struct hyprland_toplevel_export_manager_v1* hyprland_toplevel_export_manager_v1,
+    int32_t overlay_cursor,
+    uint32_t handle) {
+    struct wl_proxy* frame;
 
-	frame = wl_proxy_marshal_flags((struct wl_proxy *) hyprland_toplevel_export_manager_v1,
-			 HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_CAPTURE_TOPLEVEL, &hyprland_toplevel_export_frame_v1_interface, wl_proxy_get_version((struct wl_proxy *) hyprland_toplevel_export_manager_v1), 0, NULL, overlay_cursor, handle);
+    frame = wl_proxy_marshal_flags((struct wl_proxy*)hyprland_toplevel_export_manager_v1,
+                                   HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_CAPTURE_TOPLEVEL,
+                                   &hyprland_toplevel_export_frame_v1_interface,
+                                   wl_proxy_get_version((struct wl_proxy*)hyprland_toplevel_export_manager_v1),
+                                   0,
+                                   NULL,
+                                   overlay_cursor,
+                                   handle);
 
-	return (struct hyprland_toplevel_export_frame_v1 *) frame;
+    return (struct hyprland_toplevel_export_frame_v1*)frame;
 }
 
 /**
@@ -196,11 +199,13 @@ hyprland_toplevel_export_manager_v1_capture_toplevel(struct hyprland_toplevel_ex
  * All objects created by the manager will still remain valid, until their
  * appropriate destroy request has been called.
  */
-static inline void
-hyprland_toplevel_export_manager_v1_destroy(struct hyprland_toplevel_export_manager_v1 *hyprland_toplevel_export_manager_v1)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) hyprland_toplevel_export_manager_v1,
-			 HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) hyprland_toplevel_export_manager_v1), WL_MARSHAL_FLAG_DESTROY);
+static inline void hyprland_toplevel_export_manager_v1_destroy(
+    struct hyprland_toplevel_export_manager_v1* hyprland_toplevel_export_manager_v1) {
+    wl_proxy_marshal_flags((struct wl_proxy*)hyprland_toplevel_export_manager_v1,
+                           HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_DESTROY,
+                           NULL,
+                           wl_proxy_get_version((struct wl_proxy*)hyprland_toplevel_export_manager_v1),
+                           WL_MARSHAL_FLAG_DESTROY);
 }
 
 /**
@@ -208,38 +213,46 @@ hyprland_toplevel_export_manager_v1_destroy(struct hyprland_toplevel_export_mana
  *
  * Same as capture_toplevel, but with a zwlr_foreign_toplevel_handle_v1 handle.
  */
-static inline struct hyprland_toplevel_export_frame_v1 *
-hyprland_toplevel_export_manager_v1_capture_toplevel_with_wlr_toplevel_handle(struct hyprland_toplevel_export_manager_v1 *hyprland_toplevel_export_manager_v1, int32_t overlay_cursor, struct zwlr_foreign_toplevel_handle_v1 *handle)
-{
-	struct wl_proxy *frame;
+static inline struct hyprland_toplevel_export_frame_v1*
+    hyprland_toplevel_export_manager_v1_capture_toplevel_with_wlr_toplevel_handle(
+        struct hyprland_toplevel_export_manager_v1* hyprland_toplevel_export_manager_v1,
+        int32_t overlay_cursor,
+        struct zwlr_foreign_toplevel_handle_v1* handle) {
+    struct wl_proxy* frame;
 
-	frame = wl_proxy_marshal_flags((struct wl_proxy *) hyprland_toplevel_export_manager_v1,
-			 HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_CAPTURE_TOPLEVEL_WITH_WLR_TOPLEVEL_HANDLE, &hyprland_toplevel_export_frame_v1_interface, wl_proxy_get_version((struct wl_proxy *) hyprland_toplevel_export_manager_v1), 0, NULL, overlay_cursor, handle);
+    frame = wl_proxy_marshal_flags((struct wl_proxy*)hyprland_toplevel_export_manager_v1,
+                                   HYPRLAND_TOPLEVEL_EXPORT_MANAGER_V1_CAPTURE_TOPLEVEL_WITH_WLR_TOPLEVEL_HANDLE,
+                                   &hyprland_toplevel_export_frame_v1_interface,
+                                   wl_proxy_get_version((struct wl_proxy*)hyprland_toplevel_export_manager_v1),
+                                   0,
+                                   NULL,
+                                   overlay_cursor,
+                                   handle);
 
-	return (struct hyprland_toplevel_export_frame_v1 *) frame;
+    return (struct hyprland_toplevel_export_frame_v1*)frame;
 }
 
 #ifndef HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_ERROR_ENUM
 #define HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_ERROR_ENUM
 enum hyprland_toplevel_export_frame_v1_error {
-	/**
-	 * the object has already been used to copy a wl_buffer
-	 */
-	HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_ERROR_ALREADY_USED = 0,
-	/**
-	 * buffer attributes are invalid
-	 */
-	HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_ERROR_INVALID_BUFFER = 1,
+    /**
+     * the object has already been used to copy a wl_buffer
+     */
+    HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_ERROR_ALREADY_USED = 0,
+    /**
+     * buffer attributes are invalid
+     */
+    HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_ERROR_INVALID_BUFFER = 1,
 };
 #endif /* HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_ERROR_ENUM */
 
 #ifndef HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_FLAGS_ENUM
 #define HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_FLAGS_ENUM
 enum hyprland_toplevel_export_frame_v1_flags {
-	/**
-	 * contents are y-inverted
-	 */
-	HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_FLAGS_Y_INVERT = 1,
+    /**
+     * contents are y-inverted
+     */
+    HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_FLAGS_Y_INVERT = 1,
 };
 #endif /* HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_FLAGS_ENUM */
 
@@ -248,130 +261,127 @@ enum hyprland_toplevel_export_frame_v1_flags {
  * @struct hyprland_toplevel_export_frame_v1_listener
  */
 struct hyprland_toplevel_export_frame_v1_listener {
-	/**
-	 * wl_shm buffer information
-	 *
-	 * Provides information about wl_shm buffer parameters that need
-	 * to be used for this frame. This event is sent once after the
-	 * frame is created if wl_shm buffers are supported.
-	 * @param format buffer format
-	 * @param width buffer width
-	 * @param height buffer height
-	 * @param stride buffer stride
-	 */
-	void (*buffer)(void *data,
-		       struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1,
-		       uint32_t format,
-		       uint32_t width,
-		       uint32_t height,
-		       uint32_t stride);
-	/**
-	 * carries the coordinates of the damaged region
-	 *
-	 * This event is sent right before the ready event when
-	 * ignore_damage was not set. It may be generated multiple times
-	 * for each copy request.
-	 *
-	 * The arguments describe a box around an area that has changed
-	 * since the last copy request that was derived from the current
-	 * screencopy manager instance.
-	 *
-	 * The union of all regions received between the call to copy and a
-	 * ready event is the total damage since the prior ready event.
-	 * @param x damaged x coordinates
-	 * @param y damaged y coordinates
-	 * @param width current width
-	 * @param height current height
-	 */
-	void (*damage)(void *data,
-		       struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1,
-		       uint32_t x,
-		       uint32_t y,
-		       uint32_t width,
-		       uint32_t height);
-	/**
-	 * frame flags
-	 *
-	 * Provides flags about the frame. This event is sent once before
-	 * the "ready" event.
-	 * @param flags frame flags
-	 */
-	void (*flags)(void *data,
-		      struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1,
-		      uint32_t flags);
-	/**
-	 * indicates frame is available for reading
-	 *
-	 * Called as soon as the frame is copied, indicating it is
-	 * available for reading. This event includes the time at which
-	 * presentation happened at.
-	 *
-	 * The timestamp is expressed as tv_sec_hi, tv_sec_lo, tv_nsec
-	 * triples, each component being an unsigned 32-bit value. Whole
-	 * seconds are in tv_sec which is a 64-bit value combined from
-	 * tv_sec_hi and tv_sec_lo, and the additional fractional part in
-	 * tv_nsec as nanoseconds. Hence, for valid timestamps tv_nsec must
-	 * be in [0, 999999999]. The seconds part may have an arbitrary
-	 * offset at start.
-	 *
-	 * After receiving this event, the client should destroy the
-	 * object.
-	 * @param tv_sec_hi high 32 bits of the seconds part of the timestamp
-	 * @param tv_sec_lo low 32 bits of the seconds part of the timestamp
-	 * @param tv_nsec nanoseconds part of the timestamp
-	 */
-	void (*ready)(void *data,
-		      struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1,
-		      uint32_t tv_sec_hi,
-		      uint32_t tv_sec_lo,
-		      uint32_t tv_nsec);
-	/**
-	 * frame copy failed
-	 *
-	 * This event indicates that the attempted frame copy has failed.
-	 *
-	 * After receiving this event, the client should destroy the
-	 * object.
-	 */
-	void (*failed)(void *data,
-		       struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1);
-	/**
-	 * linux-dmabuf buffer information
-	 *
-	 * Provides information about linux-dmabuf buffer parameters that
-	 * need to be used for this frame. This event is sent once after
-	 * the frame is created if linux-dmabuf buffers are supported.
-	 * @param format fourcc pixel format
-	 * @param width buffer width
-	 * @param height buffer height
-	 */
-	void (*linux_dmabuf)(void *data,
-			     struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1,
-			     uint32_t format,
-			     uint32_t width,
-			     uint32_t height);
-	/**
-	 * all buffer types reported
-	 *
-	 * This event is sent once after all buffer events have been
-	 * sent.
-	 *
-	 * The client should proceed to create a buffer of one of the
-	 * supported types, and send a "copy" request.
-	 */
-	void (*buffer_done)(void *data,
-			    struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1);
+    /**
+     * wl_shm buffer information
+     *
+     * Provides information about wl_shm buffer parameters that need
+     * to be used for this frame. This event is sent once after the
+     * frame is created if wl_shm buffers are supported.
+     * @param format buffer format
+     * @param width buffer width
+     * @param height buffer height
+     * @param stride buffer stride
+     */
+    void (*buffer)(void* data,
+                   struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1,
+                   uint32_t format,
+                   uint32_t width,
+                   uint32_t height,
+                   uint32_t stride);
+    /**
+     * carries the coordinates of the damaged region
+     *
+     * This event is sent right before the ready event when
+     * ignore_damage was not set. It may be generated multiple times
+     * for each copy request.
+     *
+     * The arguments describe a box around an area that has changed
+     * since the last copy request that was derived from the current
+     * screencopy manager instance.
+     *
+     * The union of all regions received between the call to copy and a
+     * ready event is the total damage since the prior ready event.
+     * @param x damaged x coordinates
+     * @param y damaged y coordinates
+     * @param width current width
+     * @param height current height
+     */
+    void (*damage)(void* data,
+                   struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1,
+                   uint32_t x,
+                   uint32_t y,
+                   uint32_t width,
+                   uint32_t height);
+    /**
+     * frame flags
+     *
+     * Provides flags about the frame. This event is sent once before
+     * the "ready" event.
+     * @param flags frame flags
+     */
+    void (*flags)(void* data,
+                  struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1,
+                  uint32_t flags);
+    /**
+     * indicates frame is available for reading
+     *
+     * Called as soon as the frame is copied, indicating it is
+     * available for reading. This event includes the time at which
+     * presentation happened at.
+     *
+     * The timestamp is expressed as tv_sec_hi, tv_sec_lo, tv_nsec
+     * triples, each component being an unsigned 32-bit value. Whole
+     * seconds are in tv_sec which is a 64-bit value combined from
+     * tv_sec_hi and tv_sec_lo, and the additional fractional part in
+     * tv_nsec as nanoseconds. Hence, for valid timestamps tv_nsec must
+     * be in [0, 999999999]. The seconds part may have an arbitrary
+     * offset at start.
+     *
+     * After receiving this event, the client should destroy the
+     * object.
+     * @param tv_sec_hi high 32 bits of the seconds part of the timestamp
+     * @param tv_sec_lo low 32 bits of the seconds part of the timestamp
+     * @param tv_nsec nanoseconds part of the timestamp
+     */
+    void (*ready)(void* data,
+                  struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1,
+                  uint32_t tv_sec_hi,
+                  uint32_t tv_sec_lo,
+                  uint32_t tv_nsec);
+    /**
+     * frame copy failed
+     *
+     * This event indicates that the attempted frame copy has failed.
+     *
+     * After receiving this event, the client should destroy the
+     * object.
+     */
+    void (*failed)(void* data, struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1);
+    /**
+     * linux-dmabuf buffer information
+     *
+     * Provides information about linux-dmabuf buffer parameters that
+     * need to be used for this frame. This event is sent once after
+     * the frame is created if linux-dmabuf buffers are supported.
+     * @param format fourcc pixel format
+     * @param width buffer width
+     * @param height buffer height
+     */
+    void (*linux_dmabuf)(void* data,
+                         struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1,
+                         uint32_t format,
+                         uint32_t width,
+                         uint32_t height);
+    /**
+     * all buffer types reported
+     *
+     * This event is sent once after all buffer events have been
+     * sent.
+     *
+     * The client should proceed to create a buffer of one of the
+     * supported types, and send a "copy" request.
+     */
+    void (*buffer_done)(void* data, struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1);
 };
 
 /**
  * @ingroup iface_hyprland_toplevel_export_frame_v1
  */
-static inline int
-hyprland_toplevel_export_frame_v1_add_listener(struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1,
-					       const struct hyprland_toplevel_export_frame_v1_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) hyprland_toplevel_export_frame_v1,
-				     (void (**)(void)) listener, data);
+static inline int hyprland_toplevel_export_frame_v1_add_listener(
+    struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1,
+    const struct hyprland_toplevel_export_frame_v1_listener* listener,
+    void* data) {
+    return wl_proxy_add_listener((struct wl_proxy*)hyprland_toplevel_export_frame_v1, (void (**)(void))listener, data);
 }
 
 #define HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_COPY 0
@@ -416,23 +426,20 @@ hyprland_toplevel_export_frame_v1_add_listener(struct hyprland_toplevel_export_f
 #define HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_DESTROY_SINCE_VERSION 1
 
 /** @ingroup iface_hyprland_toplevel_export_frame_v1 */
-static inline void
-hyprland_toplevel_export_frame_v1_set_user_data(struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) hyprland_toplevel_export_frame_v1, user_data);
+static inline void hyprland_toplevel_export_frame_v1_set_user_data(
+    struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1, void* user_data) {
+    wl_proxy_set_user_data((struct wl_proxy*)hyprland_toplevel_export_frame_v1, user_data);
 }
 
 /** @ingroup iface_hyprland_toplevel_export_frame_v1 */
-static inline void *
-hyprland_toplevel_export_frame_v1_get_user_data(struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) hyprland_toplevel_export_frame_v1);
+static inline void* hyprland_toplevel_export_frame_v1_get_user_data(
+    struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1) {
+    return wl_proxy_get_user_data((struct wl_proxy*)hyprland_toplevel_export_frame_v1);
 }
 
-static inline uint32_t
-hyprland_toplevel_export_frame_v1_get_version(struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) hyprland_toplevel_export_frame_v1);
+static inline uint32_t hyprland_toplevel_export_frame_v1_get_version(
+    struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1) {
+    return wl_proxy_get_version((struct wl_proxy*)hyprland_toplevel_export_frame_v1);
 }
 
 /**
@@ -450,10 +457,16 @@ hyprland_toplevel_export_frame_v1_get_version(struct hyprland_toplevel_export_fr
  * arg is set to a non-zero value.
  */
 static inline void
-hyprland_toplevel_export_frame_v1_copy(struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1, struct wl_buffer *buffer, int32_t ignore_damage)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) hyprland_toplevel_export_frame_v1,
-			 HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_COPY, NULL, wl_proxy_get_version((struct wl_proxy *) hyprland_toplevel_export_frame_v1), 0, buffer, ignore_damage);
+    hyprland_toplevel_export_frame_v1_copy(struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1,
+                                           struct wl_buffer* buffer,
+                                           int32_t ignore_damage) {
+    wl_proxy_marshal_flags((struct wl_proxy*)hyprland_toplevel_export_frame_v1,
+                           HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_COPY,
+                           NULL,
+                           wl_proxy_get_version((struct wl_proxy*)hyprland_toplevel_export_frame_v1),
+                           0,
+                           buffer,
+                           ignore_damage);
 }
 
 /**
@@ -461,14 +474,16 @@ hyprland_toplevel_export_frame_v1_copy(struct hyprland_toplevel_export_frame_v1 
  *
  * Destroys the frame. This request can be sent at any time by the client.
  */
-static inline void
-hyprland_toplevel_export_frame_v1_destroy(struct hyprland_toplevel_export_frame_v1 *hyprland_toplevel_export_frame_v1)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) hyprland_toplevel_export_frame_v1,
-			 HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) hyprland_toplevel_export_frame_v1), WL_MARSHAL_FLAG_DESTROY);
+static inline void hyprland_toplevel_export_frame_v1_destroy(
+    struct hyprland_toplevel_export_frame_v1* hyprland_toplevel_export_frame_v1) {
+    wl_proxy_marshal_flags((struct wl_proxy*)hyprland_toplevel_export_frame_v1,
+                           HYPRLAND_TOPLEVEL_EXPORT_FRAME_V1_DESTROY,
+                           NULL,
+                           wl_proxy_get_version((struct wl_proxy*)hyprland_toplevel_export_frame_v1),
+                           WL_MARSHAL_FLAG_DESTROY);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

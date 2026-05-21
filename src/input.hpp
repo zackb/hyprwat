@@ -19,18 +19,14 @@ enum class InputMode {
     VOLUME_OSD // volume OSD mode
 };
 
-enum class VolumeAction {
-    NONE,
-    UP,
-    DOWN
-};
+enum class VolumeAction { NONE, UP, DOWN };
 
 struct ParseResult {
     InputMode mode = InputMode::MENU;
     std::vector<Choice> choices;
-    std::string hint;         // For INPUT mode only
-    std::string configPath;   // For CUSTOM mode only
-    std::string wallpaperDir; // For WALLPAPER mode only
+    std::string hint;                               // For INPUT mode only
+    std::string configPath;                         // For CUSTOM mode only
+    std::string wallpaperDir;                       // For WALLPAPER mode only
     VolumeAction volumeAction = VolumeAction::NONE; // For VOLUME_OSD mode
 };
 

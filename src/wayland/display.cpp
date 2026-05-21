@@ -96,8 +96,8 @@ namespace wl {
             self->exportManager_ = static_cast<hyprland_toplevel_export_manager_v1*>(
                 wl_registry_bind(registry, id, &hyprland_toplevel_export_manager_v1_interface, 2));
         } else if (strcmp(interface, zwp_linux_dmabuf_v1_interface.name) == 0) {
-            self->linuxDmabuf_ = static_cast<zwp_linux_dmabuf_v1*>(
-                wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, 3));
+            self->linuxDmabuf_ =
+                static_cast<zwp_linux_dmabuf_v1*>(wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, 3));
         } else if (strcmp(interface, wl_output_interface.name) == 0) {
             wl_output* output = static_cast<wl_output*>(wl_registry_bind(registry, id, &wl_output_interface, 4));
 

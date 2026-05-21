@@ -1,8 +1,6 @@
 #include "volume_flow.hpp"
 
-VolumeFlow::VolumeFlow(VolumeAction action) {
-    frame = std::make_unique<VolumeFrame>(audioManager, action);
-}
+VolumeFlow::VolumeFlow(VolumeAction action) { frame = std::make_unique<VolumeFrame>(audioManager, action); }
 
 Frame* VolumeFlow::getCurrentFrame() {
     if (done) {
@@ -16,6 +14,4 @@ bool VolumeFlow::handleResult(const FrameResult& result) {
     return false;
 }
 
-bool VolumeFlow::isDone() const {
-    return done;
-}
+bool VolumeFlow::isDone() const { return done; }

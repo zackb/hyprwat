@@ -2,10 +2,10 @@
 
 extern "C" {
 #include "protocols/hyprland-toplevel-export-v1-client-protocol.h"
-#include "protocols/wlr-layer-shell-unstable-v1-client-protocol.h"
 #include "protocols/linux-dmabuf-unstable-v1-client-protocol.h"
-#include <wayland-client.h>
+#include "protocols/wlr-layer-shell-unstable-v1-client-protocol.h"
 #include <gbm.h>
+#include <wayland-client.h>
 }
 
 #include <functional>

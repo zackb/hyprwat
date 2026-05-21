@@ -30,17 +30,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include "wayland-util.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 #ifndef __has_attribute
-# define __has_attribute(x) 0  /* Compatibility with non-clang compilers. */
+#define __has_attribute(x) 0 /* Compatibility with non-clang compilers. */
 #endif
 
 #if (__has_attribute(visibility) || defined(__GNUC__) && __GNUC__ >= 4)
-#define WL_PRIVATE __attribute__ ((visibility("hidden")))
+#define WL_PRIVATE __attribute__((visibility("hidden")))
 #else
 #define WL_PRIVATE
 #endif
@@ -49,51 +49,56 @@ extern const struct wl_interface hyprland_toplevel_export_frame_v1_interface;
 extern const struct wl_interface wl_buffer_interface;
 extern const struct wl_interface zwlr_foreign_toplevel_handle_v1_interface;
 
-static const struct wl_interface *hyprland_toplevel_export_v1_types[] = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	&hyprland_toplevel_export_frame_v1_interface,
-	NULL,
-	NULL,
-	&hyprland_toplevel_export_frame_v1_interface,
-	NULL,
-	&zwlr_foreign_toplevel_handle_v1_interface,
-	&wl_buffer_interface,
-	NULL,
+static const struct wl_interface* hyprland_toplevel_export_v1_types[] = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    &hyprland_toplevel_export_frame_v1_interface,
+    NULL,
+    NULL,
+    &hyprland_toplevel_export_frame_v1_interface,
+    NULL,
+    &zwlr_foreign_toplevel_handle_v1_interface,
+    &wl_buffer_interface,
+    NULL,
 };
 
 static const struct wl_message hyprland_toplevel_export_manager_v1_requests[] = {
-	{ "capture_toplevel", "niu", hyprland_toplevel_export_v1_types + 4 },
-	{ "destroy", "", hyprland_toplevel_export_v1_types + 0 },
-	{ "capture_toplevel_with_wlr_toplevel_handle", "2nio", hyprland_toplevel_export_v1_types + 7 },
+    {"capture_toplevel", "niu", hyprland_toplevel_export_v1_types + 4},
+    {"destroy", "", hyprland_toplevel_export_v1_types + 0},
+    {"capture_toplevel_with_wlr_toplevel_handle", "2nio", hyprland_toplevel_export_v1_types + 7},
 };
 
 WL_PRIVATE const struct wl_interface hyprland_toplevel_export_manager_v1_interface = {
-	"hyprland_toplevel_export_manager_v1", 2,
-	3, hyprland_toplevel_export_manager_v1_requests,
-	0, NULL,
+    "hyprland_toplevel_export_manager_v1",
+    2,
+    3,
+    hyprland_toplevel_export_manager_v1_requests,
+    0,
+    NULL,
 };
 
 static const struct wl_message hyprland_toplevel_export_frame_v1_requests[] = {
-	{ "copy", "oi", hyprland_toplevel_export_v1_types + 10 },
-	{ "destroy", "", hyprland_toplevel_export_v1_types + 0 },
+    {"copy", "oi", hyprland_toplevel_export_v1_types + 10},
+    {"destroy", "", hyprland_toplevel_export_v1_types + 0},
 };
 
 static const struct wl_message hyprland_toplevel_export_frame_v1_events[] = {
-	{ "buffer", "uuuu", hyprland_toplevel_export_v1_types + 0 },
-	{ "damage", "uuuu", hyprland_toplevel_export_v1_types + 0 },
-	{ "flags", "u", hyprland_toplevel_export_v1_types + 0 },
-	{ "ready", "uuu", hyprland_toplevel_export_v1_types + 0 },
-	{ "failed", "", hyprland_toplevel_export_v1_types + 0 },
-	{ "linux_dmabuf", "uuu", hyprland_toplevel_export_v1_types + 0 },
-	{ "buffer_done", "", hyprland_toplevel_export_v1_types + 0 },
+    {"buffer", "uuuu", hyprland_toplevel_export_v1_types + 0},
+    {"damage", "uuuu", hyprland_toplevel_export_v1_types + 0},
+    {"flags", "u", hyprland_toplevel_export_v1_types + 0},
+    {"ready", "uuu", hyprland_toplevel_export_v1_types + 0},
+    {"failed", "", hyprland_toplevel_export_v1_types + 0},
+    {"linux_dmabuf", "uuu", hyprland_toplevel_export_v1_types + 0},
+    {"buffer_done", "", hyprland_toplevel_export_v1_types + 0},
 };
 
 WL_PRIVATE const struct wl_interface hyprland_toplevel_export_frame_v1_interface = {
-	"hyprland_toplevel_export_frame_v1", 2,
-	2, hyprland_toplevel_export_frame_v1_requests,
-	7, hyprland_toplevel_export_frame_v1_events,
+    "hyprland_toplevel_export_frame_v1",
+    2,
+    2,
+    hyprland_toplevel_export_frame_v1_requests,
+    7,
+    hyprland_toplevel_export_frame_v1_events,
 };
-

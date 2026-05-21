@@ -1,13 +1,13 @@
 #include "audio.hpp"
 #include "../debug/log.hpp"
-#include <cstring>
-#include <spa/utils/json.h>
-#include <spa/pod/iter.h>
-#include <spa/pod/builder.h>
-#include <spa/param/props.h>
-#include <mutex>
-#include <condition_variable>
 #include <chrono>
+#include <condition_variable>
+#include <cstring>
+#include <mutex>
+#include <spa/param/props.h>
+#include <spa/pod/builder.h>
+#include <spa/pod/iter.h>
+#include <spa/utils/json.h>
 
 static const struct pw_registry_events registry_events = {
     /* version */ PW_VERSION_REGISTRY_EVENTS,
@@ -303,45 +303,47 @@ AudioManagerClient::VolumeInfo AudioManagerClient::getVolume() {
 
     pw_thread_loop_lock(loop);
 
-    struct pw_node* node = (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
+    struct pw_node* node =
+        (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
     if (!node) {
         pw_thread_loop_unlock(loop);
         return info;
     }
 
     struct spa_hook listener;
-    
-    auto node_event_param = [](void *data, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod *param) {
-        auto* st = static_cast<VolumeState*>(data);
-        if (id == SPA_PARAM_Props) {
-            const struct spa_pod_prop *prop = spa_pod_find_prop(param, nullptr, SPA_PROP_channelVolumes);
-            if (prop && spa_pod_is_array(&prop->value)) {
-                uint32_t n_values = 0;
-                const void* val_data = spa_pod_get_array(&prop->value, &n_values);
-                if (val_data && n_values > 0) {
-                    const float* vols = (const float*)val_data;
-                    st->channels = n_values;
-                    float sum = 0.0f;
-                    for (uint32_t i = 0; i < n_values; i++) {
-                        sum += vols[i];
+
+    auto node_event_param =
+        [](void* data, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod* param) {
+            auto* st = static_cast<VolumeState*>(data);
+            if (id == SPA_PARAM_Props) {
+                const struct spa_pod_prop* prop = spa_pod_find_prop(param, nullptr, SPA_PROP_channelVolumes);
+                if (prop && spa_pod_is_array(&prop->value)) {
+                    uint32_t n_values = 0;
+                    const void* val_data = spa_pod_get_array(&prop->value, &n_values);
+                    if (val_data && n_values > 0) {
+                        const float* vols = (const float*)val_data;
+                        st->channels = n_values;
+                        float sum = 0.0f;
+                        for (uint32_t i = 0; i < n_values; i++) {
+                            sum += vols[i];
+                        }
+                        st->volume = sum / n_values;
                     }
-                    st->volume = sum / n_values;
                 }
-            }
-            const struct spa_pod_prop *mute_prop = spa_pod_find_prop(param, nullptr, SPA_PROP_mute);
-            if (mute_prop && spa_pod_is_bool(&mute_prop->value)) {
-                bool m = false;
-                if (spa_pod_get_bool(&mute_prop->value, &m) == 0) {
-                    st->mute = m;
+                const struct spa_pod_prop* mute_prop = spa_pod_find_prop(param, nullptr, SPA_PROP_mute);
+                if (mute_prop && spa_pod_is_bool(&mute_prop->value)) {
+                    bool m = false;
+                    if (spa_pod_get_bool(&mute_prop->value, &m) == 0) {
+                        st->mute = m;
+                    }
                 }
+                {
+                    std::lock_guard<std::mutex> lock(st->mutex);
+                    st->done = true;
+                }
+                st->cv.notify_one();
             }
-            {
-                std::lock_guard<std::mutex> lock(st->mutex);
-                st->done = true;
-            }
-            st->cv.notify_one();
-        }
-    };
+        };
 
     static const struct pw_node_events node_events = {
         .version = PW_VERSION_NODE_EVENTS,
@@ -356,13 +358,13 @@ AudioManagerClient::VolumeInfo AudioManagerClient::getVolume() {
     // Wait for the result with timeout
     {
         std::unique_lock<std::mutex> lock(state->mutex);
-        state->cv.wait_for(lock, std::chrono::milliseconds(200), [&]{ return state->done; });
+        state->cv.wait_for(lock, std::chrono::milliseconds(200), [&] { return state->done; });
     }
 
     pw_thread_loop_lock(loop);
     spa_hook_remove(&listener);
     pw_proxy_destroy((struct pw_proxy*)node);
-    
+
     // Store channels for subsequent volume setting
     default_sink_channels = state->channels;
 
@@ -382,15 +384,19 @@ bool AudioManagerClient::setVolume(float volume) {
 
     uint8_t buffer[1024];
     struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
-    struct spa_pod *param = (struct spa_pod *)spa_pod_builder_add_object(&b,
-        SPA_TYPE_OBJECT_Props, SPA_PARAM_Props,
-        SPA_PROP_channelVolumes, SPA_POD_Array(sizeof(float), SPA_TYPE_Float, vols.size(), vols.data()),
-        SPA_PROP_mute, SPA_POD_Bool(false)
-    );
+    struct spa_pod* param = (struct spa_pod*)spa_pod_builder_add_object(
+        &b,
+        SPA_TYPE_OBJECT_Props,
+        SPA_PARAM_Props,
+        SPA_PROP_channelVolumes,
+        SPA_POD_Array(sizeof(float), SPA_TYPE_Float, vols.size(), vols.data()),
+        SPA_PROP_mute,
+        SPA_POD_Bool(false));
 
     pw_thread_loop_lock(loop);
 
-    struct pw_node* node = (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
+    struct pw_node* node =
+        (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
     if (node) {
         pw_node_set_param(node, SPA_PARAM_Props, 0, param);
         pw_core_sync(core, 0, 0);
@@ -408,14 +414,13 @@ bool AudioManagerClient::setMute(bool mute) {
 
     uint8_t buffer[1024];
     struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
-    struct spa_pod *param = (struct spa_pod *)spa_pod_builder_add_object(&b,
-        SPA_TYPE_OBJECT_Props, SPA_PARAM_Props,
-        SPA_PROP_mute, SPA_POD_Bool(mute)
-    );
+    struct spa_pod* param = (struct spa_pod*)spa_pod_builder_add_object(
+        &b, SPA_TYPE_OBJECT_Props, SPA_PARAM_Props, SPA_PROP_mute, SPA_POD_Bool(mute));
 
     pw_thread_loop_lock(loop);
 
-    struct pw_node* node = (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
+    struct pw_node* node =
+        (struct pw_node*)pw_registry_bind(registry, default_sink_id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, 0);
     if (node) {
         pw_node_set_param(node, SPA_PARAM_Props, 0, param);
         pw_core_sync(core, 0, 0);

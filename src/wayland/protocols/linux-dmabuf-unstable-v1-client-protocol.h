@@ -3,11 +3,11 @@
 #ifndef LINUX_DMABUF_UNSTABLE_V1_CLIENT_PROTOCOL_H
 #define LINUX_DMABUF_UNSTABLE_V1_CLIENT_PROTOCOL_H
 
-#include <stdint.h>
-#include <stddef.h>
 #include "wayland-client.h"
+#include <stddef.h>
+#include <stdint.h>
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -313,74 +313,70 @@ extern const struct wl_interface zwp_linux_dmabuf_feedback_v1_interface;
  * @struct zwp_linux_dmabuf_v1_listener
  */
 struct zwp_linux_dmabuf_v1_listener {
-	/**
-	 * supported buffer format
-	 *
-	 * This event advertises one buffer format that the server
-	 * supports. All the supported formats are advertised once when the
-	 * client binds to this interface. A roundtrip after binding
-	 * guarantees that the client has received all supported formats.
-	 *
-	 * For the definition of the format codes, see the
-	 * zwp_linux_buffer_params_v1::create request.
-	 *
-	 * Starting version 4, the format event is deprecated and must not
-	 * be sent by compositors. Instead, use get_default_feedback or
-	 * get_surface_feedback.
-	 * @param format DRM_FORMAT code
-	 */
-	void (*format)(void *data,
-		       struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1,
-		       uint32_t format);
-	/**
-	 * supported buffer format modifier
-	 *
-	 * This event advertises the formats that the server supports,
-	 * along with the modifiers supported for each format. All the
-	 * supported modifiers for all the supported formats are advertised
-	 * once when the client binds to this interface. A roundtrip after
-	 * binding guarantees that the client has received all supported
-	 * format-modifier pairs.
-	 *
-	 * For legacy support, DRM_FORMAT_MOD_INVALID (that is, modifier_hi
-	 * == 0x00ffffff and modifier_lo == 0xffffffff) is allowed in this
-	 * event. It indicates that the server can support the format with
-	 * an implicit modifier. When a plane has DRM_FORMAT_MOD_INVALID as
-	 * its modifier, it is as if no explicit modifier is specified. The
-	 * effective modifier will be derived from the dmabuf.
-	 *
-	 * A compositor that sends valid modifiers and
-	 * DRM_FORMAT_MOD_INVALID for a given format supports both explicit
-	 * modifiers and implicit modifiers.
-	 *
-	 * For the definition of the format and modifier codes, see the
-	 * zwp_linux_buffer_params_v1::create and
-	 * zwp_linux_buffer_params_v1::add requests.
-	 *
-	 * Starting version 4, the modifier event is deprecated and must
-	 * not be sent by compositors. Instead, use get_default_feedback or
-	 * get_surface_feedback.
-	 * @param format DRM_FORMAT code
-	 * @param modifier_hi high 32 bits of layout modifier
-	 * @param modifier_lo low 32 bits of layout modifier
-	 * @since 3
-	 */
-	void (*modifier)(void *data,
-			 struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1,
-			 uint32_t format,
-			 uint32_t modifier_hi,
-			 uint32_t modifier_lo);
+    /**
+     * supported buffer format
+     *
+     * This event advertises one buffer format that the server
+     * supports. All the supported formats are advertised once when the
+     * client binds to this interface. A roundtrip after binding
+     * guarantees that the client has received all supported formats.
+     *
+     * For the definition of the format codes, see the
+     * zwp_linux_buffer_params_v1::create request.
+     *
+     * Starting version 4, the format event is deprecated and must not
+     * be sent by compositors. Instead, use get_default_feedback or
+     * get_surface_feedback.
+     * @param format DRM_FORMAT code
+     */
+    void (*format)(void* data, struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1, uint32_t format);
+    /**
+     * supported buffer format modifier
+     *
+     * This event advertises the formats that the server supports,
+     * along with the modifiers supported for each format. All the
+     * supported modifiers for all the supported formats are advertised
+     * once when the client binds to this interface. A roundtrip after
+     * binding guarantees that the client has received all supported
+     * format-modifier pairs.
+     *
+     * For legacy support, DRM_FORMAT_MOD_INVALID (that is, modifier_hi
+     * == 0x00ffffff and modifier_lo == 0xffffffff) is allowed in this
+     * event. It indicates that the server can support the format with
+     * an implicit modifier. When a plane has DRM_FORMAT_MOD_INVALID as
+     * its modifier, it is as if no explicit modifier is specified. The
+     * effective modifier will be derived from the dmabuf.
+     *
+     * A compositor that sends valid modifiers and
+     * DRM_FORMAT_MOD_INVALID for a given format supports both explicit
+     * modifiers and implicit modifiers.
+     *
+     * For the definition of the format and modifier codes, see the
+     * zwp_linux_buffer_params_v1::create and
+     * zwp_linux_buffer_params_v1::add requests.
+     *
+     * Starting version 4, the modifier event is deprecated and must
+     * not be sent by compositors. Instead, use get_default_feedback or
+     * get_surface_feedback.
+     * @param format DRM_FORMAT code
+     * @param modifier_hi high 32 bits of layout modifier
+     * @param modifier_lo low 32 bits of layout modifier
+     * @since 3
+     */
+    void (*modifier)(void* data,
+                     struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1,
+                     uint32_t format,
+                     uint32_t modifier_hi,
+                     uint32_t modifier_lo);
 };
 
 /**
  * @ingroup iface_zwp_linux_dmabuf_v1
  */
-static inline int
-zwp_linux_dmabuf_v1_add_listener(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1,
-				 const struct zwp_linux_dmabuf_v1_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) zwp_linux_dmabuf_v1,
-				     (void (**)(void)) listener, data);
+static inline int zwp_linux_dmabuf_v1_add_listener(struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1,
+                                                   const struct zwp_linux_dmabuf_v1_listener* listener,
+                                                   void* data) {
+    return wl_proxy_add_listener((struct wl_proxy*)zwp_linux_dmabuf_v1, (void (**)(void))listener, data);
 }
 
 #define ZWP_LINUX_DMABUF_V1_DESTROY 0
@@ -415,23 +411,17 @@ zwp_linux_dmabuf_v1_add_listener(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1
 #define ZWP_LINUX_DMABUF_V1_GET_SURFACE_FEEDBACK_SINCE_VERSION 4
 
 /** @ingroup iface_zwp_linux_dmabuf_v1 */
-static inline void
-zwp_linux_dmabuf_v1_set_user_data(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) zwp_linux_dmabuf_v1, user_data);
+static inline void zwp_linux_dmabuf_v1_set_user_data(struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1, void* user_data) {
+    wl_proxy_set_user_data((struct wl_proxy*)zwp_linux_dmabuf_v1, user_data);
 }
 
 /** @ingroup iface_zwp_linux_dmabuf_v1 */
-static inline void *
-zwp_linux_dmabuf_v1_get_user_data(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) zwp_linux_dmabuf_v1);
+static inline void* zwp_linux_dmabuf_v1_get_user_data(struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1) {
+    return wl_proxy_get_user_data((struct wl_proxy*)zwp_linux_dmabuf_v1);
 }
 
-static inline uint32_t
-zwp_linux_dmabuf_v1_get_version(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) zwp_linux_dmabuf_v1);
+static inline uint32_t zwp_linux_dmabuf_v1_get_version(struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1) {
+    return wl_proxy_get_version((struct wl_proxy*)zwp_linux_dmabuf_v1);
 }
 
 /**
@@ -440,11 +430,12 @@ zwp_linux_dmabuf_v1_get_version(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1)
  * Objects created through this interface, especially wl_buffers, will
  * remain valid.
  */
-static inline void
-zwp_linux_dmabuf_v1_destroy(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_dmabuf_v1,
-			 ZWP_LINUX_DMABUF_V1_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) zwp_linux_dmabuf_v1), WL_MARSHAL_FLAG_DESTROY);
+static inline void zwp_linux_dmabuf_v1_destroy(struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1) {
+    wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_dmabuf_v1,
+                           ZWP_LINUX_DMABUF_V1_DESTROY,
+                           NULL,
+                           wl_proxy_get_version((struct wl_proxy*)zwp_linux_dmabuf_v1),
+                           WL_MARSHAL_FLAG_DESTROY);
 }
 
 /**
@@ -455,15 +446,18 @@ zwp_linux_dmabuf_v1_destroy(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1)
  * should be destroyed after a 'created' or 'failed' event has been
  * received.
  */
-static inline struct zwp_linux_buffer_params_v1 *
-zwp_linux_dmabuf_v1_create_params(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1)
-{
-	struct wl_proxy *params_id;
+static inline struct zwp_linux_buffer_params_v1*
+    zwp_linux_dmabuf_v1_create_params(struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1) {
+    struct wl_proxy* params_id;
 
-	params_id = wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_dmabuf_v1,
-			 ZWP_LINUX_DMABUF_V1_CREATE_PARAMS, &zwp_linux_buffer_params_v1_interface, wl_proxy_get_version((struct wl_proxy *) zwp_linux_dmabuf_v1), 0, NULL);
+    params_id = wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_dmabuf_v1,
+                                       ZWP_LINUX_DMABUF_V1_CREATE_PARAMS,
+                                       &zwp_linux_buffer_params_v1_interface,
+                                       wl_proxy_get_version((struct wl_proxy*)zwp_linux_dmabuf_v1),
+                                       0,
+                                       NULL);
 
-	return (struct zwp_linux_buffer_params_v1 *) params_id;
+    return (struct zwp_linux_buffer_params_v1*)params_id;
 }
 
 /**
@@ -474,15 +468,18 @@ zwp_linux_dmabuf_v1_create_params(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v
  * parameters to use if the client doesn't support per-surface feedback
  * (see get_surface_feedback).
  */
-static inline struct zwp_linux_dmabuf_feedback_v1 *
-zwp_linux_dmabuf_v1_get_default_feedback(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1)
-{
-	struct wl_proxy *id;
+static inline struct zwp_linux_dmabuf_feedback_v1*
+    zwp_linux_dmabuf_v1_get_default_feedback(struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1) {
+    struct wl_proxy* id;
 
-	id = wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_dmabuf_v1,
-			 ZWP_LINUX_DMABUF_V1_GET_DEFAULT_FEEDBACK, &zwp_linux_dmabuf_feedback_v1_interface, wl_proxy_get_version((struct wl_proxy *) zwp_linux_dmabuf_v1), 0, NULL);
+    id = wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_dmabuf_v1,
+                                ZWP_LINUX_DMABUF_V1_GET_DEFAULT_FEEDBACK,
+                                &zwp_linux_dmabuf_feedback_v1_interface,
+                                wl_proxy_get_version((struct wl_proxy*)zwp_linux_dmabuf_v1),
+                                0,
+                                NULL);
 
-	return (struct zwp_linux_dmabuf_feedback_v1 *) id;
+    return (struct zwp_linux_dmabuf_feedback_v1*)id;
 }
 
 /**
@@ -495,70 +492,76 @@ zwp_linux_dmabuf_v1_get_default_feedback(struct zwp_linux_dmabuf_v1 *zwp_linux_d
  * If the surface is destroyed before the wp_linux_dmabuf_feedback object,
  * the feedback object becomes inert.
  */
-static inline struct zwp_linux_dmabuf_feedback_v1 *
-zwp_linux_dmabuf_v1_get_surface_feedback(struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1, struct wl_surface *surface)
-{
-	struct wl_proxy *id;
+static inline struct zwp_linux_dmabuf_feedback_v1*
+    zwp_linux_dmabuf_v1_get_surface_feedback(struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1,
+                                             struct wl_surface* surface) {
+    struct wl_proxy* id;
 
-	id = wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_dmabuf_v1,
-			 ZWP_LINUX_DMABUF_V1_GET_SURFACE_FEEDBACK, &zwp_linux_dmabuf_feedback_v1_interface, wl_proxy_get_version((struct wl_proxy *) zwp_linux_dmabuf_v1), 0, NULL, surface);
+    id = wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_dmabuf_v1,
+                                ZWP_LINUX_DMABUF_V1_GET_SURFACE_FEEDBACK,
+                                &zwp_linux_dmabuf_feedback_v1_interface,
+                                wl_proxy_get_version((struct wl_proxy*)zwp_linux_dmabuf_v1),
+                                0,
+                                NULL,
+                                surface);
 
-	return (struct zwp_linux_dmabuf_feedback_v1 *) id;
+    return (struct zwp_linux_dmabuf_feedback_v1*)id;
 }
 
 #ifndef ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ENUM
 #define ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ENUM
 enum zwp_linux_buffer_params_v1_error {
-	/**
-	 * the dmabuf_batch object has already been used to create a wl_buffer
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED = 0,
-	/**
-	 * plane index out of bounds
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX = 1,
-	/**
-	 * the plane index was already set
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET = 2,
-	/**
-	 * missing or too many planes to create a buffer
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE = 3,
-	/**
-	 * format not supported
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_FORMAT = 4,
-	/**
-	 * invalid width or height
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS = 5,
-	/**
-	 * offset + stride * height goes out of dmabuf bounds
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS = 6,
-	/**
-	 * invalid wl_buffer resulted from importing dmabufs via                the create_immed request on given buffer_params
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER = 7,
+    /**
+     * the dmabuf_batch object has already been used to create a wl_buffer
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED = 0,
+    /**
+     * plane index out of bounds
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX = 1,
+    /**
+     * the plane index was already set
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET = 2,
+    /**
+     * missing or too many planes to create a buffer
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE = 3,
+    /**
+     * format not supported
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_FORMAT = 4,
+    /**
+     * invalid width or height
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS = 5,
+    /**
+     * offset + stride * height goes out of dmabuf bounds
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS = 6,
+    /**
+     * invalid wl_buffer resulted from importing dmabufs via                the create_immed request on given
+     * buffer_params
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER = 7,
 };
 #endif /* ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ENUM */
 
 #ifndef ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_ENUM
 #define ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_ENUM
 enum zwp_linux_buffer_params_v1_flags {
-	/**
-	 * contents are y-inverted
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT = 1,
-	/**
-	 * content is interlaced
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_INTERLACED = 2,
-	/**
-	 * bottom field first
-	 */
-	ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_BOTTOM_FIRST = 4,
+    /**
+     * contents are y-inverted
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT = 1,
+    /**
+     * content is interlaced
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_INTERLACED = 2,
+    /**
+     * bottom field first
+     */
+    ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_BOTTOM_FIRST = 4,
 };
 #endif /* ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_ENUM */
 
@@ -567,43 +570,40 @@ enum zwp_linux_buffer_params_v1_flags {
  * @struct zwp_linux_buffer_params_v1_listener
  */
 struct zwp_linux_buffer_params_v1_listener {
-	/**
-	 * buffer creation succeeded
-	 *
-	 * This event indicates that the attempted buffer creation was
-	 * successful. It provides the new wl_buffer referencing the
-	 * dmabuf(s).
-	 *
-	 * Upon receiving this event, the client should destroy the
-	 * zwp_linux_buffer_params_v1 object.
-	 * @param buffer the newly created wl_buffer
-	 */
-	void (*created)(void *data,
-			struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1,
-			struct wl_buffer *buffer);
-	/**
-	 * buffer creation failed
-	 *
-	 * This event indicates that the attempted buffer creation has
-	 * failed. It usually means that one of the dmabuf constraints has
-	 * not been fulfilled.
-	 *
-	 * Upon receiving this event, the client should destroy the
-	 * zwp_linux_buffer_params_v1 object.
-	 */
-	void (*failed)(void *data,
-		       struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1);
+    /**
+     * buffer creation succeeded
+     *
+     * This event indicates that the attempted buffer creation was
+     * successful. It provides the new wl_buffer referencing the
+     * dmabuf(s).
+     *
+     * Upon receiving this event, the client should destroy the
+     * zwp_linux_buffer_params_v1 object.
+     * @param buffer the newly created wl_buffer
+     */
+    void (*created)(void* data,
+                    struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1,
+                    struct wl_buffer* buffer);
+    /**
+     * buffer creation failed
+     *
+     * This event indicates that the attempted buffer creation has
+     * failed. It usually means that one of the dmabuf constraints has
+     * not been fulfilled.
+     *
+     * Upon receiving this event, the client should destroy the
+     * zwp_linux_buffer_params_v1 object.
+     */
+    void (*failed)(void* data, struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1);
 };
 
 /**
  * @ingroup iface_zwp_linux_buffer_params_v1
  */
-static inline int
-zwp_linux_buffer_params_v1_add_listener(struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1,
-					const struct zwp_linux_buffer_params_v1_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) zwp_linux_buffer_params_v1,
-				     (void (**)(void)) listener, data);
+static inline int zwp_linux_buffer_params_v1_add_listener(struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1,
+                                                          const struct zwp_linux_buffer_params_v1_listener* listener,
+                                                          void* data) {
+    return wl_proxy_add_listener((struct wl_proxy*)zwp_linux_buffer_params_v1, (void (**)(void))listener, data);
 }
 
 #define ZWP_LINUX_BUFFER_PARAMS_V1_DESTROY 0
@@ -639,22 +639,20 @@ zwp_linux_buffer_params_v1_add_listener(struct zwp_linux_buffer_params_v1 *zwp_l
 
 /** @ingroup iface_zwp_linux_buffer_params_v1 */
 static inline void
-zwp_linux_buffer_params_v1_set_user_data(struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) zwp_linux_buffer_params_v1, user_data);
+    zwp_linux_buffer_params_v1_set_user_data(struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1,
+                                             void* user_data) {
+    wl_proxy_set_user_data((struct wl_proxy*)zwp_linux_buffer_params_v1, user_data);
 }
 
 /** @ingroup iface_zwp_linux_buffer_params_v1 */
-static inline void *
-zwp_linux_buffer_params_v1_get_user_data(struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) zwp_linux_buffer_params_v1);
+static inline void*
+    zwp_linux_buffer_params_v1_get_user_data(struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1) {
+    return wl_proxy_get_user_data((struct wl_proxy*)zwp_linux_buffer_params_v1);
 }
 
 static inline uint32_t
-zwp_linux_buffer_params_v1_get_version(struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) zwp_linux_buffer_params_v1);
+    zwp_linux_buffer_params_v1_get_version(struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1) {
+    return wl_proxy_get_version((struct wl_proxy*)zwp_linux_buffer_params_v1);
 }
 
 /**
@@ -663,11 +661,12 @@ zwp_linux_buffer_params_v1_get_version(struct zwp_linux_buffer_params_v1 *zwp_li
  * Cleans up the temporary data sent to the server for dmabuf-based
  * wl_buffer creation.
  */
-static inline void
-zwp_linux_buffer_params_v1_destroy(struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_buffer_params_v1,
-			 ZWP_LINUX_BUFFER_PARAMS_V1_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) zwp_linux_buffer_params_v1), WL_MARSHAL_FLAG_DESTROY);
+static inline void zwp_linux_buffer_params_v1_destroy(struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1) {
+    wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_buffer_params_v1,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_DESTROY,
+                           NULL,
+                           wl_proxy_get_version((struct wl_proxy*)zwp_linux_buffer_params_v1),
+                           WL_MARSHAL_FLAG_DESTROY);
 }
 
 /**
@@ -693,11 +692,24 @@ zwp_linux_buffer_params_v1_destroy(struct zwp_linux_buffer_params_v1 *zwp_linux_
  * The error PLANE_SET is raised if attempting to set a plane that
  * was already set.
  */
-static inline void
-zwp_linux_buffer_params_v1_add(struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1, int32_t fd, uint32_t plane_idx, uint32_t offset, uint32_t stride, uint32_t modifier_hi, uint32_t modifier_lo)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_buffer_params_v1,
-			 ZWP_LINUX_BUFFER_PARAMS_V1_ADD, NULL, wl_proxy_get_version((struct wl_proxy *) zwp_linux_buffer_params_v1), 0, fd, plane_idx, offset, stride, modifier_hi, modifier_lo);
+static inline void zwp_linux_buffer_params_v1_add(struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1,
+                                                  int32_t fd,
+                                                  uint32_t plane_idx,
+                                                  uint32_t offset,
+                                                  uint32_t stride,
+                                                  uint32_t modifier_hi,
+                                                  uint32_t modifier_lo) {
+    wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_buffer_params_v1,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_ADD,
+                           NULL,
+                           wl_proxy_get_version((struct wl_proxy*)zwp_linux_buffer_params_v1),
+                           0,
+                           fd,
+                           plane_idx,
+                           offset,
+                           stride,
+                           modifier_hi,
+                           modifier_lo);
 }
 
 /**
@@ -763,11 +775,20 @@ zwp_linux_buffer_params_v1_add(struct zwp_linux_buffer_params_v1 *zwp_linux_buff
  * It is not mandatory to issue 'create'. If a client wants to
  * cancel the buffer creation, it can just destroy this object.
  */
-static inline void
-zwp_linux_buffer_params_v1_create(struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1, int32_t width, int32_t height, uint32_t format, uint32_t flags)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_buffer_params_v1,
-			 ZWP_LINUX_BUFFER_PARAMS_V1_CREATE, NULL, wl_proxy_get_version((struct wl_proxy *) zwp_linux_buffer_params_v1), 0, width, height, format, flags);
+static inline void zwp_linux_buffer_params_v1_create(struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1,
+                                                     int32_t width,
+                                                     int32_t height,
+                                                     uint32_t format,
+                                                     uint32_t flags) {
+    wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_buffer_params_v1,
+                           ZWP_LINUX_BUFFER_PARAMS_V1_CREATE,
+                           NULL,
+                           wl_proxy_get_version((struct wl_proxy*)zwp_linux_buffer_params_v1),
+                           0,
+                           width,
+                           height,
+                           format,
+                           flags);
 }
 
 /**
@@ -797,24 +818,35 @@ zwp_linux_buffer_params_v1_create(struct zwp_linux_buffer_params_v1 *zwp_linux_b
  * This takes the same arguments as a 'create' request, and obeys the
  * same restrictions.
  */
-static inline struct wl_buffer *
-zwp_linux_buffer_params_v1_create_immed(struct zwp_linux_buffer_params_v1 *zwp_linux_buffer_params_v1, int32_t width, int32_t height, uint32_t format, uint32_t flags)
-{
-	struct wl_proxy *buffer_id;
+static inline struct wl_buffer*
+    zwp_linux_buffer_params_v1_create_immed(struct zwp_linux_buffer_params_v1* zwp_linux_buffer_params_v1,
+                                            int32_t width,
+                                            int32_t height,
+                                            uint32_t format,
+                                            uint32_t flags) {
+    struct wl_proxy* buffer_id;
 
-	buffer_id = wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_buffer_params_v1,
-			 ZWP_LINUX_BUFFER_PARAMS_V1_CREATE_IMMED, &wl_buffer_interface, wl_proxy_get_version((struct wl_proxy *) zwp_linux_buffer_params_v1), 0, NULL, width, height, format, flags);
+    buffer_id = wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_buffer_params_v1,
+                                       ZWP_LINUX_BUFFER_PARAMS_V1_CREATE_IMMED,
+                                       &wl_buffer_interface,
+                                       wl_proxy_get_version((struct wl_proxy*)zwp_linux_buffer_params_v1),
+                                       0,
+                                       NULL,
+                                       width,
+                                       height,
+                                       format,
+                                       flags);
 
-	return (struct wl_buffer *) buffer_id;
+    return (struct wl_buffer*)buffer_id;
 }
 
 #ifndef ZWP_LINUX_DMABUF_FEEDBACK_V1_TRANCHE_FLAGS_ENUM
 #define ZWP_LINUX_DMABUF_FEEDBACK_V1_TRANCHE_FLAGS_ENUM
 enum zwp_linux_dmabuf_feedback_v1_tranche_flags {
-	/**
-	 * direct scan-out tranche
-	 */
-	ZWP_LINUX_DMABUF_FEEDBACK_V1_TRANCHE_FLAGS_SCANOUT = 1,
+    /**
+     * direct scan-out tranche
+     */
+    ZWP_LINUX_DMABUF_FEEDBACK_V1_TRANCHE_FLAGS_SCANOUT = 1,
 };
 #endif /* ZWP_LINUX_DMABUF_FEEDBACK_V1_TRANCHE_FLAGS_ENUM */
 
@@ -823,189 +855,186 @@ enum zwp_linux_dmabuf_feedback_v1_tranche_flags {
  * @struct zwp_linux_dmabuf_feedback_v1_listener
  */
 struct zwp_linux_dmabuf_feedback_v1_listener {
-	/**
-	 * all feedback has been sent
-	 *
-	 * This event is sent after all parameters of a
-	 * wp_linux_dmabuf_feedback object have been sent.
-	 *
-	 * This allows changes to the wp_linux_dmabuf_feedback parameters
-	 * to be seen as atomic, even if they happen via multiple events.
-	 */
-	void (*done)(void *data,
-		     struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1);
-	/**
-	 * format and modifier table
-	 *
-	 * This event provides a file descriptor which can be
-	 * memory-mapped to access the format and modifier table.
-	 *
-	 * The table contains a tightly packed array of consecutive format
-	 * + modifier pairs. Each pair is 16 bytes wide. It contains a
-	 * format as a 32-bit unsigned integer, followed by 4 bytes of
-	 * unused padding, and a modifier as a 64-bit unsigned integer. The
-	 * native endianness is used.
-	 *
-	 * The client must map the file descriptor in read-only private
-	 * mode.
-	 *
-	 * Compositors are not allowed to mutate the table file contents
-	 * once this event has been sent. Instead, compositors must create
-	 * a new, separate table file and re-send feedback parameters.
-	 * Compositors are allowed to store duplicate format + modifier
-	 * pairs in the table.
-	 * @param fd table file descriptor
-	 * @param size table size, in bytes
-	 */
-	void (*format_table)(void *data,
-			     struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1,
-			     int32_t fd,
-			     uint32_t size);
-	/**
-	 * preferred main device
-	 *
-	 * This event advertises the main device that the server prefers
-	 * to use when direct scan-out to the target device isn't possible.
-	 * The advertised main device may be different for each
-	 * wp_linux_dmabuf_feedback object, and may change over time.
-	 *
-	 * There is exactly one main device. The compositor must send at
-	 * least one preference tranche with tranche_target_device equal to
-	 * main_device.
-	 *
-	 * Clients need to create buffers that the main device can import
-	 * and read from, otherwise creating the dmabuf wl_buffer will fail
-	 * (see the wp_linux_buffer_params.create and create_immed requests
-	 * for details). The main device will also likely be kept active by
-	 * the compositor, so clients can use it instead of waking up
-	 * another device for power savings.
-	 *
-	 * In general the device is a DRM node. The DRM node type (primary
-	 * vs. render) is unspecified. Clients must not rely on the
-	 * compositor sending a particular node type. Clients cannot check
-	 * two devices for equality by comparing the dev_t value.
-	 *
-	 * If explicit modifiers are not supported and the client performs
-	 * buffer allocations on a different device than the main device,
-	 * then the client must force the buffer to have a linear layout.
-	 * @param device device dev_t value
-	 */
-	void (*main_device)(void *data,
-			    struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1,
-			    struct wl_array *device);
-	/**
-	 * a preference tranche has been sent
-	 *
-	 * This event splits tranche_target_device and tranche_formats
-	 * events in preference tranches. It is sent after a set of
-	 * tranche_target_device and tranche_formats events; it represents
-	 * the end of a tranche. The next tranche will have a lower
-	 * preference.
-	 */
-	void (*tranche_done)(void *data,
-			     struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1);
-	/**
-	 * target device
-	 *
-	 * This event advertises the target device that the server
-	 * prefers to use for a buffer created given this tranche. The
-	 * advertised target device may be different for each preference
-	 * tranche, and may change over time.
-	 *
-	 * There is exactly one target device per tranche.
-	 *
-	 * The target device may be a scan-out device, for example if the
-	 * compositor prefers to directly scan-out a buffer created given
-	 * this tranche. The target device may be a rendering device, for
-	 * example if the compositor prefers to texture from said buffer.
-	 *
-	 * The client can use this hint to allocate the buffer in a way
-	 * that makes it accessible from the target device, ideally
-	 * directly. The buffer must still be accessible from the main
-	 * device, either through direct import or through a potentially
-	 * more expensive fallback path. If the buffer can't be directly
-	 * imported from the main device then clients must be prepared for
-	 * the compositor changing the tranche priority or making wl_buffer
-	 * creation fail (see the wp_linux_buffer_params.create and
-	 * create_immed requests for details).
-	 *
-	 * If the device is a DRM node, the DRM node type (primary vs.
-	 * render) is unspecified. Clients must not rely on the compositor
-	 * sending a particular node type. Clients cannot check two devices
-	 * for equality by comparing the dev_t value.
-	 *
-	 * This event is tied to a preference tranche, see the tranche_done
-	 * event.
-	 * @param device device dev_t value
-	 */
-	void (*tranche_target_device)(void *data,
-				      struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1,
-				      struct wl_array *device);
-	/**
-	 * supported buffer format modifier
-	 *
-	 * This event advertises the format + modifier combinations that
-	 * the compositor supports.
-	 *
-	 * It carries an array of indices, each referring to a format +
-	 * modifier pair in the last received format table (see the
-	 * format_table event). Each index is a 16-bit unsigned integer in
-	 * native endianness.
-	 *
-	 * For legacy support, DRM_FORMAT_MOD_INVALID is an allowed
-	 * modifier. It indicates that the server can support the format
-	 * with an implicit modifier. When a buffer has
-	 * DRM_FORMAT_MOD_INVALID as its modifier, it is as if no explicit
-	 * modifier is specified. The effective modifier will be derived
-	 * from the dmabuf.
-	 *
-	 * A compositor that sends valid modifiers and
-	 * DRM_FORMAT_MOD_INVALID for a given format supports both explicit
-	 * modifiers and implicit modifiers.
-	 *
-	 * Compositors must not send duplicate format + modifier pairs
-	 * within the same tranche or across two different tranches with
-	 * the same target device and flags.
-	 *
-	 * This event is tied to a preference tranche, see the tranche_done
-	 * event.
-	 *
-	 * For the definition of the format and modifier codes, see the
-	 * wp_linux_buffer_params.create request.
-	 * @param indices array of 16-bit indexes
-	 */
-	void (*tranche_formats)(void *data,
-				struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1,
-				struct wl_array *indices);
-	/**
-	 * tranche flags
-	 *
-	 * This event sets tranche-specific flags.
-	 *
-	 * The scanout flag is a hint that direct scan-out may be attempted
-	 * by the compositor on the target device if the client
-	 * appropriately allocates a buffer. How to allocate a buffer that
-	 * can be scanned out on the target device is
-	 * implementation-defined.
-	 *
-	 * This event is tied to a preference tranche, see the tranche_done
-	 * event.
-	 * @param flags tranche flags
-	 */
-	void (*tranche_flags)(void *data,
-			      struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1,
-			      uint32_t flags);
+    /**
+     * all feedback has been sent
+     *
+     * This event is sent after all parameters of a
+     * wp_linux_dmabuf_feedback object have been sent.
+     *
+     * This allows changes to the wp_linux_dmabuf_feedback parameters
+     * to be seen as atomic, even if they happen via multiple events.
+     */
+    void (*done)(void* data, struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1);
+    /**
+     * format and modifier table
+     *
+     * This event provides a file descriptor which can be
+     * memory-mapped to access the format and modifier table.
+     *
+     * The table contains a tightly packed array of consecutive format
+     * + modifier pairs. Each pair is 16 bytes wide. It contains a
+     * format as a 32-bit unsigned integer, followed by 4 bytes of
+     * unused padding, and a modifier as a 64-bit unsigned integer. The
+     * native endianness is used.
+     *
+     * The client must map the file descriptor in read-only private
+     * mode.
+     *
+     * Compositors are not allowed to mutate the table file contents
+     * once this event has been sent. Instead, compositors must create
+     * a new, separate table file and re-send feedback parameters.
+     * Compositors are allowed to store duplicate format + modifier
+     * pairs in the table.
+     * @param fd table file descriptor
+     * @param size table size, in bytes
+     */
+    void (*format_table)(void* data,
+                         struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1,
+                         int32_t fd,
+                         uint32_t size);
+    /**
+     * preferred main device
+     *
+     * This event advertises the main device that the server prefers
+     * to use when direct scan-out to the target device isn't possible.
+     * The advertised main device may be different for each
+     * wp_linux_dmabuf_feedback object, and may change over time.
+     *
+     * There is exactly one main device. The compositor must send at
+     * least one preference tranche with tranche_target_device equal to
+     * main_device.
+     *
+     * Clients need to create buffers that the main device can import
+     * and read from, otherwise creating the dmabuf wl_buffer will fail
+     * (see the wp_linux_buffer_params.create and create_immed requests
+     * for details). The main device will also likely be kept active by
+     * the compositor, so clients can use it instead of waking up
+     * another device for power savings.
+     *
+     * In general the device is a DRM node. The DRM node type (primary
+     * vs. render) is unspecified. Clients must not rely on the
+     * compositor sending a particular node type. Clients cannot check
+     * two devices for equality by comparing the dev_t value.
+     *
+     * If explicit modifiers are not supported and the client performs
+     * buffer allocations on a different device than the main device,
+     * then the client must force the buffer to have a linear layout.
+     * @param device device dev_t value
+     */
+    void (*main_device)(void* data,
+                        struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1,
+                        struct wl_array* device);
+    /**
+     * a preference tranche has been sent
+     *
+     * This event splits tranche_target_device and tranche_formats
+     * events in preference tranches. It is sent after a set of
+     * tranche_target_device and tranche_formats events; it represents
+     * the end of a tranche. The next tranche will have a lower
+     * preference.
+     */
+    void (*tranche_done)(void* data, struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1);
+    /**
+     * target device
+     *
+     * This event advertises the target device that the server
+     * prefers to use for a buffer created given this tranche. The
+     * advertised target device may be different for each preference
+     * tranche, and may change over time.
+     *
+     * There is exactly one target device per tranche.
+     *
+     * The target device may be a scan-out device, for example if the
+     * compositor prefers to directly scan-out a buffer created given
+     * this tranche. The target device may be a rendering device, for
+     * example if the compositor prefers to texture from said buffer.
+     *
+     * The client can use this hint to allocate the buffer in a way
+     * that makes it accessible from the target device, ideally
+     * directly. The buffer must still be accessible from the main
+     * device, either through direct import or through a potentially
+     * more expensive fallback path. If the buffer can't be directly
+     * imported from the main device then clients must be prepared for
+     * the compositor changing the tranche priority or making wl_buffer
+     * creation fail (see the wp_linux_buffer_params.create and
+     * create_immed requests for details).
+     *
+     * If the device is a DRM node, the DRM node type (primary vs.
+     * render) is unspecified. Clients must not rely on the compositor
+     * sending a particular node type. Clients cannot check two devices
+     * for equality by comparing the dev_t value.
+     *
+     * This event is tied to a preference tranche, see the tranche_done
+     * event.
+     * @param device device dev_t value
+     */
+    void (*tranche_target_device)(void* data,
+                                  struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1,
+                                  struct wl_array* device);
+    /**
+     * supported buffer format modifier
+     *
+     * This event advertises the format + modifier combinations that
+     * the compositor supports.
+     *
+     * It carries an array of indices, each referring to a format +
+     * modifier pair in the last received format table (see the
+     * format_table event). Each index is a 16-bit unsigned integer in
+     * native endianness.
+     *
+     * For legacy support, DRM_FORMAT_MOD_INVALID is an allowed
+     * modifier. It indicates that the server can support the format
+     * with an implicit modifier. When a buffer has
+     * DRM_FORMAT_MOD_INVALID as its modifier, it is as if no explicit
+     * modifier is specified. The effective modifier will be derived
+     * from the dmabuf.
+     *
+     * A compositor that sends valid modifiers and
+     * DRM_FORMAT_MOD_INVALID for a given format supports both explicit
+     * modifiers and implicit modifiers.
+     *
+     * Compositors must not send duplicate format + modifier pairs
+     * within the same tranche or across two different tranches with
+     * the same target device and flags.
+     *
+     * This event is tied to a preference tranche, see the tranche_done
+     * event.
+     *
+     * For the definition of the format and modifier codes, see the
+     * wp_linux_buffer_params.create request.
+     * @param indices array of 16-bit indexes
+     */
+    void (*tranche_formats)(void* data,
+                            struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1,
+                            struct wl_array* indices);
+    /**
+     * tranche flags
+     *
+     * This event sets tranche-specific flags.
+     *
+     * The scanout flag is a hint that direct scan-out may be attempted
+     * by the compositor on the target device if the client
+     * appropriately allocates a buffer. How to allocate a buffer that
+     * can be scanned out on the target device is
+     * implementation-defined.
+     *
+     * This event is tied to a preference tranche, see the tranche_done
+     * event.
+     * @param flags tranche flags
+     */
+    void (*tranche_flags)(void* data,
+                          struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1,
+                          uint32_t flags);
 };
 
 /**
  * @ingroup iface_zwp_linux_dmabuf_feedback_v1
  */
 static inline int
-zwp_linux_dmabuf_feedback_v1_add_listener(struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1,
-					  const struct zwp_linux_dmabuf_feedback_v1_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) zwp_linux_dmabuf_feedback_v1,
-				     (void (**)(void)) listener, data);
+    zwp_linux_dmabuf_feedback_v1_add_listener(struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1,
+                                              const struct zwp_linux_dmabuf_feedback_v1_listener* listener,
+                                              void* data) {
+    return wl_proxy_add_listener((struct wl_proxy*)zwp_linux_dmabuf_feedback_v1, (void (**)(void))listener, data);
 }
 
 #define ZWP_LINUX_DMABUF_FEEDBACK_V1_DESTROY 0
@@ -1046,22 +1075,20 @@ zwp_linux_dmabuf_feedback_v1_add_listener(struct zwp_linux_dmabuf_feedback_v1 *z
 
 /** @ingroup iface_zwp_linux_dmabuf_feedback_v1 */
 static inline void
-zwp_linux_dmabuf_feedback_v1_set_user_data(struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) zwp_linux_dmabuf_feedback_v1, user_data);
+    zwp_linux_dmabuf_feedback_v1_set_user_data(struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1,
+                                               void* user_data) {
+    wl_proxy_set_user_data((struct wl_proxy*)zwp_linux_dmabuf_feedback_v1, user_data);
 }
 
 /** @ingroup iface_zwp_linux_dmabuf_feedback_v1 */
-static inline void *
-zwp_linux_dmabuf_feedback_v1_get_user_data(struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) zwp_linux_dmabuf_feedback_v1);
+static inline void*
+    zwp_linux_dmabuf_feedback_v1_get_user_data(struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1) {
+    return wl_proxy_get_user_data((struct wl_proxy*)zwp_linux_dmabuf_feedback_v1);
 }
 
 static inline uint32_t
-zwp_linux_dmabuf_feedback_v1_get_version(struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) zwp_linux_dmabuf_feedback_v1);
+    zwp_linux_dmabuf_feedback_v1_get_version(struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1) {
+    return wl_proxy_get_version((struct wl_proxy*)zwp_linux_dmabuf_feedback_v1);
 }
 
 /**
@@ -1071,13 +1098,15 @@ zwp_linux_dmabuf_feedback_v1_get_version(struct zwp_linux_dmabuf_feedback_v1 *zw
  * use the wp_linux_dmabuf_feedback object anymore.
  */
 static inline void
-zwp_linux_dmabuf_feedback_v1_destroy(struct zwp_linux_dmabuf_feedback_v1 *zwp_linux_dmabuf_feedback_v1)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) zwp_linux_dmabuf_feedback_v1,
-			 ZWP_LINUX_DMABUF_FEEDBACK_V1_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) zwp_linux_dmabuf_feedback_v1), WL_MARSHAL_FLAG_DESTROY);
+    zwp_linux_dmabuf_feedback_v1_destroy(struct zwp_linux_dmabuf_feedback_v1* zwp_linux_dmabuf_feedback_v1) {
+    wl_proxy_marshal_flags((struct wl_proxy*)zwp_linux_dmabuf_feedback_v1,
+                           ZWP_LINUX_DMABUF_FEEDBACK_V1_DESTROY,
+                           NULL,
+                           wl_proxy_get_version((struct wl_proxy*)zwp_linux_dmabuf_feedback_v1),
+                           WL_MARSHAL_FLAG_DESTROY);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 
