@@ -32,6 +32,10 @@ hyprwat creates a popup menu at your cursor position where you can select from a
 
 ![workspaces](examples/img/overview.png)
 
+#### Volume Control
+
+![volume osd](examples/img/volume.png)
+
 #### Power Profile Selector
 
 ![powerprofilesctl](examples/img/powerprofiles.png)
@@ -82,6 +86,7 @@ If no arguments are provided, hyprwat will read from stdin, expecting one item p
 - `--overview`: Show a visual workspace overview and selector
 - `--custom <file>`: Load a custom menu from a YAML configuration file
 - `--wallpaper <dir>`: Select a wallpaper from the specified directory (for hyprpaper)
+- `--volume-[up,down]`: Show volume OSD (pipewire)
 
 
 ### More Examples
@@ -114,7 +119,11 @@ hyprwat --wallpaper ~/.local/share/wallpapers
 # Visual workspace overview and navigation
 hyprwat --overview
 
+# Volume OSD for Pipewire
+hyprwat --volume-up
+
 ```
+
 See the [examples](examples) directory for more.
 
 

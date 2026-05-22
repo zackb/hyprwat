@@ -1,11 +1,7 @@
 #include "audio.hpp"
 #include "../debug/log.hpp"
 #include <algorithm>
-#include <chrono>
 #include <cmath>
-#include <condition_variable>
-#include <iostream>
-#include <memory>
 #include <mutex>
 #include <spa/param/param.h>
 #include <spa/param/props.h>

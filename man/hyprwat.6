@@ -21,6 +21,12 @@ hyprwat \- A Hyprland menu utility to present selectable options with a customiz
 --overview
 .br
 .B hyprwat
+--volume-up
+.br
+.B hyprwat
+--volume-down
+.br
+.B hyprwat
 --custom \fIconfig.yaml\fR
 .br
 .B hyprwat
@@ -100,6 +106,18 @@ Show a visual overview of all workspaces and their windows, allowing you to easi
 $ hyprwat --overview
 .EE
 .TP
+.B VOLUME MODE
+Show a Wayland-native volume HUD (On-Screen Display) to adjust the PipeWire default output audio device (sink) volume.
+The volume OSD operates in a single-instance daemon mode using UNIX domain sockets. When launched with
+.B --volume-up
+or
+.BR --volume-down ,
+the program checks for a running instance. If one exists, it communicates the adjustment request to that instance and exits immediately, providing an instantaneous OSD response without spawning another window.
+.EX
+$ hyprwat --volume-up
+$ hyprwat --volume-down
+.EE
+.TP
 .B CUSTOM MODE
 Render a fully custom menu from a YAML configuration file. Custom menus
 support multiple widget types (buttons, inputs, sliders, checkboxes, color
@@ -124,6 +142,12 @@ Show Wi-Fi network selection mode.
 .TP
 .BR --audio
 Show audio input/output device selection mode.
+.TP
+.BR --volume-up
+Increase default PipeWire output device volume by 5% and show the volume HUD OSD.
+.TP
+.BR --volume-down
+Decrease default PipeWire output device volume by 5% and show the volume HUD OSD.
 .TP
 .BR --overview
 Show a visual workspace overview and selector.
@@ -279,6 +303,12 @@ $ hyprwat --wifi
 $ hyprwat --audio
 .EE
 .TP
+Adjust output volume and show volume HUD:
+.EX
+$ hyprwat --volume-up
+$ hyprwat --volume-down
+.EE
+.TP
 Show the workspace overview:
 .EX
 $ hyprwat --overview
@@ -331,6 +361,9 @@ Uses simple INI syntax to define fonts, colors, and window style.
 .I ~/.config/hyprwat/*.yaml
 Custom menu configuration files. Can be organized hierarchically
 with submenus referencing other YAML files via relative or absolute paths.
+.TP
+.I $XDG_RUNTIME_DIR/hyprwat-volume.sock \fRor\fI /tmp/hyprwat-volume-$USER.sock
+UNIX domain socket used by the volume OSD for communication between client commands and the active daemon instance.
 .SH REQUIREMENTS
 Wayland compositor (tested with Hyprland),
 C++20 compiler, EGL/OpenGL, Fontconfig, xkbcommon,
