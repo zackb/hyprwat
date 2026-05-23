@@ -12,7 +12,7 @@ public:
     ~VolumeFrame() override = default;
 
     FrameResult render() override;
-    Vec2 getSize() override { return Vec2{280.0f, 95.0f}; }
+    Vec2 getSize() override { return Vec2{270.0f, 48.0f}; }
 
     bool shouldRepositionOnResize() const override { return false; }
     bool shouldPositionAtCursor() const override { return false; }

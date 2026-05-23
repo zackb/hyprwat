@@ -152,24 +152,21 @@ FrameResult VolumeFrame::render() {
     ImVec2 win_size = ImGui::GetWindowSize();
 
     // Draw layout
-    float speaker_size = 28.0f;
-    ImVec2 speaker_pos = ImVec2(win_pos.x + 20.0f, win_pos.y + 15.0f);
+    float speaker_size = 20.0f;
+    ImVec2 speaker_pos = ImVec2(win_pos.x + 16.0f, win_pos.y + 14.0f);
     DrawSpeakerIcon(draw_list, speaker_pos, speaker_size, info.volume, info.mute);
 
-    // Draw Title & Percentage Text
-    ImGui::SetCursorScreenPos(ImVec2(speaker_pos.x + speaker_size + 15.0f, speaker_pos.y));
-    ImGui::Text("Volume");
-
+    // Draw Percentage Text
     std::string pct_text = info.mute ? "Muted" : (std::to_string((int)(info.volume * 100)) + "%");
     ImVec2 pct_text_size = ImGui::CalcTextSize(pct_text.c_str());
-    ImGui::SetCursorScreenPos(ImVec2(win_pos.x + win_size.x - 20.0f - pct_text_size.x, speaker_pos.y));
+    ImGui::SetCursorScreenPos(ImVec2(win_pos.x + win_size.x - 16.0f - pct_text_size.x, win_pos.y + (win_size.y - pct_text_size.y) * 0.5f));
     ImGui::Text("%s", pct_text.c_str());
 
     // Draw 10 volume blocks/rects
-    float rect_width = 18.0f;
-    float rect_height = 14.0f;
-    float spacing = 6.0f;
-    ImVec2 bar_start = ImVec2(win_pos.x + 20.0f, win_pos.y + 55.0f);
+    float rect_width = 12.0f;
+    float rect_height = 12.0f;
+    float spacing = 4.0f;
+    ImVec2 bar_start = ImVec2(speaker_pos.x + speaker_size + 12.0f, win_pos.y + 18.0f);
 
     ImU32 border_col = ImGui::GetColorU32(ImGuiCol_Border);
     ImU32 active_col = ImGui::GetColorU32(ImGuiCol_Border); // Let's use the theme border color as filled color
