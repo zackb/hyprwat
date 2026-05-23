@@ -118,7 +118,7 @@ add_executable(hyprwat
     src/frames/images.cpp
     src/frames/overview.cpp
     src/frames/volume.cpp
-    src/audio/volume_daemon.cpp
+    src/daemon/daemon.cpp
     src/flows/simple_flows.cpp
     src/flows/wifi_flow.cpp
     src/flows/audio_flow.cpp

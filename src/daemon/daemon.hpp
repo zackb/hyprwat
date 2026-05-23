@@ -5,10 +5,10 @@
 #include <string>
 #include <thread>
 
-class VolumeDaemon {
+class Daemon {
 public:
-    VolumeDaemon() = default;
-    ~VolumeDaemon();
+    Daemon() = default;
+    ~Daemon();
 
     // Tries to connect to an existing running daemon instance and send a command.
     // Returns true if successfully connected and command sent (meaning another instance is running).
@@ -22,11 +22,12 @@ public:
     void stopServer();
 
     // Gets the path to the Unix domain socket.
-    static std::string getSocketPath();
 
 private:
     int serverFd = -1;
     std::thread serverThread;
     std::atomic<bool> running{false};
     std::function<void(const std::string&)> callback;
+
+    static std::string getSocketPath();
 };

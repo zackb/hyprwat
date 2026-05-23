@@ -11,7 +11,7 @@
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
 
-#include "audio/volume_daemon.hpp"
+#include "daemon/daemon.hpp"
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -150,12 +150,12 @@ int main(const int argc, const char** argv) {
     // if it's a volume operation, check single-instance
     if (args.mode == InputMode::VOLUME_OSD) {
         std::string cmd = (args.volumeAction == VolumeAction::UP) ? "up" : "down";
-        if (VolumeDaemon::sendCommand(cmd)) {
+        if (Daemon::sendCommand(cmd)) {
             return 0; // Command sent to existing instance, exit successfully!
         }
     }
 
-    VolumeDaemon daemon;
+    Daemon daemon;
 
     // find which flow to run
     std::unique_ptr<Flow> flow;
