@@ -47,11 +47,15 @@ private:
     std::map<uint32_t, AudioDevice> sources;
     uint32_t default_sink_id;
     uint32_t default_source_id;
-    uint32_t default_sink_channels = 2;
-    uint32_t default_sink_device_id = 0;
-    uint32_t default_sink_profile_device = 0;
     std::string default_sink_name;
     std::string default_source_name;
+
+    uint32_t active_device_id = 0;     // PW device object id (card)
+    uint32_t active_route_index = 0;   // SPA_PARAM_ROUTE_index  (from enum)
+    uint32_t active_route_device = 0;  // SPA_PARAM_ROUTE_device (from enum)
+    uint32_t active_sink_channels = 2; // channel count for current route
+    struct pw_device* active_device_proxy = nullptr;
+    struct spa_hook active_device_listener{};
 
     bool initialized;
 
@@ -65,6 +69,7 @@ private:
     std::vector<AudioDevice> getDevices(const std::map<uint32_t, AudioDevice>& deviceMap);
     bool setDefault(uint32_t deviceId, const std::string& key);
     void updateActiveSinkNode();
+    void teardownActiveDevice();
 
 public:
     struct VolumeInfo {
