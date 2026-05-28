@@ -135,17 +135,17 @@ int main(const int argc, const char** argv) {
     int logicalDisplayWidth = displayWidth / hyprlandScale;
     int logicalDisplayHeight = displayHeight / hyprlandScale;
 
+    // parse command line arguments
+    auto args = Input::parseArgv(argc, argv);
+
     // load config
-    Config config("~/.config/hyprwat/hyprwat.conf");
+    Config config(args.configFile);
 
     // initialize UI at wayland scaled cursor position
     ui.init(x_wayland, y_wayland, hyprlandScale);
 
     // apply theme to UI
     ui.applyTheme(config);
-
-    // parse command line arguments
-    auto args = Input::parseArgv(argc, argv);
 
     // if it's a volume operation, check single-instance
     if (args.mode == InputMode::VOLUME_OSD) {

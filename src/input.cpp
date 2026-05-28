@@ -1,4 +1,5 @@
 #include "input.hpp"
+#include "src/debug/log.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <filesystem>
@@ -6,6 +7,7 @@
 #include <thread>
 
 std::mutex Input::mutex;
+
 ParseResult Input::parseArgv(int argc, const char* argv[]) {
 
     ParseResult result;
@@ -14,55 +16,69 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
         return result;
     }
 
+    int argi = 1;
+    if (std::string(argv[argi]) == "--config") {
+        // --config and its value
+        if (argc <= argi + 1) {
+            debug::log(ERR, "--config flag requires a file path argument");
+            exit(1);
+        }
+        argi += 2;
+        result.configFile = argv[2];
+    } else {
+    }
+
+    const char* arg = argv[argi];
+
     // Check for --input mode
-    if (std::string(argv[1]) == "--input" || std::string(argv[1]) == "--password") {
-        result.mode = (std::string(argv[1]) == "--input") ? InputMode::INPUT : InputMode::PASSWORD;
+    if (std::string(arg) == "--input" || std::string(arg) == "--password") {
+        result.mode = (std::string(arg) == "--input") ? InputMode::INPUT : InputMode::PASSWORD;
         // If there's a second argument, use it as the hint
-        if (argc > 2) {
-            result.hint = argv[2];
+        if (argc > argi + 1) {
+            result.hint = argv[argi + 1];
         }
         return result;
     }
 
-    if (std::string(argv[1]) == "--wifi") {
+    if (std::string(arg) == "--wifi") {
         result.mode = InputMode::WIFI;
         return result;
     }
 
-    if (std::string(argv[1]) == "--audio") {
+    if (std::string(arg) == "--audio") {
         result.mode = InputMode::AUDIO;
         return result;
     }
 
-    if (std::string(argv[1]) == "--volume-up") {
+    if (std::string(arg) == "--volume-up") {
         result.mode = InputMode::VOLUME_OSD;
         result.volumeAction = VolumeAction::UP;
         return result;
     }
 
-    if (std::string(argv[1]) == "--volume-down") {
+    if (std::string(arg) == "--volume-down") {
         result.mode = InputMode::VOLUME_OSD;
         result.volumeAction = VolumeAction::DOWN;
         return result;
     }
 
-    if (std::string(argv[1]) == "--custom") {
+    if (std::string(arg) == "--custom") {
         result.mode = InputMode::CUSTOM;
-        if (argc > 2) {
-            result.configPath = argv[2];
+        if (argc > argi + 1) {
+            result.configPath = argv[argi + 1];
         }
         return result;
     }
 
-    if (std::string(argv[1]) == "--overview") {
+    if (std::string(arg) == "--overview") {
         result.mode = InputMode::OVERVIEW;
         return result;
     }
 
-    if (std::string(argv[1]) == "--wallpaper") {
+    if (std::string(arg) == "--wallpaper") {
         result.mode = InputMode::WALLPAPER;
-        if (argc > 2) {
-            result.wallpaperDir = Input::expandPath(argv[2]);
+        if (argc > argi + 1) {
+            result.wallpaperDir = Input::expandPath(argv[argi + 1]);
         } else {
             std::filesystem::path userWallpapers = Input::expandPath("~/.local/share/wallpapers");
             if (std::filesystem::exists(userWallpapers)) {
@@ -78,7 +94,7 @@ ParseResult Input::parseArgv(int argc, const char* argv[]) {
 
     // Default MENU mode - parse all arguments as choices
     result.mode = InputMode::MENU;
-    for (int i = 1; i < argc; ++i) {
+    for (int i = argi; i < argc; ++i) {
         result.choices.push_back(parseLine(argv[i]));
     }
 

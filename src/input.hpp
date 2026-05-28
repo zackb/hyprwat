@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#define HYPRWAT_CONFIG_FILE "~/.config/hyprwat/hyprwat.conf"
+
 enum class InputMode {
     MENU,      // default menu selection mode
     INPUT,     // text input mode
@@ -23,6 +25,7 @@ enum class VolumeAction { NONE, UP, DOWN };
 
 struct ParseResult {
     InputMode mode = InputMode::MENU;
+    std::string configFile = HYPRWAT_CONFIG_FILE;
     std::vector<Choice> choices;
     std::string hint;                               // For INPUT mode only
     std::string configPath;                         // For CUSTOM mode only
