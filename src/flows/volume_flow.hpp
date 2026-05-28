@@ -4,6 +4,8 @@
 #include "flow.hpp"
 #include <memory>
 
+#define VOLUME_DELTA 0.05f
+
 class VolumeFlow : public Flow {
 public:
     VolumeFlow(VolumeAction action);

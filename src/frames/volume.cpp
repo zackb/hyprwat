@@ -159,7 +159,8 @@ FrameResult VolumeFrame::render() {
     // Draw Percentage Text
     std::string pct_text = info.mute ? "Muted" : (std::to_string((int)(info.volume * 100)) + "%");
     ImVec2 pct_text_size = ImGui::CalcTextSize(pct_text.c_str());
-    ImGui::SetCursorScreenPos(ImVec2(win_pos.x + win_size.x - 16.0f - pct_text_size.x, win_pos.y + (win_size.y - pct_text_size.y) * 0.5f));
+    ImGui::SetCursorScreenPos(
+        ImVec2(win_pos.x + win_size.x - 16.0f - pct_text_size.x, win_pos.y + (win_size.y - pct_text_size.y) * 0.5f));
     ImGui::Text("%s", pct_text.c_str());
 
     // Draw 10 volume blocks/rects
@@ -184,12 +185,28 @@ FrameResult VolumeFrame::render() {
         ImVec2 p0 = ImVec2(bar_start.x + i * (rect_width + spacing), bar_start.y);
         ImVec2 p1 = ImVec2(p0.x + rect_width, p0.y + rect_height);
 
-        float threshold = (i + 1) * 0.1f;
-        bool filled = !info.mute && (info.volume >= threshold - 0.01f);
+        float threshold_start = i * 0.1f;
+        float threshold_end = (i + 1) * 0.1f;
+        float threshold_mid = threshold_start + 0.05f;
 
-        ImU32 block_col = filled ? active_col : bg_col;
+        bool fully_filled = !info.mute && (info.volume >= threshold_end - 0.005f);
+        bool half_filled = !info.mute && !fully_filled && (info.volume >= threshold_mid - 0.005f);
 
-        draw_list->AddRectFilled(p0, p1, block_col, style.FrameRounding);
+        // draw background block (empty state)
+        draw_list->AddRectFilled(p0, p1, bg_col, style.FrameRounding);
+
+        // draw active color fill
+        if (fully_filled) {
+            draw_list->AddRectFilled(p0, p1, active_col, style.FrameRounding);
+        } else if (half_filled) {
+            ImVec2 clip_p0 = p0;
+            ImVec2 clip_p1 = ImVec2(p0.x + rect_width * 0.5f, p1.y);
+            draw_list->PushClipRect(clip_p0, clip_p1, true);
+            draw_list->AddRectFilled(p0, p1, active_col, style.FrameRounding);
+            draw_list->PopClipRect();
+        }
+
+        // draw block border
         draw_list->AddRect(p0, p1, border_col, style.FrameRounding, 0, 1.0f);
     }
 
