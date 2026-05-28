@@ -49,13 +49,13 @@ namespace hyprland {
         ~Control();
 
         // Send command, return raw response
-        std::string send(const std::string& command);
+        std::string send(const std::string& command) const;
 
         // these are in fractional scale pixels
         float scale();
         Vec2 cursorPos();
         std::vector<Monitor> getMonitors();
-        Monitor monitorAtCursor();
+        Monitor monitorAtCursor(const Vec2& cursor);
 
         void setWallpaper(const std::string& path);
 
@@ -66,9 +66,10 @@ namespace hyprland {
 
     private:
         std::string socketPath;
-        bool luaProtocol = false;
+        mutable bool luaProtocol = false;
+        mutable bool luaProtocolDetected = false;
 
-        void detectLuaProtocol();
+        void detectLuaProtocol() const;
     };
 
     class Events {

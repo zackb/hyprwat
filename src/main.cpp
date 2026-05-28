@@ -108,7 +108,7 @@ int main(const int argc, const char** argv) {
     Vec2 pos = hyprctl.cursorPos();
 
     // get the monitor the cursor is currently on
-    auto monitor = hyprctl.monitorAtCursor();
+    auto monitor = hyprctl.monitorAtCursor(pos);
     if (monitor.id < 0) {
         debug::log(ERR, "Failed to find monitor at cursor, aborting");
         return 1;

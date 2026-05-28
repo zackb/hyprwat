@@ -253,7 +253,10 @@ void UI::applyTheme(const Config& config) {
 
 void UI::setupFont(ImGuiIO& io, const Config& config) {
     // load the user font if specified in config defaulting to fc
-    std::string fontPath = config.getString("theme", "font_path", font::defaultFontPath());
+    std::string fontPath = config.getString("theme", "font_path", "");
+    if (fontPath.empty()) {
+        fontPath = font::defaultFontPath();
+    }
     float fontSize = config.getFloat("theme", "font_size", 14.0f);
 
     if (!fontPath.empty()) {

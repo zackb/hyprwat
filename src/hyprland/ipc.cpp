@@ -22,11 +22,12 @@ namespace hyprland {
 
     // Control
     Control::Control() : Control(getSocketPath(".socket.sock")) {}
-    Control::Control(const std::string& socketPath) : socketPath(socketPath) { detectLuaProtocol(); }
+    Control::Control(const std::string& socketPath) : socketPath(socketPath) {}
 
     Control::~Control() {}
 
-    void Control::detectLuaProtocol() {
+    void Control::detectLuaProtocol() const {
+        luaProtocolDetected = true;
         try {
             std::string response = send("dispatch workspace __hyprwat_probe__");
             if (response.find("hl.dispatch") != std::string::npos) {
@@ -41,7 +42,7 @@ namespace hyprland {
         }
     }
 
-    std::string Control::send(const std::string& command) {
+    std::string Control::send(const std::string& command) const {
         int wfd = socket(AF_UNIX, SOCK_STREAM, 0);
         if (wfd < 0)
             throw std::runtime_error("Failed to create socket");
@@ -111,8 +112,7 @@ namespace hyprland {
         return result;
     }
 
-    Monitor hyprland::Control::monitorAtCursor() {
-        Vec2 cursor = cursorPos();
+    Monitor hyprland::Control::monitorAtCursor(const Vec2& cursor) {
         auto monitors = getMonitors();
         for (auto& m : monitors) {
             if (cursor.x >= m.x && cursor.x < m.x + m.width && cursor.y >= m.y && cursor.y < m.y + m.height) {
@@ -138,6 +138,9 @@ namespace hyprland {
     }
 
     void Control::setWallpaper(const std::string& path) {
+        if (!luaProtocolDetected) {
+            detectLuaProtocol();
+        }
         if (luaProtocol) {
             std::string response =
                 send("/dispatch hl.dsp.exec_cmd(\"hyprctl hyprpaper preload \\\"" + path + "\\\"\")");
@@ -232,6 +235,9 @@ namespace hyprland {
     }
 
     void Control::dispatchWorkspace(int id) {
+        if (!luaProtocolDetected) {
+            detectLuaProtocol();
+        }
         if (luaProtocol) {
             send("/dispatch hl.dsp.focus({ workspace = \"" + std::to_string(id) + "\" })");
         } else {
