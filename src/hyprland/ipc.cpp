@@ -177,7 +177,10 @@ namespace hyprland {
                     workspace.name = w["name"].as<std::string>();
                     workspace.monitor = w["monitor"].as<std::string>();
                     workspace.active = false; // not provided easily, hyprctl activeworkspace has it
-                    result.push_back(workspace);
+                    // do now show the special workspace on the overview
+                    if (workspace.name != "special:magic") {
+                        result.push_back(workspace);
+                    }
                 }
             }
         } catch (const std::exception& e) {
