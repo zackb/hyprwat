@@ -66,7 +66,7 @@ TARBALL="$ASSET_DIR/hyprwat-$VERSION.tar.gz"
 DEB=$(ls "$ASSET_DIR"/hyprwat-*.deb | head -n 1)
 RPM=$(ls "$ASSET_DIR"/hyprwat-*.rpm | head -n 1)
 
-gh release create "$TAG" "$TARBALL" "$DEB" "$RPM" --title "Release $TAG" --generate-notes
+gh release create "$TAG" "$TARBALL" "$DEB" "$RPM" --title "$TAG" --generate-notes
 
 # 6. Update AUR (hyprwat-git)
 if [ -d "$AUR_GIT_DIR" ]; then
