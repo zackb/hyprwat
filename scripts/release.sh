@@ -13,7 +13,7 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
-TAG="v$VERSION"
+TAG="$VERSION"
 REPO_ROOT=$(git rev-parse --show-toplevel)
 AUR_GIT_DIR="$REPO_ROOT/../hyprwat-git"
 AUR_BIN_DIR="$REPO_ROOT/../hyprwat-bin"
