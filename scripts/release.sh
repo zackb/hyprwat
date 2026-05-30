@@ -39,7 +39,7 @@ echo "🚀 Starting release process for $TAG..."
 
 # 2. Update CMakeLists.txt and man page version
 sed -i "s/project(hyprwat VERSION [0-9.]*/project(hyprwat VERSION $VERSION/" "$REPO_ROOT/CMakeLists.txt"
-sed -i "s/\.TH HYPRWAT 6 \"[^\"]*\" \"hyprwat [0-9.]*\"/.TH HYPRWAT 6 \"\$(date +'%B %Y')\" \"hyprwat \$VERSION\"/" "$REPO_ROOT/man/hyprwat.6"
+sed -i "s/\.TH HYPRWAT 6 \"[^\"]*\" \"hyprwat [0-9.]*\"/.TH HYPRWAT 6 \"$(date +'%B %Y')\" \"hyprwat $VERSION\"/" "$REPO_ROOT/man/hyprwat.6"
 git add "$REPO_ROOT/CMakeLists.txt" "$REPO_ROOT/man/hyprwat.6"
 git commit -m "chore: bump version to $VERSION" || true
 
