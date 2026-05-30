@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(hyprwat VERSION 0.11.2 LANGUAGES CXX C)
+project(hyprwat VERSION 0.11.3 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
