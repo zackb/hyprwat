@@ -14,7 +14,7 @@ install: release
 	cmake --install build/release
 
 package: release
-	cpack --config build/release/CPackConfig.cmake
+	cd build/release && cpack
 
 package-pacman: release
 	makepkg -s

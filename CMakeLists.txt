@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(hyprwat CXX C)
+project(hyprwat VERSION 0.11.2 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -184,7 +184,7 @@ install(FILES man/hyprwat.6
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_NAME "hyprwat")
-set(CPACK_PACKAGE_VERSION "0.11.2")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_CONTACT "zack@bartel.com")
 set(CPACK_GENERATOR "DEB;RPM;TGZ")
 
