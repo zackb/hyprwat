@@ -2,9 +2,9 @@
 #include "../frames/overview.hpp"
 #include "../wayland/display.hpp"
 
-OverviewFlow::OverviewFlow(hyprland::Control& hyprctl, wl::Display& wlDisplay, int logicalWidth, int logicalHeight)
-    : hyprctl(hyprctl), logicalWidth(logicalWidth), logicalHeight(logicalHeight) {
-    mainFrame = std::make_unique<OverviewFrame>(hyprctl, wlDisplay, logicalWidth, logicalHeight);
+OverviewFlow::OverviewFlow(compositor::Compositor& comp, wl::Display& wlDisplay, int logicalWidth, int logicalHeight)
+    : comp(comp), logicalWidth(logicalWidth), logicalHeight(logicalHeight) {
+    mainFrame = std::make_unique<OverviewFrame>(comp, wlDisplay, logicalWidth, logicalHeight);
 }
 
 OverviewFlow::~OverviewFlow() = default;
@@ -18,7 +18,7 @@ bool OverviewFlow::handleResult(const FrameResult& result) {
 
         // dispatch to selected workspace
         int workspaceId = std::stoi(finalResult);
-        hyprctl.dispatchWorkspace(workspaceId);
+        comp.dispatchWorkspace(workspaceId);
     } else if (result.action == FrameResult::Action::CANCEL) {
         done = true;
     }

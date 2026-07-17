@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../hyprland/ipc.hpp"
+#include "../compositor/compositor.hpp"
 #include "../ui.hpp"
 #include "flow.hpp"
 
@@ -10,7 +10,7 @@ namespace wl {
 
 class OverviewFlow : public Flow {
 public:
-    OverviewFlow(hyprland::Control& hyprctl, wl::Display& wlDisplay, int logicalWidth, int logicalHeight);
+    OverviewFlow(compositor::Compositor& comp, wl::Display& wlDisplay, int logicalWidth, int logicalHeight);
     ~OverviewFlow() override;
 
     Frame* getCurrentFrame() override;
@@ -19,7 +19,7 @@ public:
     std::string getResult() const override;
 
 private:
-    hyprland::Control& hyprctl;
+    compositor::Compositor& comp;
     int logicalWidth;
     int logicalHeight;
     std::unique_ptr<Frame> mainFrame;

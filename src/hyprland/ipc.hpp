@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../compositor/compositor.hpp"
 #include "../vec.hpp"
 #include <atomic>
 #include <functional>
@@ -9,40 +10,11 @@
 #include <vector>
 
 namespace hyprland {
-    struct Workspace {
-        int id;
-        std::string name;
-        std::string monitor;
-        bool active = false;
-    };
+    using compositor::Client;
+    using compositor::Monitor;
+    using compositor::Workspace;
 
-    struct Client {
-        std::string address;
-        std::string title;
-        std::string class_;
-        std::string initialClass;
-        std::string initialTitle;
-        int workspaceId = -1;
-        int x = 0;
-        int y = 0;
-        int width = 0;
-        int height = 0;
-        bool mapped = false;
-        bool hidden = false;
-    };
-
-    struct Monitor {
-        int id;
-        std::string name;
-        int x;
-        int y;
-        int width;
-        int height;
-        float scale;
-        bool focused;
-    };
-
-    class Control {
+    class Control : public compositor::Compositor {
     public:
         explicit Control();
         explicit Control(const std::string& socketPath);
@@ -53,18 +25,21 @@ namespace hyprland {
 
         // these are in fractional scale pixels
         float scale();
-        Vec2 cursorPos();
-        std::vector<Monitor> getMonitors();
-        Monitor monitorAtCursor(const Vec2& cursor);
+        Vec2 cursorPos() override;
+        std::optional<Monitor> monitorAtCursor(const Vec2& cursor) override;
 
-        void setWallpaper(const std::string& path);
+        void setWallpaper(const std::string& path) override;
 
-        std::vector<Workspace> getWorkspaces();
-        std::vector<Client> getClients();
-        int getActiveWorkspaceId();
-        void dispatchWorkspace(int id);
+        std::vector<Workspace> getWorkspaces() override;
+        std::vector<Client> getClients() override;
+        int getActiveWorkspaceId() override;
+        void dispatchWorkspace(int id) override;
+
+        bool supportsOverview() const override { return true; }
 
     private:
+        std::vector<Monitor> getMonitors();
+
         std::string socketPath;
         mutable bool luaProtocol = false;
         mutable bool luaProtocolDetected = false;

@@ -1,12 +1,14 @@
 #pragma once
 
+#include "../compositor/compositor.hpp"
 #include "../frames/images.hpp"
-#include "../hyprland/ipc.hpp"
 #include "flow.hpp"
+#include <atomic>
+#include <thread>
 
 class WallpaperFlow : public Flow {
 public:
-    WallpaperFlow(hyprland::Control& hyprctl,
+    WallpaperFlow(compositor::Compositor& comp,
                   const std::string& wallpaperDir,
                   const int logicalWidth,
                   const int logicalHeight);
@@ -19,7 +21,7 @@ public:
 
 private:
     WallpaperManager wallpaperManager;
-    hyprland::Control& hyprctl;
+    compositor::Compositor& comp;
     std::unique_ptr<ImageList> imageList;
     std::string finalResult;
     std::thread loadingThread;

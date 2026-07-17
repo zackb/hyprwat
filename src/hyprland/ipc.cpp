@@ -112,14 +112,14 @@ namespace hyprland {
         return result;
     }
 
-    Monitor hyprland::Control::monitorAtCursor(const Vec2& cursor) {
+    std::optional<Monitor> hyprland::Control::monitorAtCursor(const Vec2& cursor) {
         auto monitors = getMonitors();
         for (auto& m : monitors) {
             if (cursor.x >= m.x && cursor.x < m.x + m.width && cursor.y >= m.y && cursor.y < m.y + m.height) {
                 return m;
             }
         }
-        return monitors[0]; // fallback
+        return std::nullopt;
     }
 
     float Control::scale() {

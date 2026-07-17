@@ -213,6 +213,7 @@ cmake --build --preset debug
   - `wayland/`: Wayland protocol implementations
   - `renderer/`: EGL/OpenGL rendering context
   - `selection/`: Selection/Menu handling logic and UI
+  - `compositor/`: Compositor abstraction and IPC integration
   - `hyprland/`: Hyprland IPC integration
   - `audio/`: Pipewire audio device handling
   - `wifi/`: WiFi network handling via DBus and NetworkManager
@@ -290,7 +291,7 @@ echo $PASSPHRASE
 
 ## Requirements
 
-- **Wayland compositor** (tested with Hyprland)
+- **Wayland compositor** (tested with Hyprland and fenriz, see [compositor support](docs/COMPOSITORS.md))
 - **C++20 compatible compiler**
 - **CMake 3.15+**
 - **OpenGL/EGL support**

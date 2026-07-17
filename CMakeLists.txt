@@ -104,6 +104,8 @@ add_executable(hyprwat
     src/ui.cpp
     src/util.cpp
     src/hyprland/ipc.cpp
+    src/compositor/detect.cpp
+    src/compositor/fenriz.cpp
     src/wayland/wayland.cpp
     src/wayland/display.cpp
     src/wayland/shm.cpp
@@ -184,6 +186,16 @@ install(FILES man/hyprwat.6
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_NAME "hyprwat")
+# Tests. The fenriz snapshot parser is the one piece of logic testable without a
+# live compositor, so it is the one piece that has a test.
+enable_testing()
+add_executable(fenriz_parse_test
+    src/compositor/fenriz_test.cpp
+    src/compositor/fenriz.cpp
+)
+target_link_libraries(fenriz_parse_test PRIVATE yaml-cpp::yaml-cpp)
+add_test(NAME fenriz_parse COMMAND fenriz_parse_test)
+
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_CONTACT "zack@bartel.com")
 set(CPACK_GENERATOR "DEB;RPM;TGZ")

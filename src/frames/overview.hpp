@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../hyprland/ipc.hpp"
+#include "../compositor/compositor.hpp"
 #include "../ui.hpp"
 #include "../wayland/display.hpp"
 #include "../wayland/protocols/hyprland-toplevel-export-v1-client-protocol.h"
@@ -16,7 +16,7 @@
 
 class OverviewFrame : public Frame {
 public:
-    OverviewFrame(hyprland::Control& hyprctl, wl::Display& wlDisplay, int logicalWidth, int logicalHeight);
+    OverviewFrame(compositor::Compositor& comp, wl::Display& wlDisplay, int logicalWidth, int logicalHeight);
     ~OverviewFrame() override;
 
     FrameResult render() override;
@@ -28,7 +28,7 @@ public:
 private:
     struct CapturedClient {
         OverviewFrame* owner = nullptr;
-        hyprland::Client client;
+        compositor::Client client;
         struct hyprland_toplevel_export_frame_v1* frame = nullptr;
         std::unique_ptr<wl::ShmBuffer> shmBuffer;
         GLuint texture = 0;
@@ -48,14 +48,14 @@ private:
     };
 
     struct WorkspaceView {
-        hyprland::Workspace workspace;
+        compositor::Workspace workspace;
         std::vector<std::shared_ptr<CapturedClient>> clients;
     };
 
     int selectedIndex = 0;
     int logicalWidth;
     int logicalHeight;
-    hyprland::Control& hyprctl;
+    compositor::Compositor& comp;
     wl::Display& wlDisplay;
 
     std::vector<WorkspaceView> workspaces;

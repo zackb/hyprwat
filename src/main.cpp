@@ -1,3 +1,4 @@
+#include "compositor/compositor.hpp"
 #include "flows/audio_flow.hpp"
 #include "flows/custom_flow.hpp"
 #include "flows/flow.hpp"
@@ -6,7 +7,6 @@
 #include "flows/volume_flow.hpp"
 #include "flows/wallpaper_flow.hpp"
 #include "flows/wifi_flow.hpp"
-#include "hyprland/ipc.hpp"
 #include "input.hpp"
 #include "ui.hpp"
 #include "wayland/wayland.hpp"
@@ -104,36 +104,41 @@ int main(const int argc, const char** argv) {
     UI ui(wayland);
 
     // find cursor position for meny x/y
-    hyprland::Control hyprctl;
-    Vec2 pos = hyprctl.cursorPos();
+    auto comp = compositor::detect();
+    if (!comp) {
+        debug::log(ERR, "No supported compositor found (need Hyprland or fenriz), aborting");
+        return 1;
+    }
+    Vec2 pos = comp->cursorPos();
 
     // get the monitor the cursor is currently on
-    auto monitor = hyprctl.monitorAtCursor(pos);
-    if (monitor.id < 0) {
+    auto monitorAt = comp->monitorAtCursor(pos);
+    if (!monitorAt) {
         debug::log(ERR, "Failed to find monitor at cursor, aborting");
         return 1;
     }
+    auto& monitor = *monitorAt;
 
-    float hyprlandScale = monitor.scale;
+    float monitorScale = monitor.scale;
 
     // global offset of this monitor
     int monitorOffsetX = monitor.x;
     int monitorOffsetY = monitor.y;
 
-    // cursor position local to this monitor in hyprland logical
+    // cursor position local to this monitor in compositor logical
     float localX = pos.x - monitorOffsetX;
     float localY = pos.y - monitorOffsetY;
 
-    // convert hyprland logical to physical to wayland logical
+    // convert compositor logical to physical to wayland logical
     int waylandScale = wayland.display().getMaxScale();
-    int x_physical = (int)(localX * hyprlandScale);
-    int y_physical = (int)(localY * hyprlandScale);
+    int x_physical = (int)(localX * monitorScale);
+    int y_physical = (int)(localY * monitorScale);
     int x_wayland = x_physical / waylandScale;
     int y_wayland = y_physical / waylandScale;
 
     auto [displayWidth, displayHeight] = wayland.display().getOutputSize();
-    int logicalDisplayWidth = displayWidth / hyprlandScale;
-    int logicalDisplayHeight = displayHeight / hyprlandScale;
+    int logicalDisplayWidth = displayWidth / monitorScale;
+    int logicalDisplayHeight = displayHeight / monitorScale;
 
     // parse command line arguments
     auto args = Input::parseArgv(argc, argv);
@@ -142,7 +147,7 @@ int main(const int argc, const char** argv) {
     Config config(args.configFile);
 
     // initialize UI at wayland scaled cursor position
-    ui.init(x_wayland, y_wayland, hyprlandScale);
+    ui.init(x_wayland, y_wayland, monitorScale);
 
     // apply theme to UI
     ui.applyTheme(config);
@@ -190,10 +195,14 @@ int main(const int argc, const char** argv) {
         flow = std::make_unique<CustomFlow>(args.configPath);
         break;
     case InputMode::OVERVIEW:
-        flow = std::make_unique<OverviewFlow>(hyprctl, wayland.display(), logicalDisplayWidth, logicalDisplayHeight);
+        if (!comp->supportsOverview()) {
+            debug::log(ERR, "--overview is not supported on this compositor");
+            return 1;
+        }
+        flow = std::make_unique<OverviewFlow>(*comp, wayland.display(), logicalDisplayWidth, logicalDisplayHeight);
         break;
     case InputMode::WALLPAPER:
-        flow = std::make_unique<WallpaperFlow>(hyprctl, args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);
+        flow = std::make_unique<WallpaperFlow>(*comp, args.wallpaperDir, logicalDisplayWidth, logicalDisplayHeight);
         break;
     case InputMode::MENU:
         if (args.choices.size() > 0) {

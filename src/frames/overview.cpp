@@ -24,8 +24,8 @@ const struct hyprland_toplevel_export_frame_v1_listener OverviewFrame::export_fr
     .buffer_done = OverviewFrame::handle_buffer_done,
 };
 
-OverviewFrame::OverviewFrame(hyprland::Control& hyprctl, wl::Display& wlDisplay, int logicalWidth, int logicalHeight)
-    : hyprctl(hyprctl), wlDisplay(wlDisplay), logicalWidth(logicalWidth), logicalHeight(logicalHeight) {
+OverviewFrame::OverviewFrame(compositor::Compositor& comp, wl::Display& wlDisplay, int logicalWidth, int logicalHeight)
+    : comp(comp), wlDisplay(wlDisplay), logicalWidth(logicalWidth), logicalHeight(logicalHeight) {
     captureClients();
 }
 
@@ -48,13 +48,13 @@ OverviewFrame::~OverviewFrame() {
 }
 
 void OverviewFrame::captureClients() {
-    auto allWorkspaces = hyprctl.getWorkspaces();
-    auto allClients = hyprctl.getClients();
+    auto allWorkspaces = comp.getWorkspaces();
+    auto allClients = comp.getClients();
 
     // sort workspaces by id
     std::sort(allWorkspaces.begin(), allWorkspaces.end(), [](const auto& a, const auto& b) { return a.id < b.id; });
 
-    int activeWsId = hyprctl.getActiveWorkspaceId();
+    int activeWsId = comp.getActiveWorkspaceId();
 
     for (size_t i = 0; i < allWorkspaces.size(); ++i) {
         const auto& w = allWorkspaces[i];
